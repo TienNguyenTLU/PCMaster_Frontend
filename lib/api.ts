@@ -114,6 +114,7 @@ export interface Supplier {
   phone?: string;
   address?: string;
   contactPerson?: string;
+  brandIds?: (string | number)[];
 }
 
 export interface Brand {
@@ -128,6 +129,35 @@ export interface Category {
   name: string;
   slug?: string;
   parentId?: string | number | null;
+}
+
+export interface PurchaseOrderItemRequest {
+  productId: number;
+  quantity: number;
+  importPrice: number;
+}
+
+export interface PurchaseOrderCreateRequest {
+  supplierId: number;
+  items: PurchaseOrderItemRequest[];
+}
+
+export interface PurchaseOrderItemResponse {
+  id: number;
+  productId: number;
+  quantity: number;
+  importPrice: number;
+}
+
+export interface PurchaseOrder {
+  id: number;
+  supplierId: number;
+  createdBy?: number;
+  status: 'DRAFT' | 'RECEIVED';
+  totalAmount: number;
+  createdAt: string;
+  documentUrl?: string;
+  items: PurchaseOrderItemResponse[];
 }
 
 // Admin API Services
@@ -211,5 +241,34 @@ export const adminAPI = {
       console.error('Error fetching brands:', error);
       return { content: [], totalPages: 0, totalElements: 0, size, number: page };
     }
+  },
+  getPurchaseOrders: async (): Promise<PurchaseOrder[]> => {
+    try {
+      const { data } = await axiosInstance.get('/api/admin/purchase-orders');
+      return data;
+    } catch (error) {
+      console.error('Error fetching purchase orders:', error);
+      return [];
+    }
+  },
+
+  getPurchaseOrderById: async (id: number): Promise<PurchaseOrder> => {
+    const { data } = await axiosInstance.get(`/api/admin/purchase-orders/${id}`);
+    return data;
+  },
+
+  createPurchaseOrder: async (request: PurchaseOrderCreateRequest, document?: File): Promise<PurchaseOrder> => {
+    const formData = new FormData();
+    formData.append('data', new Blob([JSON.stringify(request)], { type: 'application/json' }));
+    if (document) {
+      formData.append('document', document);
+    }
+    const { data } = await axiosInstance.post('/api/admin/purchase-orders', formData);
+    return data;
+  },
+
+  receivePurchaseOrder: async (id: number, newPrices?: Record<number, number>): Promise<PurchaseOrder> => {
+    const { data } = await axiosInstance.put(`/api/admin/purchase-orders/${id}/receive`, newPrices || {});
+    return data;
   },
 };
