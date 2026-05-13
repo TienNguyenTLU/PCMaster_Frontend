@@ -1,0 +1,143 @@
+'use client';
+
+import { useState, FormEvent } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import AuthFormField from './AuthFormField';
+import AuthSocialButtons from './AuthSocialButtons';
+import { useAuthStore } from '@/lib/store';
+
+const imgArrow = 'http://localhost:3845/assets/fadd198d26aadd8b0ee816378d8a8139f72021b1.svg';
+
+export default function RegisterForm() {
+  const router = useRouter();
+  const { signup, isLoading, error, clearError } = useAuthStore();
+
+  const [form, setForm] = useState({ username: '', email: '', password: '' });
+
+  const handleChange =
+    (field: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) => {
+      clearError();
+      setForm((prev) => ({ ...prev, [field]: e.target.value }));
+    };
+
+  const handleSubmit = async (e: FormEvent) => {
+    e.preventDefault();
+    try {
+      await signup(form.username, form.email, form.password);
+      // After signup the store has user.role – re-read from store state
+      const { user } = useAuthStore.getState();
+      router.push(user?.role === 'ADMIN' ? '/dashboard' : '/home');
+    } catch {
+      // error displayed from store
+    }
+  };
+
+  return (
+    <div
+      className="
+        bg-white border border-[rgba(194,198,214,0.15)] rounded-[8px]
+        shadow-[0px_40px_40px_rgba(0,0,0,0.04)]
+        col-span-5 col-start-8
+        flex flex-col gap-[31.5px] items-start
+        p-[41px] self-center justify-self-end
+        w-[518px]
+      "
+    >
+      {/* Card header */}
+      <div className="flex flex-col gap-2 w-full">
+        <h1
+          className="text-[#191c1e] text-[24px] tracking-[-0.6px] leading-[32px] font-normal"
+          style={{ fontFamily: 'Inter, sans-serif' }}
+        >
+          Create Account
+        </h1>
+        <p
+          className="text-[#424754] text-[14px] leading-[20px] font-normal"
+          style={{ fontFamily: 'Inter, sans-serif' }}
+        >
+          Elevate your building journey today.
+        </p>
+      </div>
+
+      {/* Form */}
+      <form onSubmit={handleSubmit} className="flex flex-col gap-6 w-full pt-[8.5px]">
+        <AuthFormField
+          label="USERNAME"
+          type="text"
+          placeholder="nikola_tesla"
+          value={form.username}
+          onChange={handleChange('username')}
+          required
+          autoComplete="username"
+          id="register-username"
+        />
+
+        <AuthFormField
+          label="EMAIL ADDRESS"
+          type="email"
+          placeholder="builder@pcmaster.tech"
+          value={form.email}
+          onChange={handleChange('email')}
+          required
+          autoComplete="email"
+          id="register-email"
+        />
+
+        <AuthFormField
+          label="PASSWORD"
+          type="password"
+          placeholder="••••••••"
+          value={form.password}
+          onChange={handleChange('password')}
+          required
+          autoComplete="new-password"
+          id="register-password"
+        />
+
+        {/* Error message */}
+        {error && (
+          <p
+            className="text-red-500 text-[13px] font-normal -mt-2"
+            style={{ fontFamily: 'Inter, sans-serif' }}
+          >
+            {error}
+          </p>
+        )}
+
+        {/* Submit */}
+        <button
+          type="submit"
+          disabled={isLoading}
+          id="register-submit"
+          className="
+            relative w-full bg-[#0058be] text-white text-[16px] leading-[24px] font-normal
+            flex items-center justify-center gap-2
+            py-[16px] rounded-[4px]
+            shadow-[0px_10px_15px_-3px_rgba(0,88,190,0.2),0px_4px_6px_-4px_rgba(0,88,190,0.2)]
+            hover:bg-[#0047a3] transition-colors
+            disabled:opacity-60 disabled:cursor-not-allowed
+            cursor-pointer
+          "
+          style={{ fontFamily: 'Inter, sans-serif' }}
+        >
+          {isLoading ? 'Creating account…' : 'Sign up'}
+          {!isLoading && (
+            <img src={imgArrow} alt="" className="size-[9.333px]" aria-hidden />
+          )}
+        </button>
+
+        {/* Social login */}
+        <AuthSocialButtons />
+
+        {/* Sign in link */}
+        <p className="text-[14px] text-center w-full" style={{ fontFamily: 'Inter, sans-serif' }}>
+          <span className="text-[#424754]">Already part of the network? </span>
+          <Link href="/auth/login" className="text-[#0058be] hover:underline" id="signin-link">
+            Sign in
+          </Link>
+        </p>
+      </form>
+    </div>
+  );
+}
