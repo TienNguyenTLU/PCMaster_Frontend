@@ -12,6 +12,7 @@ export interface User {
 interface AuthStore {
   user: User | null;
   token: string | null;
+  isHydrated: boolean;
   isLoading: boolean;
   error: string | null;
 
@@ -39,6 +40,7 @@ export const useAuthStore = create<AuthStore>()(
     (set) => ({
       user: null,
       token: null,
+      isHydrated: false,
       isLoading: false,
       error: null,
 
@@ -76,10 +78,13 @@ export const useAuthStore = create<AuthStore>()(
       clearError: () => set({ error: null }),
 
       hydrate: () => {
+        if (typeof window === 'undefined') return;
         const token = authAPI.getStoredToken();
         const user = authAPI.getStoredUser();
         if (token && user) {
-          set({ token, user });
+          set({ token, user, isHydrated: true });
+        } else {
+          set({ isHydrated: true });
         }
       },
     }),

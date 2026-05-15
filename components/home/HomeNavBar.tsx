@@ -5,9 +5,7 @@ import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/lib/store';
 
-const imgSearch = 'http://localhost:3845/assets/a1ccb6f268fe7d652b126c777d162fa85ac9d6f9.svg';
-const imgCart = 'http://localhost:3845/assets/1e107b8b22bae76f0ef40a8644f78085ebf78613.svg';
-const imgUser = 'http://localhost:3845/assets/d17a13871153fccc2454b657e80283b2552a8d92.svg';
+import { Search, ShoppingCart, User, Settings, ClipboardList, Cpu, LogOut } from 'lucide-react';
 
 const navLinks = [
   { label: 'Builds', href: '/builds' },
@@ -17,12 +15,12 @@ const navLinks = [
 ];
 
 export default function HomeNavBar() {
-  const { user, logout, hydrate } = useAuthStore();
+  const { user, logout, hydrate, isHydrated } = useAuthStore();
   const router = useRouter();
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
 
-  // Hydrate store on mount since skipHydration is true
+  // Hydrate store on mount
   useEffect(() => {
     hydrate();
   }, [hydrate]);
@@ -84,11 +82,11 @@ export default function HomeNavBar() {
           <div className="flex items-center gap-6">
             {/* Search bar */}
             <div className="flex items-center bg-[#f2f4f6] rounded-[8px] px-4 py-2 w-[256px] gap-3">
-              <img src={imgSearch} alt="" className="size-[10.5px] shrink-0" />
+              <Search className="size-4 text-[#64748b] shrink-0" />
               <input
                 type="search"
                 placeholder="Search products..."
-                className="flex-1 bg-transparent text-[14px] text-[rgba(66,71,84,0.5)] placeholder:text-[rgba(66,71,84,0.5)] focus:outline-none"
+                className="flex-1 bg-transparent text-[14px] text-[#1e293b] placeholder:text-[#94a3b8] focus:outline-none"
                 style={{ fontFamily: 'Inter, sans-serif' }}
               />
             </div>
@@ -96,109 +94,119 @@ export default function HomeNavBar() {
             {/* Cart */}
             <button
               type="button"
-              className="p-2 rounded-[8px] hover:bg-[#f2f4f6] transition-colors cursor-pointer"
+              className="p-2 rounded-[8px] hover:bg-[#f2f4f6] transition-colors cursor-pointer text-[#475569] hover:text-[#0058be]"
               aria-label="Cart"
             >
-              <img src={imgCart} alt="" className="size-5" />
+              <ShoppingCart className="size-5" />
             </button>
 
-            {/* User / Account Dropdown */}
-            <div className="relative">
-              <button
-                type="button"
-                onClick={handleUserClick}
-                className="p-2 rounded-[8px] hover:bg-[#f2f4f6] transition-colors cursor-pointer"
-                aria-label={user ? 'Account' : 'Sign in'}
-                title={user ? `Signed in as ${user.username}` : 'Sign in'}
-              >
-                <img src={imgUser} alt="" className="size-5" />
-              </button>
+            {/* User / Auth links */}
+            {!isHydrated ? (
+              <div className="w-20" /> // Placeholder while hydrating
+            ) : user ? (
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={handleUserClick}
+                  className="p-2 rounded-[8px] hover:bg-[#f2f4f6] transition-colors cursor-pointer text-[#475569] hover:text-[#0058be]"
+                  aria-label="Account"
+                  title={`Signed in as ${user.username}`}
+                >
+                  <User className="size-5" />
+                </button>
 
-              {/* Dropdown Overlay */}
-              {isDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-56 bg-white border border-[#e2e8f0] rounded-[8px] shadow-lg py-2 flex flex-col z-50">
-                  {user ? (
-                    <>
-                      <div className="px-4 py-2 border-b border-[#e2e8f0]">
-                        <p className="text-[14px] font-medium text-[#191c1e]">{user.username}</p>
-                        <p className="text-[12px] text-[#64748b] truncate">{user.email}</p>
-                      </div>
+                {/* Dropdown Overlay */}
+                {isDropdownOpen && (
+                  <div className="absolute right-0 mt-2 w-64 bg-white border border-[#e2e8f0] rounded-[12px] shadow-xl py-2 flex flex-col z-50 overflow-hidden">
+                    <div className="px-4 py-3 border-b border-[#f1f5f9] bg-[#f8fafc]">
+                      <p className="text-[14px] font-semibold text-[#0f172a]">{user.username}</p>
+                      <p className="text-[12px] text-[#64748b] truncate">{user.email}</p>
+                    </div>
+                    <div className="p-1">
                       <Link
                         href="#"
                         onClick={() => setIsDropdownOpen(false)}
-                        className="px-4 py-2 text-[14px] text-[#424754] hover:bg-[#f2f4f6] hover:text-[#0058be] transition-colors"
+                        className="flex items-center gap-3 px-3 py-2 text-[14px] text-[#475569] hover:bg-[#f1f5f9] hover:text-[#0058be] transition-all rounded-[6px]"
                       >
+                        <Settings className="size-4" />
                         Cài đặt tài khoản
                       </Link>
                       <Link
                         href="#"
                         onClick={() => setIsDropdownOpen(false)}
-                        className="px-4 py-2 text-[14px] text-[#424754] hover:bg-[#f2f4f6] hover:text-[#0058be] transition-colors"
+                        className="flex items-center gap-3 px-3 py-2 text-[14px] text-[#475569] hover:bg-[#f1f5f9] hover:text-[#0058be] transition-all rounded-[6px]"
                       >
-                        Đơn hàng
+                        <ClipboardList className="size-4" />
+                        Đơn hàng của tôi
                       </Link>
                       <Link
                         href="#"
                         onClick={() => setIsDropdownOpen(false)}
-                        className="px-4 py-2 text-[14px] text-[#424754] hover:bg-[#f2f4f6] hover:text-[#0058be] transition-colors"
+                        className="flex items-center gap-3 px-3 py-2 text-[14px] text-[#475569] hover:bg-[#f1f5f9] hover:text-[#0058be] transition-all rounded-[6px]"
                       >
-                        Cấu hình của bạn
+                        <Cpu className="size-4" />
+                        Cấu hình đã lưu
                       </Link>
-                      <div className="border-t border-[#e2e8f0] mt-1 pt-1">
-                        <button
-                          type="button"
-                          onClick={handleLogoutClick}
-                          className="w-full text-left px-4 py-2 text-[14px] text-red-600 hover:bg-[#fef2f2] transition-colors cursor-pointer"
-                        >
-                          Đăng xuất
-                        </button>
-                      </div>
-                    </>
-                  ) : (
-                    <>
-                      <Link
-                        href="/auth/login"
-                        onClick={() => setIsDropdownOpen(false)}
-                        className="px-4 py-2 text-[14px] text-[#424754] hover:bg-[#f2f4f6] hover:text-[#0058be] transition-colors"
+                    </div>
+                    <div className="border-t border-[#f1f5f9] mt-1 p-1">
+                      <button
+                        type="button"
+                        onClick={handleLogoutClick}
+                        className="flex items-center gap-3 w-full text-left px-3 py-2 text-[14px] text-red-600 hover:bg-[#fef2f2] transition-all rounded-[6px] cursor-pointer"
                       >
-                        Đăng nhập
-                      </Link>
-                      <Link
-                        href="/auth/register"
-                        onClick={() => setIsDropdownOpen(false)}
-                        className="px-4 py-2 text-[14px] text-[#424754] hover:bg-[#f2f4f6] hover:text-[#0058be] transition-colors"
-                      >
-                        Đăng ký
-                      </Link>
-                    </>
-                  )}
-                </div>
-              )}
-            </div>
+                        <LogOut className="size-4" />
+                        Đăng xuất
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="flex items-center gap-1 text-[14px] font-medium">
+                <Link
+                  href="/auth/login"
+                  className="text-[#475569] hover:text-[#0058be] transition-colors"
+                >
+                  Đăng nhập
+                </Link>
+                <span className="text-[#e2e8f0]">/</span>
+                <Link
+                  href="/auth/register"
+                  className="text-[#475569] hover:text-[#0058be] transition-colors"
+                >
+                  Đăng ký
+                </Link>
+              </div>
+            )}
           </div>
         </div>
       </nav>
 
       {/* Logout Confirmation Modal */}
       {isLogoutModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-          <div className="bg-white rounded-[12px] p-6 shadow-xl w-[400px] flex flex-col gap-4">
-            <h3 className="text-[#191c1e] text-[20px] font-medium">Xác nhận đăng xuất</h3>
-            <p className="text-[#424754] text-[14px]">
-              Bạn có chắc chắn muốn đăng xuất khỏi tài khoản hiện tại không?
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
+          <div className="bg-white rounded-[16px] p-6 shadow-2xl w-full max-w-[400px] flex flex-col gap-4 animate-in fade-in zoom-in duration-200">
+            <div className="flex items-center gap-3 text-red-600">
+              <div className="p-2 bg-red-50 rounded-full">
+                <LogOut className="size-6" />
+              </div>
+              <h3 className="text-[#0f172a] text-[18px] font-bold">Xác nhận đăng xuất</h3>
+            </div>
+            <p className="text-[#475569] text-[14px] leading-relaxed">
+              Bạn có chắc chắn muốn đăng xuất khỏi hệ thống? Các thay đổi chưa lưu có thể bị mất.
             </p>
-            <div className="flex justify-end gap-3 mt-4">
+            <div className="flex justify-end gap-3 mt-4 border-t pt-4">
               <button
                 type="button"
                 onClick={cancelLogout}
-                className="px-4 py-2 rounded-[6px] text-[#424754] bg-[#f2f4f6] hover:bg-[#e2e8f0] transition-colors text-[14px] font-medium cursor-pointer"
+                className="px-4 py-2 rounded-[8px] text-[#475569] bg-white border border-[#e2e8f0] hover:bg-[#f8fafc] transition-all text-[14px] font-medium cursor-pointer"
               >
                 Hủy
               </button>
               <button
                 type="button"
                 onClick={confirmLogout}
-                className="px-4 py-2 rounded-[6px] text-white bg-red-600 hover:bg-red-700 transition-colors text-[14px] font-medium cursor-pointer"
+                className="px-6 py-2 rounded-[8px] text-white bg-red-600 hover:bg-red-700 shadow-lg shadow-red-200 transition-all text-[14px] font-medium cursor-pointer"
               >
                 Đăng xuất
               </button>

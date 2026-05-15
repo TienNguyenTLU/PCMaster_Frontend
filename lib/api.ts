@@ -160,6 +160,18 @@ export interface PurchaseOrder {
   items: PurchaseOrderItemResponse[];
 }
 
+export interface DashboardStatsResponse {
+  totalRevenue: number;
+  activeOrders: number;
+  lowStockItems: number;
+  pendingPurchaseOrders: number;
+  recentActivities: {
+    title: string;
+    timeAgo: string;
+    type: string;
+  }[];
+}
+
 // Admin API Services
 export const adminAPI = {
   getProducts: async (
@@ -230,6 +242,20 @@ export const adminAPI = {
     }
   },
 
+  createSupplier: async (payload: Partial<Supplier>): Promise<Supplier> => {
+    const { data } = await axiosInstance.post<Supplier>('/api/admin/suppliers', payload);
+    return data;
+  },
+
+  updateSupplier: async (id: string | number, payload: Partial<Supplier>): Promise<Supplier> => {
+    const { data } = await axiosInstance.put<Supplier>(`/api/admin/suppliers/${id}`, payload);
+    return data;
+  },
+
+  deleteSupplier: async (id: string | number): Promise<void> => {
+    await axiosInstance.delete(`/api/admin/suppliers/${id}`);
+  },
+
   getBrands: async (page = 0, size = 10): Promise<PageResponse<Brand>> => {
     try {
       const { data } = await axiosInstance.get(`/api/brands?page=${page}&size=${size}`);
@@ -269,6 +295,25 @@ export const adminAPI = {
 
   receivePurchaseOrder: async (id: number, newPrices?: Record<number, number>): Promise<PurchaseOrder> => {
     const { data } = await axiosInstance.put(`/api/admin/purchase-orders/${id}/receive`, newPrices || {});
+    return data;
+  },
+
+  createBrand: async (formData: FormData): Promise<Brand> => {
+    const { data } = await axiosInstance.post<Brand>('/api/admin/brands', formData);
+    return data;
+  },
+
+  updateBrand: async (id: string | number, formData: FormData): Promise<Brand> => {
+    const { data } = await axiosInstance.put<Brand>(`/api/admin/brands/${id}`, formData);
+    return data;
+  },
+
+  deleteBrand: async (id: string | number): Promise<void> => {
+    await axiosInstance.delete(`/api/admin/brands/${id}`);
+  },
+
+  getDashboardStats: async (): Promise<DashboardStatsResponse> => {
+    const { data } = await axiosInstance.get<DashboardStatsResponse>('/api/admin/dashboard/stats');
     return data;
   },
 };
