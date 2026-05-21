@@ -3,8 +3,15 @@
 import { useState } from 'react';
 import { X, Package, ChevronDown, ChevronRight, Loader2 } from 'lucide-react';
 import { adminAPI, Product, Supplier, Brand } from '@/lib/api';
+import { CldImage } from 'next-cloudinary';
 import toast from 'react-hot-toast';
 import { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, WidthType, AlignmentType } from 'docx';
+
+const formatVND = (value: number | string) => {
+  if (value === undefined || value === null || value === '') return '';
+  const clean = String(value).replace(/\D/g, '');
+  return clean.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+};
 
 interface CartItem {
   product: Product;
@@ -69,7 +76,11 @@ export default function CreatePOModal({ suppliers, allProducts, allBrands, onClo
   const toggleBrand = (bid: number) => {
     setExpandedBrands(prev => {
       const next = new Set(prev);
-      next.has(bid) ? next.delete(bid) : next.add(bid);
+      if (next.has(bid)) {
+        next.delete(bid);
+      } else {
+        next.add(bid);
+      }
       return next;
     });
   };
@@ -132,8 +143,9 @@ export default function CreatePOModal({ suppliers, allProducts, allBrands, onClo
       toast.success('Tạo phiếu thành công!');
       onSuccess();
       onClose();
-    } catch (err: any) {
-      toast.error(err?.response?.data?.message ?? 'Lỗi tạo phiếu.');
+    } catch (err) {
+      const error = err as { response?: { data?: { message?: string } } };
+      toast.error(error?.response?.data?.message ?? 'Lỗi tạo phiếu.');
     } finally {
       setLoading(false);
     }
@@ -178,7 +190,13 @@ export default function CreatePOModal({ suppliers, allProducts, allBrands, onClo
                         return (
                           <div key={p.id} className="flex flex-col gap-3 px-4 py-4">
                             <div className="flex items-center gap-3">
-                              {p.thumbnailUrl && <img src={p.thumbnailUrl} alt={p.name} className="h-10 w-10 object-contain" />}
+                              {p.thumbnailUrl && (
+                                p.thumbnailUrl.startsWith('http://localhost') ? (
+                                  <img src={p.thumbnailUrl} alt={p.name} className="h-10 w-10 object-contain" />
+                                ) : (
+                                  <CldImage src={p.thumbnailUrl} alt={p.name} width={40} height={40} className="h-10 w-10 object-contain" />
+                                )
+                              )}
                               <div className="flex-1"><p className="text-[13px] font-medium truncate">{p.name}</p></div>
                               <div className="flex items-center gap-2">
                                 <button onClick={() => updateQty(p, (cartItem?.quantity ?? 1) - 1)} className="w-7 h-7 border rounded-full">−</button>
@@ -190,7 +208,17 @@ export default function CreatePOModal({ suppliers, allProducts, allBrands, onClo
                               <div className="flex items-center gap-4 pl-13">
                                 <div className="flex-1">
                                   <label className="text-[10px] font-bold text-[#94a3b8] uppercase block mb-1">Giá nhập mong muốn</label>
-                                  <input type="number" value={cartItem.importPrice || ''} onChange={(e) => updateImportPrice(p.id, e.target.value)} className="w-full bg-[#f8fafc] border rounded-md px-3 py-1.5 text-[13px]" />
+                                  <input
+                                    type="text"
+                                    value={cartItem.importPrice ? formatVND(cartItem.importPrice) : ''}
+                                    onChange={(e) => {
+                                      const rawVal = e.target.value.replace(/\./g, '');
+                                      if (/^\d*$/.test(rawVal)) {
+                                        updateImportPrice(p.id, rawVal);
+                                      }
+                                    }}
+                                    className="w-full bg-[#f8fafc] border rounded-md px-3 py-1.5 text-[13px] font-medium"
+                                  />
                                 </div>
                               </div>
                             )}

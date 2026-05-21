@@ -41,20 +41,12 @@ export default function ProductsPage() {
     return () => clearTimeout(handler);
   }, [searchTerm]);
 
-  // Reset page on filter changes
-  useEffect(() => {
-    setPage(0);
-  }, [selectedCategory, selectedBrand]);
+
 
   // Fetch initial data (brands, categories)
   useEffect(() => {
     adminAPI.getBrands(0, 100).then(res => setBrandsList(res.content || []));
     adminAPI.getCategories(0, 100).then(res => setCategoriesList(res.content || []));
-  }, []);
-
-  // Fetch products without filters to handle locally
-  useEffect(() => {
-    fetchProducts();
   }, []);
 
   const fetchProducts = async () => {
@@ -79,12 +71,20 @@ export default function ProductsPage() {
       }
       
       setAllProducts(all);
-    } catch (err) {
+    } catch {
       setError('Lỗi khi tải danh sách sản phẩm. Vui lòng thử lại sau.');
     } finally {
       setLoading(false);
     }
   };
+
+  // Fetch products without filters to handle locally
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchProducts();
+    }, 0);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Compute filtered and paginated products
   const filteredProducts = allProducts.filter(p => {
@@ -132,15 +132,15 @@ export default function ProductsPage() {
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-[#0f172a] text-[24px] font-semibold tracking-[-0.5px]">Products</h2>
-          <p className="text-[#64748b] text-[14px] mt-1">Manage your store inventory and catalog.</p>
+          <h2 className="text-[#0f172a] text-[24px] font-semibold tracking-[-0.5px]">Sản phẩm</h2>
+          <p className="text-[#64748b] text-[14px] mt-1">Quản lý danh mục và kho hàng của cửa hàng.</p>
         </div>
         <button
           onClick={handleAddClick}
           className="bg-[#0058be] text-white px-4 py-2 rounded-[8px] text-[14px] font-medium flex items-center gap-2 hover:bg-[#0047a3] transition-colors cursor-pointer"
         >
           <Plus className="size-4" />
-          Add Product
+          Thêm sản phẩm
         </button>
       </div>
 
@@ -150,7 +150,7 @@ export default function ProductsPage() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-[#94a3b8]" />
           <input
             type="text"
-            placeholder="Search products..."
+            placeholder="Tìm kiếm sản phẩm..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[8px] pl-9 pr-4 py-2 text-[14px] focus:outline-none focus:border-[#0058be] focus:ring-1 focus:ring-[#0058be] transition-all w-full md:w-[300px]"
@@ -160,19 +160,25 @@ export default function ProductsPage() {
         <div className="flex items-center gap-3 w-full md:w-auto">
           <select
             value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
+            onChange={(e) => {
+              setSelectedCategory(e.target.value);
+              setPage(0);
+            }}
             className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[8px] px-3 py-2 text-[14px] focus:outline-none focus:border-[#0058be] transition-all"
           >
-            <option value="">All Categories</option>
+            <option value="">Tất cả danh mục</option>
             {categoriesList.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
           </select>
 
           <select
             value={selectedBrand}
-            onChange={(e) => setSelectedBrand(e.target.value)}
+            onChange={(e) => {
+              setSelectedBrand(e.target.value);
+              setPage(0);
+            }}
             className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[8px] px-3 py-2 text-[14px] focus:outline-none focus:border-[#0058be] transition-all"
           >
-            <option value="">All Brands</option>
+            <option value="">Tất cả thương hiệu</option>
             {brandsList.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
           </select>
         </div>
@@ -197,14 +203,14 @@ export default function ProductsPage() {
             <table className="w-full text-left text-[14px]">
               <thead className="bg-[#f8fafc] border-b border-[#e2e8f0] text-[#64748b] font-medium">
                 <tr>
-                  <th className="px-6 py-4 font-medium">Image</th>
-                  <th className="px-6 py-4 font-medium">Product ID</th>
-                  <th className="px-6 py-4 font-medium">Name</th>
-                  <th className="px-6 py-4 font-medium">Category</th>
-                  <th className="px-6 py-4 font-medium">Brand</th>
-                  <th className="px-6 py-4 font-medium">Price</th>
-                  <th className="px-6 py-4 font-medium">Stock</th>
-                  <th className="px-6 py-4 font-medium text-right">Actions</th>
+                  <th className="px-6 py-4 font-medium">Hình ảnh</th>
+                  <th className="px-6 py-4 font-medium">Mã SP</th>
+                  <th className="px-6 py-4 font-medium">Tên sản phẩm</th>
+                  <th className="px-6 py-4 font-medium">Danh mục</th>
+                  <th className="px-6 py-4 font-medium">Thương hiệu</th>
+                  <th className="px-6 py-4 font-medium">Giá bán</th>
+                  <th className="px-6 py-4 font-medium">Tồn kho</th>
+                  <th className="px-6 py-4 font-medium text-right">Thao tác</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#e2e8f0]">
@@ -229,7 +235,7 @@ export default function ProductsPage() {
                           </div>
                         ) : (
                           <div className="h-10 w-10 bg-gray-100 rounded-[8px] flex items-center justify-center text-[10px] text-gray-400">
-                            No Img
+                            Không ảnh
                           </div>
                         )}
                       </td>
@@ -251,7 +257,7 @@ export default function ProductsPage() {
                             </div>
                           ) : (
                             <div className="h-8 w-16 bg-gray-100 rounded flex items-center justify-center text-[10px] text-gray-400 font-medium truncate px-1">
-                              {brandName || 'No Logo'}
+                              {brandName || 'Không logo'}
                             </div>
                           )}
                         </div>
@@ -289,14 +295,14 @@ export default function ProductsPage() {
         {/* Pagination */}
         {!loading && !error && currentProducts.length > 0 && (
           <div className="px-6 py-4 border-t border-[#e2e8f0] flex items-center justify-between text-[13px] text-[#64748b]">
-            <span>Showing page {page + 1} of {totalPages} (Total: {totalElements})</span>
+            <span>Hiển thị trang {page + 1} / {totalPages} (Tổng số: {totalElements})</span>
             <div className="flex gap-1">
               <button
                 onClick={() => setPage(p => Math.max(0, p - 1))}
                 disabled={page === 0}
                 className="px-3 py-1 border border-[#e2e8f0] rounded-[6px] hover:bg-[#f8fafc] disabled:opacity-50 cursor-pointer"
               >
-                Previous
+                Trước
               </button>
               <button className="px-3 py-1 bg-[#0058be] text-white border border-[#0058be] rounded-[6px]">
                 {page + 1}
@@ -306,7 +312,7 @@ export default function ProductsPage() {
                 disabled={page >= totalPages - 1}
                 className="px-3 py-1 border border-[#e2e8f0] rounded-[6px] hover:bg-[#f8fafc] disabled:opacity-50 cursor-pointer"
               >
-                Next
+                Sau
               </button>
             </div>
           </div>

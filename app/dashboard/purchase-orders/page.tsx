@@ -30,10 +30,13 @@ export default function PurchaseOrdersPage() {
   };
 
   useEffect(() => {
-    fetchOrders();
-    adminAPI.getSuppliers(0, 200).then(r => setSuppliers(r.content || []));
-    adminAPI.getBrands(0, 200).then(r => setAllBrands(r.content || []));
-    adminAPI.getProducts(0, 1000).then(r => setAllProducts(r.content || []));
+    const timer = setTimeout(() => {
+      fetchOrders();
+      adminAPI.getSuppliers(0, 200).then(r => setSuppliers(r.content || []));
+      adminAPI.getBrands(0, 200).then(r => setAllBrands(r.content || []));
+      adminAPI.getProducts(0, 1000).then(r => setAllProducts(r.content || []));
+    }, 0);
+    return () => clearTimeout(timer);
   }, []);
 
   const getSupplier = (id: number) => suppliers.find(s => Number(s.id) === id);

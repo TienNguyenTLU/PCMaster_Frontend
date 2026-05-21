@@ -1,9 +1,10 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { X, Save, Loader2, AlertCircle, Upload, ImageIcon } from 'lucide-react';
-import { adminAPI, Product, Brand, Category } from '@/lib/api';
+import { X, Save, Loader2, AlertCircle, Upload, ImageIcon, Check, Trash2 } from 'lucide-react';
+import { adminAPI, Product, Brand, Category, ProductImage } from '@/lib/api';
 import toast from 'react-hot-toast';
+import { CldImage } from 'next-cloudinary';
 
 // ─── Spec field definitions per category slug/name ─────────────────────────
 type SpecFieldType = 'text' | 'number' | 'multiselect' | 'select' | 'boolean';
@@ -170,6 +171,12 @@ export default function ProductFormModal({ isOpen, onClose, onSuccess, editingPr
   const [loading, setLoading] = useState(false);
   const [submitError, setSubmitError] = useState('');
 
+  // Step 2 & Multi-image state
+  const [step, setStep] = useState<number>(1);
+  const [createdProduct, setCreatedProduct] = useState<Product | null>(null);
+  const [uploadedImages, setUploadedImages] = useState<ProductImage[]>([]);
+  const [uploadingFiles, setUploadingFiles] = useState<{ id: string; name: string; status: 'uploading' | 'done' | 'error' }[]>([]);
+
   // Basic fields
   const [basic, setBasic] = useState<BasicForm>({ name: '', categoryId: '', brandId: '', price: '0', stock: '0', description: '' });
 
@@ -185,6 +192,76 @@ export default function ProductFormModal({ isOpen, onClose, onSuccess, editingPr
   const selectedCategoryName = categories.find(c => String(c.id) === basic.categoryId)?.name ?? '';
   const specFields = getSpecsForCategory(selectedCategoryName);
 
+  const fetchUploadedImages = async (productId: number | string) => {
+    try {
+      const data = await adminAPI.getProductImages(productId);
+      setUploadedImages(data);
+    } catch (err) {
+      console.error('Error fetching product images:', err);
+    }
+  };
+
+  useEffect(() => {
+    if (step === 2 && createdProduct) {
+      const timer = setTimeout(() => {
+        fetchUploadedImages(createdProduct.id);
+      }, 0);
+      return () => clearTimeout(timer);
+    }
+  }, [step, createdProduct]);
+
+  const handleMultipleFilesChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || !createdProduct) return;
+
+    const fileList = Array.from(files);
+    
+    // Add all to uploadingFiles state with unique IDs
+    const newUploading = fileList.map(file => ({
+      id: Math.random().toString(36).substring(2, 11),
+      name: file.name,
+      status: 'uploading' as const
+    }));
+    
+    setUploadingFiles(prev => [...prev, ...newUploading]);
+
+    // Upload files sequentially
+    for (let i = 0; i < fileList.length; i++) {
+      const file = fileList[i];
+      const tracking = newUploading[i];
+      
+      try {
+        await adminAPI.uploadProductImage(createdProduct.id, file);
+        
+        // Mark as done
+        setUploadingFiles(prev =>
+          prev.map(item => item.id === tracking.id ? { ...item, status: 'done' } : item)
+        );
+        
+        // Refresh uploaded list
+        fetchUploadedImages(createdProduct.id);
+      } catch {
+        // Mark as error
+        setUploadingFiles(prev =>
+          prev.map(item => item.id === tracking.id ? { ...item, status: 'error' } : item)
+        );
+        toast.error(`Tải lên file "${file.name}" thất bại.`);
+      }
+    }
+  };
+
+  const handleDeleteImage = async (imageId: number) => {
+    try {
+      await adminAPI.deleteProductImage(imageId);
+      toast.success('Xóa ảnh chi tiết thành công!');
+      if (createdProduct) {
+        fetchUploadedImages(createdProduct.id);
+      }
+    } catch {
+      toast.error('Xóa ảnh chi tiết thất bại.');
+    }
+  };
+
   // Load refs data once
   useEffect(() => {
     adminAPI.getBrands(0, 200).then(r => setBrands(r.content || []));
@@ -194,32 +271,39 @@ export default function ProductFormModal({ isOpen, onClose, onSuccess, editingPr
   // Populate when editing
   useEffect(() => {
     if (!isOpen) return;
-    if (editingProduct) {
-      setBasic({
-        name: editingProduct.name,
-        categoryId: String(editingProduct.categoryId ?? editingProduct.category?.id ?? ''),
-        brandId: String(editingProduct.brandId ?? editingProduct.brand?.id ?? ''),
-        price: String(editingProduct.price),
-        stock: String(editingProduct.stock),
-        description: editingProduct.description ?? '',
-      });
-      // Parse specsJson into state
-      try {
-        const parsed = editingProduct.specsJson ? JSON.parse(editingProduct.specsJson) : {};
-        const stringified: Record<string, string> = {};
-        for (const [k, v] of Object.entries(parsed)) {
-          stringified[k] = Array.isArray(v) ? (v as string[]).join(', ') : String(v);
-        }
-        setSpecs(stringified);
-      } catch { setSpecs({}); }
-      setThumbnailPreview(editingProduct.thumbnailUrl ?? '');
-    } else {
-      setBasic({ name: '', categoryId: '', brandId: '', price: '0', stock: '0', description: '' });
-      setSpecs({});
-      setThumbnailPreview('');
-    }
-    setThumbnailFile(null);
-    setSubmitError('');
+    const timer = setTimeout(() => {
+      setStep(1);
+      setCreatedProduct(null);
+      setUploadingFiles([]);
+      setUploadedImages([]);
+      if (editingProduct) {
+        setBasic({
+          name: editingProduct.name,
+          categoryId: String(editingProduct.categoryId ?? editingProduct.category?.id ?? ''),
+          brandId: String(editingProduct.brandId ?? editingProduct.brand?.id ?? ''),
+          price: String(editingProduct.price),
+          stock: String(editingProduct.stock),
+          description: editingProduct.description ?? '',
+        });
+        // Parse specsJson into state
+        try {
+          const parsed = editingProduct.specsJson ? JSON.parse(editingProduct.specsJson) : {};
+          const stringified: Record<string, string> = {};
+          for (const [k, v] of Object.entries(parsed)) {
+            stringified[k] = Array.isArray(v) ? (v as string[]).join(', ') : String(v);
+          }
+          setSpecs(stringified);
+        } catch { setSpecs({}); }
+        setThumbnailPreview(editingProduct.thumbnailUrl ?? '');
+      } else {
+        setBasic({ name: '', categoryId: '', brandId: '', price: '0', stock: '0', description: '' });
+        setSpecs({});
+        setThumbnailPreview('');
+      }
+      setThumbnailFile(null);
+      setSubmitError('');
+    }, 0);
+    return () => clearTimeout(timer);
   }, [editingProduct, isOpen]);
 
   // Removed reset specs on category change to prevent wiping data on edit load
@@ -245,7 +329,7 @@ export default function ProductFormModal({ isOpen, onClose, onSuccess, editingPr
     setSubmitError('');
 
     // Build specsJson from spec fields
-    const specsObj: Record<string, any> = (isEditing && editingProduct?.specsJson) 
+    const specsObj: Record<string, unknown> = (isEditing && editingProduct?.specsJson) 
       ? JSON.parse(editingProduct.specsJson) 
       : {};
 
@@ -266,7 +350,7 @@ export default function ProductFormModal({ isOpen, onClose, onSuccess, editingPr
         const numVal = Number(val);
         specsObj[field.key] = isNaN(numVal) ? val : numVal;
       } else if (field.type === 'boolean') {
-        specsObj[field.key] = val === 'true' || val === true;
+        specsObj[field.key] = val === 'true';
       } else {
         specsObj[field.key] = val;
       }
@@ -315,6 +399,9 @@ export default function ProductFormModal({ isOpen, onClose, onSuccess, editingPr
       if (isEditing && editingProduct) {
         await adminAPI.updateProduct(editingProduct.id, dataPayload);
         toast.success('Cập nhật sản phẩm thành công!');
+        console.groupEnd();
+        onSuccess();
+        onClose();
       } else {
         // Build FormData
         const formData = new FormData();
@@ -324,12 +411,12 @@ export default function ProductFormModal({ isOpen, onClose, onSuccess, editingPr
           console.log('thumbnail file:', thumbnailFile);
         }
         console.log('FormData keys:', [...formData.keys()]);
-        await adminAPI.createProduct(formData);
-        toast.success('Thêm sản phẩm thành công!');
+        const newProduct = await adminAPI.createProduct(formData);
+        toast.success('Thêm sản phẩm thành công! Vui lòng thêm ảnh chi tiết.');
+        console.groupEnd();
+        setCreatedProduct(newProduct);
+        setStep(2);
       }
-      console.groupEnd();
-      onSuccess();
-      onClose();
     } catch (err: unknown) {
       const axiosErr = err as { response?: { data?: { message?: string } } };
       const msg = axiosErr?.response?.data?.message || 'Có lỗi xảy ra. Vui lòng thử lại.';
@@ -363,208 +450,325 @@ export default function ProductFormModal({ isOpen, onClose, onSuccess, editingPr
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-6">
-          {/* Error */}
-          {submitError && (
-            <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 rounded-[8px] px-4 py-3 text-[14px]">
-              <AlertCircle className="size-4 shrink-0" />
-              {submitError}
-            </div>
-          )}
-
-          {/* ── SECTION: Thông tin cơ bản ── */}
-          <section className="flex flex-col gap-4">
-            <h4 className="text-[13px] font-semibold text-[#0058be] uppercase tracking-wider">Thông tin cơ bản</h4>
-
-            {/* Name */}
-            <div className="flex flex-col gap-1.5">
-              <label className="text-[13px] font-medium text-[#374151]">Tên sản phẩm <span className="text-red-500">*</span></label>
-              <input
-                type="text"
-                value={basic.name}
-                onChange={e => handleBasic('name', e.target.value)}
-                placeholder="VD: Jonsbo D32 Pro Black"
-                className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[8px] px-3 py-2.5 text-[14px] focus:outline-none focus:border-[#0058be] focus:ring-1 focus:ring-[#0058be] transition-all"
-              />
-            </div>
-
-            {/* Category + Brand */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[13px] font-medium text-[#374151]">Danh mục <span className="text-red-500">*</span></label>
-                <select
-                  value={basic.categoryId}
-                  onChange={e => handleBasic('categoryId', e.target.value)}
-                  className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[8px] px-3 py-2.5 text-[14px] focus:outline-none focus:border-[#0058be] transition-all"
-                >
-                  <option value="">-- Chọn danh mục --</option>
-                  {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
-                </select>
+        {/* Step Indicator */}
+        {!isEditing && (
+          <div className="flex items-center justify-center gap-2 px-6 py-3 bg-[#f8fafc] border-b border-[#e2e8f0]">
+            <div className={`flex items-center gap-1.5 text-[13px] font-medium ${step >= 1 ? 'text-green-600 font-semibold' : 'text-gray-400'}`}>
+              <div className={`size-5 rounded-full flex items-center justify-center text-[11px] ${step > 1 ? 'bg-green-100 text-green-600 font-bold' : 'bg-[#e8f0fe] text-[#0058be] font-bold'}`}>
+                {step > 1 ? '✓' : '1'}
               </div>
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[13px] font-medium text-[#374151]">Thương hiệu <span className="text-red-500">*</span></label>
-                <select
-                  value={basic.brandId}
-                  onChange={e => handleBasic('brandId', e.target.value)}
-                  className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[8px] px-3 py-2.5 text-[14px] focus:outline-none focus:border-[#0058be] transition-all"
-                >
-                  <option value="">-- Chọn thương hiệu --</option>
-                  {brands.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
-                </select>
+              <span>Thông tin sản phẩm</span>
+            </div>
+            <div className="w-12 h-px bg-[#e2e8f0]"></div>
+            <div className={`flex items-center gap-1.5 text-[13px] font-medium ${step === 2 ? 'text-[#0058be] font-semibold' : 'text-[#94a3b8]'}`}>
+              <div className={`size-5 rounded-full flex items-center justify-center text-[11px] ${step === 2 ? 'bg-[#e8f0fe] text-[#0058be] font-bold' : 'bg-[#f1f5f9] text-[#94a3b8]'}`}>
+                2
+              </div>
+              <span>Ảnh chi tiết (Không bắt buộc)</span>
+            </div>
+          </div>
+        )}
+
+        {step === 2 ? (
+          <div className="p-6 flex flex-col gap-6">
+            <div className="bg-[#e8f0fe] border border-blue-100 rounded-[12px] p-4 flex gap-3 text-[#0058be]">
+              <Check className="size-5 shrink-0 mt-0.5" />
+              <div>
+                <p className="font-semibold text-[14px]">Sản phẩm đã được tạo thành công!</p>
+                <p className="text-[13px] opacity-90 mt-0.5">Sản phẩm <strong>{createdProduct?.name}</strong> đã được thêm vào hệ thống. Bây giờ bạn có thể tải lên các hình ảnh chi tiết để hiển thị ở trang chi tiết sản phẩm.</p>
               </div>
             </div>
 
-            {/* Price + Stock */}
-            <div className="grid grid-cols-2 gap-4">
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[13px] font-medium text-[#374151]">Giá (VNĐ) <span className="text-red-500">*</span></label>
+            {/* Drag & Drop Upload Zone */}
+            <div className="flex flex-col gap-2">
+              <label className="text-[13px] font-bold text-[#475569] uppercase tracking-wider">Tải ảnh chi tiết lên</label>
+              <div className="relative group">
                 <input
-                  type="number" min={0} step="1000"
-                  value={basic.price}
-                  onChange={e => handleBasic('price', e.target.value)}
-                  placeholder="0"
-                  readOnly
-                  disabled
-                  className="bg-[#f1f5f9] border border-[#e2e8f0] rounded-[8px] px-3 py-2.5 text-[14px] text-[#64748b] cursor-not-allowed transition-all"
+                  type="file"
+                  id="detail-images-input"
+                  className="hidden"
+                  accept="image/*"
+                  multiple
+                  onChange={handleMultipleFilesChange}
                 />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <label className="text-[13px] font-medium text-[#374151]">Tồn kho <span className="text-red-500">*</span></label>
-                <input
-                  type="number" min={0}
-                  value={basic.stock}
-                  onChange={e => handleBasic('stock', e.target.value)}
-                  placeholder="0"
-                  readOnly
-                  disabled
-                  className="bg-[#f1f5f9] border border-[#e2e8f0] rounded-[8px] px-3 py-2.5 text-[14px] text-[#64748b] cursor-not-allowed transition-all"
-                />
+                <label
+                  htmlFor="detail-images-input"
+                  className="flex flex-col items-center justify-center w-full min-h-[140px] border-2 border-dashed border-[#cbd5e1] hover:border-[#0058be] bg-[#f8fafc] hover:bg-[#0058be]/[0.02] rounded-[12px] cursor-pointer transition-all p-6 text-center group"
+                >
+                  <Upload className="size-8 text-[#94a3b8] mb-2 group-hover:text-[#0058be] transition-colors" />
+                  <span className="text-[14px] font-medium text-[#475569]">Chọn nhiều ảnh chi tiết</span>
+                  <span className="text-[11px] text-[#94a3b8] mt-1">Hỗ trợ JPG, PNG, WEBP. Chọn nhiều ảnh cùng lúc</span>
+                </label>
               </div>
             </div>
 
-            {/* Description */}
-            <div className="flex flex-col gap-1.5">
-              <label className="text-[13px] font-medium text-[#374151]">Mô tả</label>
-              <textarea
-                value={basic.description}
-                onChange={e => handleBasic('description', e.target.value)}
-                placeholder="Mô tả sản phẩm..."
-                rows={2}
-                className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[8px] px-3 py-2.5 text-[14px] focus:outline-none focus:border-[#0058be] focus:ring-1 focus:ring-[#0058be] transition-all resize-none"
-              />
-            </div>
-          </section>
+            {/* Uploading Status list */}
+            {uploadingFiles.length > 0 && (
+              <div className="flex flex-col gap-2 bg-[#f8fafc] border border-[#e2e8f0] rounded-[12px] p-4 max-h-[160px] overflow-y-auto">
+                <h5 className="text-[12px] font-bold text-[#475569] uppercase tracking-wider">Trạng thái tải lên</h5>
+                <div className="flex flex-col gap-1.5">
+                  {uploadingFiles.map(file => (
+                    <div key={file.id} className="flex items-center justify-between text-[13px]">
+                      <span className="truncate max-w-[80%] text-[#475569]">{file.name}</span>
+                      <span className={`font-semibold shrink-0 ${
+                        file.status === 'uploading' ? 'text-[#0058be] animate-pulse' :
+                        file.status === 'done' ? 'text-green-600' : 'text-red-500'
+                      }`}>
+                        {file.status === 'uploading' ? 'Đang tải...' :
+                         file.status === 'done' ? 'Hoàn tất' : 'Lỗi'}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
 
-          {/* ── SECTION: Ảnh sản phẩm ── */}
-          <section className="flex flex-col gap-4">
-            <h4 className="text-[13px] font-semibold text-[#0058be] uppercase tracking-wider">Ảnh sản phẩm</h4>
-            <div
-              className="relative border-2 border-dashed border-[#e2e8f0] rounded-[12px] p-4 flex flex-col items-center gap-3 hover:border-[#0058be] transition-colors cursor-pointer bg-[#f8fafc]"
-              onClick={() => fileInputRef.current?.click()}
-            >
-              {thumbnailPreview ? (
-                <div className="flex items-center gap-4 w-full">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={thumbnailPreview} alt="preview" className="h-20 w-20 object-contain rounded-[8px] border border-[#e2e8f0] bg-white" />
-                  <div className="flex flex-col gap-1">
-                    <p className="text-[14px] font-medium text-[#0f172a]">{thumbnailFile?.name ?? 'Ảnh hiện tại'}</p>
-                    <p className="text-[12px] text-[#94a3b8]">Nhấn để thay đổi ảnh</p>
-                  </div>
+            {/* Uploaded Gallery Grid */}
+            <div className="flex flex-col gap-2">
+              <h5 className="text-[13px] font-bold text-[#475569] uppercase tracking-wider">Danh sách ảnh đã tải lên ({uploadedImages.length})</h5>
+              {uploadedImages.length === 0 ? (
+                <div className="border border-dashed border-[#e2e8f0] rounded-[12px] py-8 text-center text-[#94a3b8] text-[13px]">
+                  Chưa có ảnh chi tiết nào được tải lên.
                 </div>
               ) : (
-                <>
-                  <div className="p-3 bg-[#e8f0fe] rounded-full">
-                    <ImageIcon className="size-6 text-[#0058be]" />
-                  </div>
-                  <div className="text-center">
-                    <p className="text-[14px] font-medium text-[#374151]">Nhấn để tải ảnh lên</p>
-                    <p className="text-[12px] text-[#94a3b8] mt-0.5">PNG, JPG, WEBP (key: thumbnail)</p>
-                  </div>
-                  <div className="flex items-center gap-2 text-[#0058be] text-[13px] font-medium">
-                    <Upload className="size-4" /> Chọn file
-                  </div>
-                </>
+                <div className="grid grid-cols-4 sm:grid-cols-5 gap-3">
+                  {uploadedImages.map(img => (
+                    <div key={img.id} className="aspect-square bg-white border border-[#e2e8f0] rounded-[8px] relative group overflow-hidden flex items-center justify-center p-1">
+                      <img src={img.url} alt="Detail" className="object-contain w-full h-full" />
+                      <button
+                        type="button"
+                        onClick={() => handleDeleteImage(img.id)}
+                        className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center text-white cursor-pointer"
+                      >
+                        <Trash2 className="size-5 hover:scale-110 transition-transform text-red-400" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
               )}
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept="image/*"
-                onChange={handleFileChange}
-                className="hidden"
-              />
             </div>
-          </section>
 
-          {/* ── SECTION: Thông số kỹ thuật (dynamic) ── */}
-          {specFields.length > 0 && (
-            <section className="flex flex-col gap-4">
-              <div className="flex items-center justify-between">
-                <h4 className="text-[13px] font-semibold text-[#0058be] uppercase tracking-wider">
-                  Thông số kỹ thuật — {selectedCategoryName}
-                </h4>
+            {/* Complete Buttons */}
+            <div className="flex justify-end gap-3 pt-4 border-t border-[#e2e8f0]">
+              <button
+                type="button"
+                onClick={() => {
+                  onSuccess();
+                  onClose();
+                }}
+                className="px-6 py-2 bg-[#0058be] text-white rounded-[8px] text-[14px] font-medium hover:bg-[#0047a3] transition-colors cursor-pointer"
+              >
+                Hoàn tất
+              </button>
+            </div>
+          </div>
+        ) : (
+          <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-6">
+            {/* Error */}
+            {submitError && (
+              <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 rounded-[8px] px-4 py-3 text-[14px]">
+                <AlertCircle className="size-4 shrink-0" />
+                {submitError}
               </div>
+            )}
+
+            {/* ── SECTION: Thông tin cơ bản ── */}
+            <section className="flex flex-col gap-4">
+              <h4 className="text-[13px] font-semibold text-[#0058be] uppercase tracking-wider">Thông tin cơ bản</h4>
+
+              {/* Name */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[13px] font-medium text-[#374151]">Tên sản phẩm <span className="text-red-500">*</span></label>
+                <input
+                  type="text"
+                  value={basic.name}
+                  onChange={e => handleBasic('name', e.target.value)}
+                  placeholder="VD: Jonsbo D32 Pro Black"
+                  className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[8px] px-3 py-2.5 text-[14px] focus:outline-none focus:border-[#0058be] focus:ring-1 focus:ring-[#0058be] transition-all"
+                />
+              </div>
+
+              {/* Category + Brand */}
               <div className="grid grid-cols-2 gap-4">
-                {specFields.map(field => (
-                  <div key={field.key} className={`flex flex-col gap-1.5 ${field.type === 'multiselect' ? 'col-span-2' : ''}`}>
-                    <label className="text-[13px] font-medium text-[#374151]">
-                      {field.label}
-                      {field.type === 'multiselect' && <span className="text-[#94a3b8] font-normal ml-1">(phân cách bằng dấu phẩy)</span>}
-                    </label>
-                    {field.type === 'select' ? (
-                      <select
-                        value={specs[field.key] ?? ''}
-                        onChange={e => handleSpec(field.key, e.target.value)}
-                        className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[8px] px-3 py-2.5 text-[14px] focus:outline-none focus:border-[#0058be] transition-all"
-                      >
-                        <option value="">-- Chọn {field.label.toLowerCase()} --</option>
-                        {field.options?.map(opt => (
-                          <option key={opt} value={opt}>{opt}</option>
-                        ))}
-                      </select>
-                    ) : field.type === 'boolean' ? (
-                      <select
-                        value={specs[field.key] ?? ''}
-                        onChange={e => handleSpec(field.key, e.target.value)}
-                        className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[8px] px-3 py-2.5 text-[14px] focus:outline-none focus:border-[#0058be] transition-all"
-                      >
-                        <option value="">-- Chọn --</option>
-                        <option value="true">Có / Yes</option>
-                        <option value="false">Không / No</option>
-                      </select>
-                    ) : (
-                      <input
-                        type={field.type === 'number' ? 'number' : 'text'}
-                        value={specs[field.key] ?? ''}
-                        onChange={e => handleSpec(field.key, e.target.value)}
-                        placeholder={field.placeholder ?? ''}
-                        className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[8px] px-3 py-2.5 text-[14px] focus:outline-none focus:border-[#0058be] focus:ring-1 focus:ring-[#0058be] transition-all"
-                      />
-                    )}
-                  </div>
-                ))}
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[13px] font-medium text-[#374151]">Danh mục <span className="text-red-500">*</span></label>
+                  <select
+                    value={basic.categoryId}
+                    onChange={e => handleBasic('categoryId', e.target.value)}
+                    className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[8px] px-3 py-2.5 text-[14px] focus:outline-none focus:border-[#0058be] transition-all"
+                  >
+                    <option value="">-- Chọn danh mục --</option>
+                    {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                  </select>
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[13px] font-medium text-[#374151]">Thương hiệu <span className="text-red-500">*</span></label>
+                  <select
+                    value={basic.brandId}
+                    onChange={e => handleBasic('brandId', e.target.value)}
+                    className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[8px] px-3 py-2.5 text-[14px] focus:outline-none focus:border-[#0058be] transition-all"
+                  >
+                    <option value="">-- Chọn thương hiệu --</option>
+                    {brands.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+                  </select>
+                </div>
+              </div>
+
+              {/* Price + Stock */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[13px] font-medium text-[#374151]">Giá (VNĐ) <span className="text-red-500">*</span></label>
+                  <input
+                    type="number" min={0} step="1000"
+                    value={basic.price}
+                    onChange={e => handleBasic('price', e.target.value)}
+                    placeholder="0"
+                    readOnly
+                    disabled
+                    className="bg-[#f1f5f9] border border-[#e2e8f0] rounded-[8px] px-3 py-2.5 text-[14px] text-[#64748b] cursor-not-allowed transition-all"
+                  />
+                </div>
+                <div className="flex flex-col gap-1.5">
+                  <label className="text-[13px] font-medium text-[#374151]">Tồn kho <span className="text-red-500">*</span></label>
+                  <input
+                    type="number" min={0}
+                    value={basic.stock}
+                    onChange={e => handleBasic('stock', e.target.value)}
+                    placeholder="0"
+                    readOnly
+                    disabled
+                    className="bg-[#f1f5f9] border border-[#e2e8f0] rounded-[8px] px-3 py-2.5 text-[14px] text-[#64748b] cursor-not-allowed transition-all"
+                  />
+                </div>
+              </div>
+
+              {/* Description */}
+              <div className="flex flex-col gap-1.5">
+                <label className="text-[13px] font-medium text-[#374151]">Mô tả</label>
+                <textarea
+                  value={basic.description}
+                  onChange={e => handleBasic('description', e.target.value)}
+                  placeholder="Mô tả sản phẩm..."
+                  rows={2}
+                  className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[8px] px-3 py-2.5 text-[14px] focus:outline-none focus:border-[#0058be] focus:ring-1 focus:ring-[#0058be] transition-all resize-none"
+                />
               </div>
             </section>
-          )}
 
-          {/* ── Actions ── */}
-          <div className="flex items-center justify-end gap-3 pt-2 border-t border-[#e2e8f0]">
-            <button
-              type="button"
-              onClick={onClose}
-              className="px-4 py-2 text-[14px] font-medium text-[#475569] border border-[#e2e8f0] rounded-[8px] hover:bg-[#f8fafc] transition-colors cursor-pointer"
-            >
-              Hủy
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="px-5 py-2 text-[14px] font-medium text-white bg-[#0058be] rounded-[8px] hover:bg-[#0047a3] transition-colors flex items-center gap-2 disabled:opacity-70 cursor-pointer"
-            >
-              {loading ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
-              {isEditing ? 'Lưu thay đổi' : 'Tạo sản phẩm'}
-            </button>
-          </div>
-        </form>
+            {/* ── SECTION: Ảnh sản phẩm ── */}
+            <section className="flex flex-col gap-4">
+              <h4 className="text-[13px] font-semibold text-[#0058be] uppercase tracking-wider">Ảnh sản phẩm</h4>
+              <div
+                className="relative border-2 border-dashed border-[#e2e8f0] rounded-[12px] p-4 flex flex-col items-center gap-3 hover:border-[#0058be] transition-colors cursor-pointer bg-[#f8fafc]"
+                onClick={() => fileInputRef.current?.click()}
+              >
+                {thumbnailPreview ? (
+                  <div className="flex items-center gap-4 w-full">
+                    {thumbnailPreview.startsWith('blob:') ? (
+                      <img src={thumbnailPreview} alt="preview" className="h-20 w-20 object-contain rounded-[8px] border border-[#e2e8f0] bg-white" />
+                    ) : (
+                      <CldImage src={thumbnailPreview} alt="preview" width={80} height={80} className="h-20 w-20 object-contain rounded-[8px] border border-[#e2e8f0] bg-white" />
+                    )}
+                    <div className="flex flex-col gap-1">
+                      <p className="text-[14px] font-medium text-[#0f172a]">{thumbnailFile?.name ?? 'Ảnh hiện tại'}</p>
+                      <p className="text-[12px] text-[#94a3b8]">Nhấn để thay đổi ảnh</p>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <div className="p-3 bg-[#e8f0fe] rounded-full">
+                      <ImageIcon className="size-6 text-[#0058be]" />
+                    </div>
+                    <div className="text-center">
+                      <p className="text-[14px] font-medium text-[#374151]">Nhấn để tải ảnh lên</p>
+                      <p className="text-[12px] text-[#94a3b8] mt-0.5">PNG, JPG, WEBP (key: thumbnail)</p>
+                    </div>
+                    <div className="flex items-center gap-2 text-[#0058be] text-[13px] font-medium">
+                      <Upload className="size-4" /> Chọn file
+                    </div>
+                  </>
+                )}
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+              </div>
+            </section>
+
+            {/* ── SECTION: Thông số kỹ thuật (dynamic) ── */}
+            {specFields.length > 0 && (
+              <section className="flex flex-col gap-4">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-[13px] font-semibold text-[#0058be] uppercase tracking-wider">
+                    Thông số kỹ thuật — {selectedCategoryName}
+                  </h4>
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  {specFields.map(field => (
+                    <div key={field.key} className={`flex flex-col gap-1.5 ${field.type === 'multiselect' ? 'col-span-2' : ''}`}>
+                      <label className="text-[13px] font-medium text-[#374151]">
+                        {field.label}
+                        {field.type === 'multiselect' && <span className="text-[#94a3b8] font-normal ml-1">(phân cách bằng dấu phẩy)</span>}
+                      </label>
+                      {field.type === 'select' ? (
+                        <select
+                          value={specs[field.key] ?? ''}
+                          onChange={e => handleSpec(field.key, e.target.value)}
+                          className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[8px] px-3 py-2.5 text-[14px] focus:outline-none focus:border-[#0058be] transition-all"
+                        >
+                          <option value="">-- Chọn {field.label.toLowerCase()} --</option>
+                          {field.options?.map(opt => (
+                            <option key={opt} value={opt}>{opt}</option>
+                          ))}
+                        </select>
+                      ) : field.type === 'boolean' ? (
+                        <select
+                          value={specs[field.key] ?? ''}
+                          onChange={e => handleSpec(field.key, e.target.value)}
+                          className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[8px] px-3 py-2.5 text-[14px] focus:outline-none focus:border-[#0058be] transition-all"
+                        >
+                          <option value="">-- Chọn --</option>
+                          <option value="true">Có / Yes</option>
+                          <option value="false">Không / No</option>
+                        </select>
+                      ) : (
+                        <input
+                          type={field.type === 'number' ? 'number' : 'text'}
+                          value={specs[field.key] ?? ''}
+                          onChange={e => handleSpec(field.key, e.target.value)}
+                          placeholder={field.placeholder ?? ''}
+                          className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[8px] px-3 py-2.5 text-[14px] focus:outline-none focus:border-[#0058be] focus:ring-1 focus:ring-[#0058be] transition-all"
+                        />
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </section>
+            )}
+
+            {/* ── Actions ── */}
+            <div className="flex items-center justify-end gap-3 pt-2 border-t border-[#e2e8f0]">
+              <button
+                type="button"
+                onClick={onClose}
+                className="px-4 py-2 text-[14px] font-medium text-[#475569] border border-[#e2e8f0] rounded-[8px] hover:bg-[#f8fafc] transition-colors cursor-pointer"
+              >
+                Hủy
+              </button>
+              <button
+                type="submit"
+                disabled={loading}
+                className="px-5 py-2 text-[14px] font-medium text-white bg-[#0058be] rounded-[8px] hover:bg-[#0047a3] transition-colors flex items-center gap-2 disabled:opacity-70 cursor-pointer"
+              >
+                {loading ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
+                {isEditing ? 'Lưu thay đổi' : 'Tạo sản phẩm'}
+              </button>
+            </div>
+          </form>
+        )}
       </div>
     </div>
   );

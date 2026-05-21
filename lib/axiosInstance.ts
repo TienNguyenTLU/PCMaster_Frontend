@@ -7,18 +7,13 @@ const axiosInstance = axios.create({
   baseURL: API_BASE_URL,
 });
 
-// Request interceptor – attach Bearer token from localStorage
+// ─── Request interceptor — attach Bearer token from localStorage ─────────────
 axiosInstance.interceptors.request.use(
   (config) => {
     if (typeof window !== 'undefined') {
       const token = localStorage.getItem('authToken');
       if (token) {
-        if (config.headers && typeof config.headers.set === 'function') {
-          config.headers.set('Authorization', `Bearer ${token}`);
-        } else {
-          config.headers = config.headers || {};
-          config.headers['Authorization'] = `Bearer ${token}`;
-        }
+        config.headers.set('Authorization', `Bearer ${token}`);
       }
     }
     return config;
@@ -26,19 +21,23 @@ axiosInstance.interceptors.request.use(
   (error) => Promise.reject(error),
 );
 
-// Response interceptor – handle 401 globally
+// ─── Response interceptor — handle 401 globally ──────────────────────────────
 axiosInstance.interceptors.response.use(
   (response) => response,
-  (error) => {
-    if (error.response?.status === 401) {
-      if (typeof window !== 'undefined') {
-        const token = localStorage.getItem('authToken');
-        if (token) {
-          toast.error('Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại.');
-        }
-        localStorage.removeItem('authToken');
-        localStorage.removeItem('user');
-        window.location.href = '/auth/login';
+  async (error) => {
+    if (error.response?.status === 401 && typeof window !== 'undefined') {
+      const hadToken = !!localStorage.getItem('authToken');
+
+      // Import forceLogout lazily to avoid circular dependency at module init
+      const { forceLogout } = await import('@/lib/store');
+      forceLogout();
+
+      if (hadToken) {
+        toast.error('Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại.');
+        // Small delay so toast is visible before navigation
+        setTimeout(() => {
+          window.location.href = '/auth/login';
+        }, 300);
       }
     }
     return Promise.reject(error);

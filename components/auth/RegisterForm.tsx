@@ -50,20 +50,20 @@ export default function RegisterForm() {
           className="text-[#191c1e] text-[24px] tracking-[-0.6px] leading-[32px] font-normal"
           style={{ fontFamily: 'Inter, sans-serif' }}
         >
-          Create Account
+          Đăng Ký Tài Khoản
         </h1>
         <p
           className="text-[#424754] text-[14px] leading-[20px] font-normal"
           style={{ fontFamily: 'Inter, sans-serif' }}
         >
-          Elevate your building journey today.
+          Nâng tầm trải nghiệm lắp ráp PC của bạn ngay hôm nay.
         </p>
       </div>
 
       {/* Form */}
       <form onSubmit={handleSubmit} className="flex flex-col gap-6 w-full pt-[8.5px]">
         <AuthFormField
-          label="USERNAME"
+          label="TÊN ĐĂNG NHẬP"
           type="text"
           placeholder="nikola_tesla"
           value={form.username}
@@ -74,7 +74,7 @@ export default function RegisterForm() {
         />
 
         <AuthFormField
-          label="EMAIL ADDRESS"
+          label="ĐỊA CHỈ EMAIL"
           type="email"
           placeholder="builder@pcmaster.tech"
           value={form.email}
@@ -85,7 +85,7 @@ export default function RegisterForm() {
         />
 
         <AuthFormField
-          label="PASSWORD"
+          label="MẬT KHẨU"
           type="password"
           placeholder="••••••••"
           value={form.password}
@@ -121,7 +121,7 @@ export default function RegisterForm() {
           "
           style={{ fontFamily: 'Inter, sans-serif' }}
         >
-          {isLoading ? 'Creating account…' : 'Sign up'}
+          {isLoading ? 'Đang đăng ký…' : 'Đăng ký'}
           {!isLoading && (
             <img src={imgArrow} alt="" className="size-[9.333px]" aria-hidden />
           )}
@@ -132,9 +132,9 @@ export default function RegisterForm() {
 
         {/* Sign in link */}
         <p className="text-[14px] text-center w-full" style={{ fontFamily: 'Inter, sans-serif' }}>
-          <span className="text-[#424754]">Already part of the network? </span>
+          <span className="text-[#424754]">Đã có tài khoản? </span>
           <Link href="/auth/login" className="text-[#0058be] hover:underline" id="signin-link">
-            Sign in
+            Đăng nhập
           </Link>
         </p>
       </form>

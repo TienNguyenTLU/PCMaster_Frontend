@@ -2,13 +2,13 @@ import type { Metadata } from 'next';
 import HomeNavBar from '@/components/home/HomeNavBar';
 import HomeHero from '@/components/home/HomeHero';
 import HomeCategoriesSection from '@/components/home/HomeCategoriesSection';
-import HomeSpecsBento from '@/components/home/HomeSpecsBento';
+import HomeProductsSection from '@/components/home/HomeProductsSection';
 import AuthFooter from '@/components/auth/AuthFooter';
 
 export const metadata: Metadata = {
-  title: 'PCMaster – Architect Your Powerful PC',
+  title: 'PCMaster – Thiết Kế Cấu Hình PC Cực Mạnh',
   description:
-    'Precision-engineered PC building tools. Browse processors, graphics cards, pre-built systems and build the ultimate workstation.',
+    'Công cụ lắp ráp PC chính xác tuyệt đối. Khám phá các bộ vi xử lý, card đồ họa, máy bộ và tự tạo cấu hình workstation tối tân.',
 };
 
 export default function HomePage() {
@@ -21,7 +21,7 @@ export default function HomePage() {
       <HomeNavBar />
 
       {/* Main content – push down by nav height */}
-      <main className="flex flex-col items-center gap-20 pt-24 pb-2">
+      <main className="flex flex-col items-center gap-20 pt-24 pb-12">
         {/* Hero */}
         <div className="w-full flex justify-center px-8">
           <HomeHero />
@@ -30,8 +30,19 @@ export default function HomePage() {
         {/* Featured Categories */}
         <HomeCategoriesSection />
 
-        {/* Specs Bento */}
-        <HomeSpecsBento />
+        {/* Newly Listed Products Section */}
+        <HomeProductsSection 
+          title="Sản phẩm mới niêm yết" 
+          subtitle="Khám phá linh kiện công nghệ mới nhất vừa cập bến" 
+          type="new" 
+        />
+
+        {/* Products On Sale Section */}
+        <HomeProductsSection 
+          title="Đang giảm giá" 
+          subtitle="Ưu đãi giới hạn cho các linh kiện kiến tạo PC đỉnh cao" 
+          type="sale" 
+        />
       </main>
 
       {/* Footer – reuse auth footer (identical design) */}

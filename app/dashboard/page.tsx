@@ -2,15 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import { adminAPI, DashboardStatsResponse } from '@/lib/api';
-import { Loader2, TrendingUp, TrendingDown, Package, Clock, DollarSign, ShoppingBag } from 'lucide-react';
+import { Loader2, TrendingUp, TrendingDown, Package, Clock, DollarSign, ShoppingBag, Coins } from 'lucide-react';
 
 export default function DashboardOverview() {
   const [stats, setStats] = useState<DashboardStatsResponse | null>(null);
   const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    fetchStats();
-  }, []);
 
   const fetchStats = async () => {
     try {
@@ -23,6 +19,13 @@ export default function DashboardOverview() {
     }
   };
 
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      fetchStats();
+    }, 0);
+    return () => clearTimeout(timer);
+  }, []);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-[400px]">
@@ -33,30 +36,37 @@ export default function DashboardOverview() {
 
   const statCards = [
     { 
-      title: 'Total Revenue', 
+      title: 'Tổng doanh thu', 
       value: new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(stats?.totalRevenue || 0), 
       change: '+12.5%', 
       positive: true,
       icon: <DollarSign className="size-4 text-[#0058be]" />
     },
     { 
-      title: 'Active Orders', 
+      title: 'Tổng lợi nhuận', 
+      value: new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(stats?.totalProfit || 0), 
+      change: '+15.8%', 
+      positive: true,
+      icon: <Coins className="size-4 text-emerald-600" />
+    },
+    { 
+      title: 'Đơn hàng đang xử lý', 
       value: stats?.activeOrders || 0, 
       change: '+5.2%', 
       positive: true,
       icon: <ShoppingBag className="size-4 text-purple-600" />
     },
     { 
-      title: 'Low Stock Items', 
+      title: 'Sản phẩm sắp hết hàng', 
       value: stats?.lowStockItems || 0, 
-      change: stats?.lowStockItems ? 'Needs restock' : 'Healthy', 
+      change: stats?.lowStockItems ? 'Cần nhập thêm' : 'Ổn định', 
       positive: !stats?.lowStockItems,
       icon: <Package className="size-4 text-amber-600" />
     },
     { 
-      title: 'Pending POs', 
+      title: 'Đơn nhập hàng nháp', 
       value: stats?.pendingPurchaseOrders || 0, 
-      change: 'Draft POs', 
+      change: 'Phiếu nháp', 
       positive: true,
       icon: <Clock className="size-4 text-blue-600" />
     },
@@ -65,7 +75,7 @@ export default function DashboardOverview() {
   return (
     <div className="flex flex-col gap-6">
       {/* Stats row */}
-      <div className="grid grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-6">
         {statCards.map((stat, i) => (
           <div key={i} className="bg-white border border-[#e2e8f0] rounded-[12px] p-6 flex flex-col gap-3 shadow-sm hover:shadow-md transition-shadow">
             <div className="flex items-center justify-between">
@@ -95,7 +105,7 @@ export default function DashboardOverview() {
         <div className="col-span-2 bg-white border border-[#e2e8f0] rounded-[12px] p-6 h-[400px] flex flex-col shadow-sm">
           <h3 className="text-[#0f172a] text-[16px] font-bold mb-6 flex items-center gap-2">
             <div className="w-1.5 h-4 bg-[#0058be] rounded-full" />
-            Revenue Overview
+            Biểu đồ lợi nhuận
           </h3>
           <div className="flex-1 bg-[#f8fafc] rounded-[12px] flex items-center justify-center border border-dashed border-[#cbd5e1] relative overflow-hidden">
              {/* Mock chart grid */}
@@ -109,7 +119,7 @@ export default function DashboardOverview() {
                   </div>
                 ))}
              </div>
-             <span className="text-[#94a3b8] text-[14px] font-medium z-10 bg-white/80 px-4 py-2 rounded-full shadow-sm">Monthly Revenue Trend</span>
+             <span className="text-[#94a3b8] text-[14px] font-medium z-10 bg-white/80 px-4 py-2 rounded-full shadow-sm">Xu hướng lợi nhuận hàng tháng</span>
           </div>
         </div>
 
@@ -117,7 +127,7 @@ export default function DashboardOverview() {
         <div className="col-span-1 bg-white border border-[#e2e8f0] rounded-[12px] p-6 flex flex-col shadow-sm">
           <h3 className="text-[#0f172a] text-[16px] font-bold mb-6 flex items-center gap-2">
             <div className="w-1.5 h-4 bg-[#f59e0b] rounded-full" />
-            Recent Activity
+            Hoạt động gần đây
           </h3>
           <div className="flex flex-col gap-6">
             {stats?.recentActivities && stats.recentActivities.length > 0 ? (
@@ -138,7 +148,7 @@ export default function DashboardOverview() {
             ) : (
               <div className="flex flex-col items-center justify-center py-12 text-[#94a3b8]">
                 <Clock className="size-8 opacity-20 mb-2" />
-                <p className="text-[13px]">No recent activity</p>
+                <p className="text-[13px]">Không có hoạt động gần đây</p>
               </div>
             )}
           </div>

@@ -53,20 +53,20 @@ export default function LoginForm() {
           className="text-[#191c1e] text-[24px] tracking-[-0.6px] leading-[32px] font-normal"
           style={{ fontFamily: 'Inter, sans-serif' }}
         >
-          Sign In
+          Đăng Nhập
         </h1>
         <p
           className="text-[#424754] text-[14px] leading-[20px] font-normal"
           style={{ fontFamily: 'Inter, sans-serif' }}
         >
-          Welcome back to the PCMaster network.
+          Chào mừng bạn quay lại với hệ thống PCMaster.
         </p>
       </div>
 
       {/* Form */}
       <form onSubmit={handleSubmit} className="flex flex-col gap-6 w-full pt-[8.5px]">
         <AuthFormField
-          label="EMAIL OR USERNAME"
+          label="TÊN ĐĂNG NHẬP HOẶC EMAIL"
           type="text"
           placeholder="builder@pcmaster.tech"
           value={form.usernameOrEmail}
@@ -77,7 +77,7 @@ export default function LoginForm() {
         />
 
         <AuthFormField
-          label="PASSWORD"
+          label="MẬT KHẨU"
           type="password"
           placeholder="••••••••"
           value={form.password}
@@ -113,7 +113,7 @@ export default function LoginForm() {
           "
           style={{ fontFamily: 'Inter, sans-serif' }}
         >
-          {isLoading ? 'Signing in…' : 'Sign in'}
+          {isLoading ? 'Đang đăng nhập…' : 'Đăng nhập'}
           {!isLoading && (
             <img src={imgArrow} alt="" className="size-[9.333px]" aria-hidden />
           )}
@@ -124,9 +124,9 @@ export default function LoginForm() {
 
         {/* Register link */}
         <p className="text-[14px] text-center w-full" style={{ fontFamily: 'Inter, sans-serif' }}>
-          <span className="text-[#424754]">New to the network? </span>
+          <span className="text-[#424754]">Chưa có tài khoản? </span>
           <Link href="/auth/register" className="text-[#0058be] hover:underline" id="register-link">
-            Create account
+            Đăng ký ngay
           </Link>
         </p>
       </form>

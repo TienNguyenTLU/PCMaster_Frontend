@@ -1,20 +1,20 @@
 import type { Metadata } from 'next';
 import HomeNavBar from '@/components/home/HomeNavBar';
 import AuthFooter from '@/components/auth/AuthFooter';
-import ExplorePage from '@/components/explore/ExplorePage';
+import BuildPage from '@/components/builds/BuildPage';
 
 export const metadata: Metadata = {
-  title: 'Khám phá linh kiện – PCMaster',
+  title: 'Xây dựng cấu hình PC – PCMaster Builder',
   description:
-    'Tìm kiếm và so sánh hàng nghìn linh kiện máy tính: CPU, GPU, RAM, Mainboard, SSD, PSU, Case và nhiều hơn nữa. Lọc theo thông số kỹ thuật chuyên sâu.',
+    'Tự tay chọn từng linh kiện để lắp ráp bộ máy tính theo ý muốn. So sánh giá, kiểm tra tồn kho và thêm toàn bộ vào giỏ hàng chỉ với một bước.',
 };
 
-export default function ExploreRoute() {
+export default function BuildRoute() {
   return (
     <div className="flex flex-col min-h-screen">
       <HomeNavBar />
       <main className="flex-1 pt-[72px]">
-        <ExplorePage />
+        <BuildPage />
       </main>
       <AuthFooter />
     </div>

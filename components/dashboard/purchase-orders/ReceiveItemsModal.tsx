@@ -5,6 +5,12 @@ import { X, Loader2, Save } from 'lucide-react';
 import { adminAPI, Product, PurchaseOrder } from '@/lib/api';
 import toast from 'react-hot-toast';
 
+const formatVND = (value: number | string) => {
+  if (value === undefined || value === null || value === '') return '';
+  const clean = String(value).replace(/\D/g, '');
+  return clean.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+};
+
 interface ReceiveItemsModalProps {
   po: PurchaseOrder;
   products: Product[];
@@ -22,7 +28,10 @@ export default function ReceiveItemsModal({ po, products, onClose, onSuccess }: 
       const p = products.find(prod => Number(prod.id) === item.productId);
       initialPrices[item.productId] = p?.price || 0;
     });
-    setSellingPrices(initialPrices);
+    const timer = setTimeout(() => {
+      setSellingPrices(initialPrices);
+    }, 0);
+    return () => clearTimeout(timer);
   }, [po, products]);
 
   const handlePriceChange = (productId: number, price: string) => {
@@ -37,8 +46,9 @@ export default function ReceiveItemsModal({ po, products, onClose, onSuccess }: 
       toast.success('Nhận hàng và cập nhật giá bán thành công!');
       onSuccess();
       onClose();
-    } catch (err: any) {
-      toast.error(err?.response?.data?.message ?? 'Nhận hàng thất bại.');
+    } catch (err) {
+      const error = err as { response?: { data?: { message?: string } } };
+      toast.error(error?.response?.data?.message ?? 'Nhận hàng thất bại.');
     } finally {
       setLoading(false);
     }
@@ -68,9 +78,14 @@ export default function ReceiveItemsModal({ po, products, onClose, onSuccess }: 
                   <div className="w-[180px]">
                     <label className="text-[11px] font-bold text-[#94a3b8] uppercase mb-1 block">Giá bán mới (VND)</label>
                     <input
-                      type="number"
-                      value={sellingPrices[item.productId] || ''}
-                      onChange={(e) => handlePriceChange(item.productId, e.target.value)}
+                      type="text"
+                      value={sellingPrices[item.productId] ? formatVND(sellingPrices[item.productId]) : ''}
+                      onChange={(e) => {
+                        const rawVal = e.target.value.replace(/\./g, '');
+                        if (/^\d*$/.test(rawVal)) {
+                          handlePriceChange(item.productId, rawVal);
+                        }
+                      }}
                       className="w-full bg-white border border-[#e2e8f0] rounded-[8px] px-3 py-2 text-[14px] focus:outline-none focus:border-[#0058be] font-medium"
                       placeholder="0"
                     />

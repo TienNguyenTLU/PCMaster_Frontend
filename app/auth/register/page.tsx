@@ -3,9 +3,9 @@ import AuthPageLayout from '@/components/auth/AuthPageLayout';
 import RegisterForm from '@/components/auth/RegisterForm';
 
 export const metadata: Metadata = {
-  title: 'Create Account – PCMaster',
+  title: 'Đăng Ký Tài Khoản – PCMaster',
   description:
-    'Join the PCMaster network. Create your account to access precision-engineered tools for the ultimate PC building experience.',
+    'Tham gia hệ thống PCMaster. Tạo tài khoản của bạn để sử dụng các công cụ tự lắp ráp PC hiệu năng cao chuyên nghiệp.',
 };
 
 export default function RegisterPage() {

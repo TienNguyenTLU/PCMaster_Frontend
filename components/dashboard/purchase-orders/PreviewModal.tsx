@@ -1,7 +1,8 @@
 'use client';
 
 import { X, FileText, Save } from 'lucide-react';
-import { Product, Supplier, PurchaseOrder, authAPI } from '@/lib/api';
+import { Product, Supplier, PurchaseOrder } from '@/lib/api';
+import { useAuthStore } from '@/lib/store';
 import toast from 'react-hot-toast';
 
 interface PreviewModalProps {
@@ -12,6 +13,7 @@ interface PreviewModalProps {
 }
 
 export default function PreviewModal({ po, supplier, products, onClose }: PreviewModalProps) {
+  const currentUser = useAuthStore.getState().user;
   const getProduct = (id: number) => products.find(p => Number(p.id) === id);
   const createdDate = new Date(po.createdAt).toLocaleDateString('vi-VN');
 
@@ -173,7 +175,7 @@ export default function PreviewModal({ po, supplier, products, onClose }: Previe
                   </div>
                   <div>
                     <p className="font-bold text-[#0f172a] mb-20 uppercase text-[12px] tracking-[1px]">Người lập phiếu</p>
-                    <p className="text-[#94a3b8] text-[13px] font-bold">{authAPI.getStoredUser()?.username || 'Admin'}</p>
+                    <p className="text-[#94a3b8] text-[13px] font-bold">{currentUser?.username || 'Admin'}</p>
                     <p className="text-[#94a3b8] text-[13px]">(Ký & ghi rõ họ tên)</p>
                   </div>
                 </div>

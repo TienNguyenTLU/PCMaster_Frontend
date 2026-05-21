@@ -1,49 +1,27 @@
-import { type NextRequest, NextResponse } from 'next/server';
+import { NextResponse } from 'next/server';
 
-function getRoleFromUser(request: NextRequest): 'ADMIN' | 'CUSTOMER' | null {
-  try {
-    const userCookie = request.cookies.get('user')?.value;
-    if (!userCookie) return null;
-    const user = JSON.parse(decodeURIComponent(userCookie));
-    return user?.role ?? null;
-  } catch {
-    return null;
-  }
-}
-
-export function middleware(request: NextRequest) {
-  const token = request.cookies.get('authToken')?.value;
-  const { pathname } = request.nextUrl;
-
-  const isAuthPage =
-    pathname.startsWith('/auth/login') ||
-    pathname.startsWith('/auth/register') ||
-    pathname === '/auth';
-
-  // Already authenticated → skip auth pages, route by role
-  if (isAuthPage && token) {
-    const role = getRoleFromUser(request);
-    const dest = role === 'ADMIN' ? '/dashboard' : '/home';
-    return NextResponse.redirect(new URL(dest, request.url));
-  }
-
-  // Dashboard is ADMIN-only (Temporarily disabled for UI review)
-  /*
-  if (pathname.startsWith('/dashboard')) {
-    if (!token) {
-      return NextResponse.redirect(new URL('/home', request.url));
-    }
-    const role = getRoleFromUser(request);
-    if (role !== 'ADMIN') {
-      return NextResponse.redirect(new URL('/home', request.url));
-    }
-  }
-  */
-
+/**
+ * Middleware is intentionally minimal.
+ *
+ * Token is stored only in localStorage (client-side), so the middleware
+ * cannot read it. Auth state is managed entirely by the Zustand store on
+ * the client.
+ *
+ * The only SSR-level protection we keep here is redirecting already-
+ * authenticated users away from auth pages — but since we have no cookie
+ * to read, that redirect is also handled client-side (in the login/register
+ * page components themselves via useAuthStore).
+ *
+ * When dashboard protection is re-enabled, switch to HttpOnly cookie storage
+ * and decode the JWT here to check the role.
+ */
+export function middleware() {
   return NextResponse.next();
 }
 
 export const config = {
+  // Only run on routes that actually need middleware processing.
+  // Exclude static assets to keep the edge runtime fast.
   matcher: [
     '/((?!_next/static|_next/image|favicon.ico|public).*)',
   ],

@@ -1,52 +1,98 @@
+'use client';
+
+import { useState, useEffect } from 'react';
+import Link from 'next/link';
+import { adminAPI, Category } from '@/lib/api';
 import HomeCategoryCard from './HomeCategoryCard';
+import { 
+  Cpu, 
+  Tv, 
+  HardDrive, 
+  Layers, 
+  Zap, 
+  Wind, 
+  Box, 
+  Monitor, 
+  Folder, 
+  HelpCircle 
+} from 'lucide-react';
 
 const imgArrowSmall = 'http://localhost:3845/assets/61dd0d1d6928fb3ddfc20fcb1cfc8aee254066a1.svg';
-const imgArrowRight1 = 'http://localhost:3845/assets/64909fdf44e256a6ecbba492e70c895e556b4349.svg';
-const imgArrowRight2 = 'http://localhost:3845/assets/a5518d4da6d70e9c7b446b4f2801ce5c2e79c7eb.svg';
-const imgArrowRight3 = 'http://localhost:3845/assets/fb9c7feac6c1954cd16582262a580ea6513629c9.svg';
 
-const imgProcessor = 'http://localhost:3845/assets/b2d483d522c41af6de4c494486de4dd01c8229b0.png';
-const imgGraphics = 'http://localhost:3845/assets/537786f202a71dab5ec38329a625820a762f86c5.png';
-const imgPrebuilt = 'http://localhost:3845/assets/5d265a4886fceda1b54443d3fa6cfc6b8016cf22.png';
+function getCategoryIcon(name: string) {
+  const slug = name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+  if (slug.includes('cpu') || slug.includes('vi xu ly') || slug.includes('processor')) {
+    return Cpu;
+  }
+  if (slug.includes('vga') || slug.includes('graphics') || slug.includes('do hoa') || slug.includes('card man hinh')) {
+    return Tv;
+  }
+  if (slug.includes('ram') || slug.includes('bo nho') || slug.includes('memory')) {
+    return Layers;
+  }
+  if (slug.includes('main') || slug.includes('board') || slug.includes('bo mach')) {
+    return Folder;
+  }
+  if (slug.includes('storage') || slug.includes('ssd') || slug.includes('hdd') || slug.includes('o cung')) {
+    return HardDrive;
+  }
+  if (slug.includes('psu') || slug.includes('power') || slug.includes('nguon')) {
+    return Zap;
+  }
+  if (slug.includes('case') || slug.includes('vo may')) {
+    return Box;
+  }
+  if (slug.includes('cool') || slug.includes('tan nhiet') || slug.includes('fan') || slug.includes('quat')) {
+    return Wind;
+  }
+  if (slug.includes('monitor') || slug.includes('man hinh')) {
+    return Monitor;
+  }
+  return HelpCircle;
+}
 
-const categories = [
-  {
-    image: imgProcessor,
-    title: 'Processors',
-    description: 'Next-gen CPU architectures',
-    icon: imgArrowRight1,
-  },
-  {
-    image: imgGraphics,
-    title: 'Graphics Cards',
-    description: 'Ultimate rendering power',
-    icon: imgArrowRight2,
-  },
-  {
-    image: imgPrebuilt,
-    title: 'Pre-built Systems',
-    description: 'Ready-to-deploy power',
-    icon: imgArrowRight3,
-  },
-];
+function CategorySkeleton() {
+  return (
+    <div className="bg-white border border-[#e8ecf2] rounded-[20px] p-6 flex flex-col items-center justify-center text-center gap-4 animate-pulse w-full">
+      <div className="size-14 bg-[#f1f5f9] rounded-[16px]" />
+      <div className="h-4 bg-[#e2e8f0] rounded w-2/3" />
+    </div>
+  );
+}
 
 export default function HomeCategoriesSection() {
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    adminAPI.getCategories(0, 100)
+      .then(res => {
+        setCategories(res.content || []);
+      })
+      .catch(err => {
+        console.error('Failed to load categories on homepage:', err);
+      })
+      .finally(() => {
+        setLoading(false);
+      });
+  }, []);
+
   return (
-    <section className="flex flex-col gap-12 max-w-[1536px] w-full px-8">
+    <section className="flex flex-col gap-10 max-w-[1536px] w-full px-8">
       {/* Section header */}
       <div className="flex items-end justify-between w-full">
         <div className="flex flex-col gap-2">
           <p
-            className="text-[#0058be] text-[14px] tracking-[1.4px] uppercase font-normal leading-[20px]"
+            className="text-[#0058be] text-[14px] tracking-[1.4px] uppercase font-semibold leading-[20px]"
             style={{ fontFamily: 'Inter, sans-serif' }}
           >
-            INVENTORY
+            DANH MỤC SẢN PHẨM
           </p>
           <h2
-            className="text-[#191c1e] text-[36px] tracking-[-1.8px] leading-[40px] font-normal"
+            className="text-[#191c1e] text-[36px] tracking-[-1.8px] leading-[40px] font-bold"
             style={{ fontFamily: 'Inter, sans-serif' }}
           >
-            Precision Categories
+            Linh Kiện Cao Cấp
           </h2>
         </div>
 
@@ -56,21 +102,39 @@ export default function HomeCategoriesSection() {
         </div>
 
         {/* View all */}
-        <a
+        <Link
           href="/explore"
           className="flex items-center gap-2 text-[#424754] text-[14px] leading-[20px] hover:text-[#0058be] transition-colors"
           style={{ fontFamily: 'Inter, sans-serif' }}
         >
-          View All Categories
+          Xem tất cả danh mục
           <img src={imgArrowSmall} alt="" className="size-[9.333px]" />
-        </a>
+        </Link>
       </div>
 
-      {/* 3-column grid */}
-      <div className="grid grid-cols-3 gap-8">
-        {categories.map((cat) => (
-          <HomeCategoryCard key={cat.title} {...cat} />
-        ))}
+      {/* Grid containing categories */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-5 xl:grid-cols-5 gap-6">
+        {loading ? (
+          Array.from({ length: 6 }).map((_, idx) => (
+            <CategorySkeleton key={idx} />
+          ))
+        ) : categories.length === 0 ? (
+          <div className="col-span-full py-8 text-center text-[#64748b] text-[14px]">
+            Không tìm thấy danh mục nào.
+          </div>
+        ) : (
+          categories.map((cat) => {
+            const Icon = getCategoryIcon(cat.name);
+            return (
+              <HomeCategoryCard 
+                key={cat.id} 
+                id={cat.id} 
+                name={cat.name} 
+                Icon={Icon} 
+              />
+            );
+          })
+        )}
       </div>
     </section>
   );

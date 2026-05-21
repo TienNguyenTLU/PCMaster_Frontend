@@ -3,9 +3,9 @@ import AuthPageLayout from '@/components/auth/AuthPageLayout';
 import LoginForm from '@/components/auth/LoginForm';
 
 export const metadata: Metadata = {
-  title: 'Sign In – PCMaster',
+  title: 'Đăng Nhập – PCMaster',
   description:
-    'Sign in to your PCMaster account to access high-fidelity PC building tools and laboratory-grade specifications.',
+    'Đăng nhập tài khoản PCMaster của bạn để tiếp cận kho thông số kỹ thuật chi tiết cùng các công cụ tự lắp ráp PC hàng đầu.',
 };
 
 export default function LoginPage() {

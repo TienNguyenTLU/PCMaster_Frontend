@@ -9,16 +9,20 @@ import {
   Factory, 
   ShoppingCart, 
   FileBox, 
-  Settings 
+  Settings,
+  Image,
+  Warehouse
 } from 'lucide-react';
 
 const navItems = [
-  { label: 'Overview', href: '/dashboard', icon: LayoutDashboard },
-  { label: 'Products', href: '/dashboard/products', icon: Package },
-  { label: 'Brands', href: '/dashboard/brands', icon: Tag },
-  { label: 'Suppliers', href: '/dashboard/suppliers', icon: Factory },
-  { label: 'Purchase Orders', href: '/dashboard/purchase-orders', icon: FileBox },
-  { label: 'Orders', href: '/dashboard/orders', icon: ShoppingCart },
+  { label: 'Tổng quan', href: '/dashboard', icon: LayoutDashboard },
+  { label: 'Sản phẩm', href: '/dashboard/products', icon: Package },
+  { label: 'Thương hiệu', href: '/dashboard/brands', icon: Tag },
+  { label: 'Banner quảng cáo', href: '/dashboard/banners', icon: Image },
+  { label: 'Nhà cung cấp', href: '/dashboard/suppliers', icon: Factory },
+  { label: 'Đơn nhập hàng', href: '/dashboard/purchase-orders', icon: FileBox },
+  { label: 'Quản lý kho', href: '/dashboard/inventory', icon: Warehouse },
+  { label: 'Đơn bán hàng', href: '/dashboard/orders', icon: ShoppingCart },
 ];
 
 export default function Sidebar() {
@@ -69,7 +73,7 @@ export default function Sidebar() {
           style={{ fontFamily: 'Inter, sans-serif' }}
         >
           <Settings className="size-5" />
-          <span className="text-[14px] font-medium leading-none mt-0.5">Settings</span>
+          <span className="text-[14px] font-medium leading-none mt-0.5">Cấu hình</span>
         </Link>
       </div>
     </aside>

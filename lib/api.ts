@@ -1,14 +1,14 @@
 import axiosInstance from './axiosInstance';
 
-// API Response interfaces
+// ─── Auth Response (matches backend flat record) ───────────────────────────
+// Backend AuthResponse record:
+//   String token, Long userId, String username, String email, UserRole role
 export interface AuthResponse {
   token: string;
-  user: {
-    id: string;
-    email: string;
-    username: string;
-    role: 'ADMIN' | 'CUSTOMER';
-  };
+  userId: number;
+  username: string;
+  email: string;
+  role: 'ADMIN' | 'CUSTOMER';
 }
 
 export interface LoginRequest {
@@ -22,7 +22,7 @@ export interface SignupRequest {
   password: string;
 }
 
-// Auth API – uses axios interceptor (token auto-attached on subsequent requests)
+// Auth API
 export const authAPI = {
   login: async (credentials: LoginRequest): Promise<AuthResponse> => {
     const { data } = await axiosInstance.post<AuthResponse>('/api/auth/login', {
@@ -44,25 +44,10 @@ export const authAPI = {
   logout: () => {
     if (typeof window !== 'undefined') {
       localStorage.removeItem('authToken');
-      localStorage.removeItem('user');
-      // Also clear the cookies used by middleware
-      document.cookie = 'authToken=; path=/; max-age=0';
-      document.cookie = 'user=; path=/; max-age=0';
     }
   },
 
-  getStoredUser: () => {
-    if (typeof window === 'undefined') return null;
-    const userStr = localStorage.getItem('user');
-    if (!userStr) return null;
-    try {
-      return JSON.parse(userStr);
-    } catch {
-      return null;
-    }
-  },
-
-  getStoredToken: () => {
+  getStoredToken: (): string | null => {
     if (typeof window === 'undefined') return null;
     return localStorage.getItem('authToken');
   },
@@ -91,7 +76,6 @@ export interface Product {
   thumbnailUrl?: string;
   createdAt?: string;
   updatedAt?: string;
-  // Nested objects returned by the API
   category?: { id: string | number; name: string; slug?: string; parentId?: string | number | null };
   brand?: { id: string | number; name: string; logoUrl?: string };
 }
@@ -162,6 +146,7 @@ export interface PurchaseOrder {
 
 export interface DashboardStatsResponse {
   totalRevenue: number;
+  totalProfit: number;
   activeOrders: number;
   lowStockItems: number;
   pendingPurchaseOrders: number;
@@ -172,14 +157,157 @@ export interface DashboardStatsResponse {
   }[];
 }
 
+// Cart Models
+export interface CartItemDto {
+  id: number;
+  productId: number;
+  productName: string;
+  productThumbnailUrl: string | null;
+  productPrice: number; // BigDecimal serialised as number by Jackson
+  productStock: number;
+  quantity: number;
+}
+
+export interface CartDto {
+  id: number;
+  items: CartItemDto[];
+}
+
+// Order Models
+export type OrderStatus = 'DRAFT' | 'CONFIRMED' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED';
+export type DeliveryType = 'HOME_DELIVERY' | 'SHOWROOM_PICKUP';
+
+export interface OrderItemResponse {
+  id: number;
+  productId: number | null;
+  quantity: number;
+  sellingPrice: number;
+  costPrice: number;
+}
+
+export interface OrderResponse {
+  id: number;
+  userId: number | null;
+  username: string | null;
+  email: string | null;
+  totalAmount: number;
+  status: OrderStatus;
+  deliveryType: DeliveryType;
+  recipientName: string | null;
+  recipientPhone: string | null;
+  shippingAddress: string | null;
+  documentUrl: string | null;
+  createdAt: string;
+  items: OrderItemResponse[];
+}
+
+export interface OrderItemRequest {
+  productId: number;
+  quantity: number;
+}
+
+export interface OrderRequest {
+  items: OrderItemRequest[];
+  deliveryType: DeliveryType;
+  recipientName?: string;
+  recipientPhone?: string;
+  shippingAddress?: string;
+}
+
+// Inventory & Issue Slip Models
+export interface InventoryBatchResponse {
+  id: number;
+  productId: number | null;
+  productName: string;
+  thumbnailUrl: string | null;
+  quantity: number;
+  remainingQuantity: number;
+  importPrice: number;
+  sellingPrice: number;
+  importedAt: string;
+}
+
+export interface IssueSlipItemResponse {
+  id: number;
+  productId: number | null;
+  productName: string;
+  quantity: number;
+}
+
+export interface IssueSlipResponse {
+  id: number;
+  code: string;
+  orderId: number;
+  status: 'PENDING' | 'COMPLETED';
+  documentUrl: string | null;
+  createdAt: string;
+  completedAt: string | null;
+  recipientName: string | null;
+  recipientPhone: string | null;
+  shippingAddress: string | null;
+  deliveryType: string;
+  items: IssueSlipItemResponse[];
+}
+
+
+// Banner & Product Image Models
+export interface Banner {
+  id: number;
+  imageUrl: string;
+  linkUrl?: string;
+  displayOrder: number;
+}
+
+export interface ProductImage {
+  id: number;
+  url: string;
+  sortOrder: number;
+  createdAt: string;
+}
+
 // Admin API Services
 export const adminAPI = {
+  getBanners: async (): Promise<Banner[]> => {
+    const { data } = await axiosInstance.get<Banner[]>('/api/banners');
+    return data;
+  },
+
+  createBanner: async (formData: FormData): Promise<Banner> => {
+    const { data } = await axiosInstance.post<Banner>('/api/banners', formData);
+    return data;
+  },
+
+  updateBanner: async (id: number | string, formData: FormData): Promise<Banner> => {
+    const { data } = await axiosInstance.put<Banner>(`/api/banners/${id}`, formData);
+    return data;
+  },
+
+  deleteBanner: async (id: number | string): Promise<void> => {
+    await axiosInstance.delete(`/api/banners/${id}`);
+  },
+
+  getProductImages: async (productId: number | string): Promise<ProductImage[]> => {
+    const { data } = await axiosInstance.get<ProductImage[]>(`/api/product-images/product/${productId}`);
+    return data;
+  },
+
+  uploadProductImage: async (productId: number | string, file: File): Promise<ProductImage> => {
+    const formData = new FormData();
+    formData.append('file', file);
+    const { data } = await axiosInstance.post<ProductImage>(`/api/product-images/product/${productId}`, formData);
+    return data;
+  },
+
+  deleteProductImage: async (imageId: number | string): Promise<void> => {
+    await axiosInstance.delete(`/api/product-images/${imageId}`);
+  },
+
   getProducts: async (
-    page = 0, 
-    size = 10, 
-    search?: string, 
-    category?: string, 
-    brandId?: string | number
+    page = 0,
+    size = 10,
+    search?: string,
+    category?: string,
+    brandId?: string | number,
   ): Promise<PageResponse<Product>> => {
     try {
       const params = new URLSearchParams({
@@ -191,7 +319,6 @@ export const adminAPI = {
       if (brandId) params.append('brandId', brandId.toString());
 
       const { data } = await axiosInstance.get(`/api/products?${params.toString()}`);
-      // Handle cases where backend might return direct array or paginated object
       if (Array.isArray(data)) {
         return { content: data, totalPages: 1, totalElements: data.length, size, number: page };
       }
@@ -202,12 +329,17 @@ export const adminAPI = {
     }
   },
 
+  getProductById: async (id: string | number): Promise<Product> => {
+    const { data } = await axiosInstance.get(`/api/products/${id}`);
+    return data;
+  },
+
   createProduct: async (formData: FormData): Promise<Product> => {
     const { data } = await axiosInstance.post<Product>('/api/admin/products', formData);
     return data;
   },
 
-  updateProduct: async (id: string | number, payload: Record<string, any>): Promise<Product> => {
+  updateProduct: async (id: string | number, payload: Record<string, unknown>): Promise<Product> => {
     const { data } = await axiosInstance.put<Product>(`/api/admin/products/${id}`, payload);
     return data;
   },
@@ -268,6 +400,7 @@ export const adminAPI = {
       return { content: [], totalPages: 0, totalElements: 0, size, number: page };
     }
   },
+
   getPurchaseOrders: async (): Promise<PurchaseOrder[]> => {
     try {
       const { data } = await axiosInstance.get('/api/admin/purchase-orders');
@@ -316,4 +449,95 @@ export const adminAPI = {
     const { data } = await axiosInstance.get<DashboardStatsResponse>('/api/admin/dashboard/stats');
     return data;
   },
+
+  getInventoryBatches: async (page = 0, size = 10): Promise<PageResponse<InventoryBatchResponse>> => {
+    const { data } = await axiosInstance.get<PageResponse<InventoryBatchResponse>>(`/api/admin/inventory/batches?page=${page}&size=${size}`);
+    return data;
+  },
+
+  getIssueSlips: async (page = 0, size = 10): Promise<PageResponse<IssueSlipResponse>> => {
+    const { data } = await axiosInstance.get<PageResponse<IssueSlipResponse>>(`/api/admin/inventory/issue-slips?page=${page}&size=${size}`);
+    return data;
+  },
+
+  updateInventoryPrices: async (id: number, importPrice: number, sellingPrice: number): Promise<void> => {
+    await axiosInstance.put(`/api/admin/inventory/batches/${id}/prices?importPrice=${importPrice}&sellingPrice=${sellingPrice}`);
+  },
+
+  createIssueSlip: async (orderId: number): Promise<IssueSlipResponse> => {
+    const { data } = await axiosInstance.post<IssueSlipResponse>(`/api/admin/inventory/issue-slips/create?orderId=${orderId}`);
+    return data;
+  },
+
+  dispatchIssueSlip: async (id: number): Promise<IssueSlipResponse> => {
+    const { data } = await axiosInstance.post<IssueSlipResponse>(`/api/admin/inventory/issue-slips/${id}/dispatch`);
+    return data;
+  },
 };
+
+// Cart API Services
+export const cartAPI = {
+  getCart: async (): Promise<CartDto> => {
+    const { data } = await axiosInstance.get<CartDto>('/api/cart');
+    return data;
+  },
+
+  addToCart: async (productId: number | string, quantity: number): Promise<CartDto> => {
+    const { data } = await axiosInstance.post<CartDto>('/api/cart/items', { productId, quantity });
+    return data;
+  },
+
+  updateQuantity: async (itemId: number | string, quantity: number): Promise<CartDto> => {
+    const { data } = await axiosInstance.put<CartDto>(`/api/cart/items/${itemId}`, { quantity });
+    return data;
+  },
+
+  removeItem: async (itemId: number | string): Promise<CartDto> => {
+    const { data } = await axiosInstance.delete<CartDto>(`/api/cart/items/${itemId}`);
+    return data;
+  },
+
+  clearCart: async (): Promise<void> => {
+    await axiosInstance.delete('/api/cart');
+  }
+};
+
+// Order API Services
+export const orderAPI = {
+  create: async (request: OrderRequest): Promise<OrderResponse> => {
+    const { data } = await axiosInstance.post<OrderResponse>('/api/orders', request);
+    return data;
+  },
+
+  list: async (): Promise<OrderResponse[]> => {
+    const { data } = await axiosInstance.get<OrderResponse[]>('/api/orders');
+    return data;
+  },
+
+  getById: async (id: number): Promise<OrderResponse> => {
+    const { data } = await axiosInstance.get<OrderResponse>(`/api/orders/${id}`);
+    return data;
+  },
+
+  // Admin
+  adminListAll: async (): Promise<OrderResponse[]> => {
+    const { data } = await axiosInstance.get<OrderResponse[]>('/api/orders/admin/all');
+    return data;
+  },
+
+  adminGetById: async (id: number): Promise<OrderResponse> => {
+    const { data } = await axiosInstance.get<OrderResponse>(`/api/orders/admin/${id}`);
+    return data;
+  },
+
+  adminConfirm: async (id: number): Promise<OrderResponse> => {
+    const { data } = await axiosInstance.put<OrderResponse>(`/api/orders/admin/${id}/confirm`);
+    return data;
+  },
+
+  adminUpdateStatus: async (id: number, status: OrderStatus): Promise<OrderResponse> => {
+    const { data } = await axiosInstance.put<OrderResponse>(`/api/orders/admin/${id}/status`, { status });
+    return data;
+  },
+};
+

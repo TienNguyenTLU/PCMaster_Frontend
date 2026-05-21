@@ -1,6 +1,7 @@
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
-import { authAPI, AuthResponse } from './api';
+import { authAPI, AuthResponse, cartAPI, CartItemDto } from './api';
+
+// ─── Types ──────────────────────────────────────────────────────────────────
 
 export interface User {
   id: string;
@@ -12,6 +13,7 @@ export interface User {
 interface AuthStore {
   user: User | null;
   token: string | null;
+  /** True once we've checked localStorage on the client — prevents flash */
   isHydrated: boolean;
   isLoading: boolean;
   error: string | null;
@@ -21,76 +23,252 @@ interface AuthStore {
   signup: (username: string, email: string, password: string) => Promise<void>;
   logout: () => void;
   clearError: () => void;
+  /** Call once on client mount to restore session from localStorage */
   hydrate: () => void;
 }
 
-/** Persist token in localStorage AND as cookies for middleware access */
-function persistAuthData(response: AuthResponse) {
-  if (typeof window === 'undefined') return;
-  localStorage.setItem('authToken', response.token);
-  localStorage.setItem('user', JSON.stringify(response.user));
-  const maxAge = 60 * 60 * 24 * 7; // 7 days
-  document.cookie = `authToken=${response.token}; path=/; max-age=${maxAge}`;
-  // Encode user object so middleware can read the role without decoding JWT
-  document.cookie = `user=${encodeURIComponent(JSON.stringify(response.user))}; path=/; max-age=${maxAge}`;
+// ─── JWT Utilities ───────────────────────────────────────────────────────────
+
+interface JwtPayload {
+  sub: string;       // userId (set as subject in backend)
+  username: string;  // claim added by JwtTokenProvider
+  role: string;      // claim added by JwtTokenProvider
+  exp: number;       // expiry in seconds
+  iat: number;
 }
 
-export const useAuthStore = create<AuthStore>()(
-  persist(
-    (set) => ({
-      user: null,
-      token: null,
-      isHydrated: false,
-      isLoading: false,
-      error: null,
+/**
+ * Decode the JWT payload without verifying the signature (client-side only).
+ * The backend will reject the token via 401 if tampered with.
+ */
+function decodeJwt(token: string): JwtPayload | null {
+  try {
+    const base64Url = token.split('.')[1];
+    if (!base64Url) return null;
+    // atob is available in all modern browsers and Next.js Edge runtime
+    const json = atob(base64Url.replace(/-/g, '+').replace(/_/g, '/'));
+    return JSON.parse(json) as JwtPayload;
+  } catch {
+    return null;
+  }
+}
 
-      login: async (usernameOrEmail: string, password: string) => {
-        set({ isLoading: true, error: null });
-        try {
-          const response = await authAPI.login({ usernameOrEmail, password });
-          persistAuthData(response);
-          set({ user: response.user as User, token: response.token, isLoading: false });
-        } catch (err) {
-          const errorMessage = err instanceof Error ? err.message : 'Login failed';
-          set({ error: errorMessage, isLoading: false });
-          throw err;
-        }
-      },
+/** Returns true if the token exists and has not expired yet (10s grace window). */
+function isTokenAlive(token: string): boolean {
+  const payload = decodeJwt(token);
+  if (!payload || typeof payload.exp !== 'number') return false;
+  return payload.exp * 1000 > Date.now() - 10_000;
+}
 
-      signup: async (username: string, email: string, password: string) => {
-        set({ isLoading: true, error: null });
-        try {
-          const response = await authAPI.signup({ username, email, password });
-          persistAuthData(response);
-          set({ user: response.user as User, token: response.token, isLoading: false });
-        } catch (err) {
-          const errorMessage = err instanceof Error ? err.message : 'Signup failed';
-          set({ error: errorMessage, isLoading: false });
-          throw err;
-        }
-      },
+/** Build a User object from a decoded JWT payload. */
+function userFromPayload(payload: JwtPayload): User {
+  return {
+    id: payload.sub,
+    username: payload.username,
+    // email is not in the JWT claims — we get it from the login response
+    // and store it separately in a lightweight way below
+    email: '',
+    role: payload.role as 'ADMIN' | 'CUSTOMER',
+  };
+}
 
-      logout: () => {
-        authAPI.logout();
-        set({ user: null, token: null, error: null });
-      },
+// ─── localStorage helpers ────────────────────────────────────────────────────
+// Only token is persisted. User info is derived from the JWT on every hydration
+// so it's always in sync with the token. Email (not in JWT) is stored separately.
 
-      clearError: () => set({ error: null }),
+const TOKEN_KEY = 'authToken';
+const EMAIL_KEY = 'authEmail';
 
-      hydrate: () => {
-        if (typeof window === 'undefined') return;
-        const token = authAPI.getStoredToken();
-        const user = authAPI.getStoredUser();
-        if (token && user) {
-          set({ token, user, isHydrated: true });
-        } else {
-          set({ isHydrated: true });
-        }
-      },
-    }),
-    {
-      name: 'auth-store',
-      skipHydration: true,
-    },
-  ),
-);
+function saveSession(token: string, email: string) {
+  localStorage.setItem(TOKEN_KEY, token);
+  localStorage.setItem(EMAIL_KEY, email);
+}
+
+function clearSession() {
+  localStorage.removeItem(TOKEN_KEY);
+  localStorage.removeItem(EMAIL_KEY);
+  // Also clear any leftover keys from the old implementation
+  localStorage.removeItem('user');
+  localStorage.removeItem('auth-store');
+}
+
+// ─── Store ───────────────────────────────────────────────────────────────────
+
+export const useAuthStore = create<AuthStore>()((set) => ({
+  user: null,
+  token: null,
+  isHydrated: false,
+  isLoading: false,
+  error: null,
+
+  // ── Login ────────────────────────────────────────────────────────────────
+  login: async (usernameOrEmail: string, password: string) => {
+    set({ isLoading: true, error: null });
+    try {
+      const res: AuthResponse = await authAPI.login({ usernameOrEmail, password });
+
+      // Backend returns flat fields: token, userId, username, email, role
+      saveSession(res.token, res.email);
+
+      const user: User = {
+        id: String(res.userId),
+        username: res.username,
+        email: res.email,
+        role: res.role,
+      };
+
+      set({ user, token: res.token, isLoading: false, isHydrated: true });
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : 'Đăng nhập thất bại';
+      set({ error: errorMessage, isLoading: false });
+      throw err;
+    }
+  },
+
+  // ── Signup ───────────────────────────────────────────────────────────────
+  signup: async (username: string, email: string, password: string) => {
+    set({ isLoading: true, error: null });
+    try {
+      const res: AuthResponse = await authAPI.signup({ username, email, password });
+
+      saveSession(res.token, res.email);
+
+      const user: User = {
+        id: String(res.userId),
+        username: res.username,
+        email: res.email,
+        role: res.role,
+      };
+
+      set({ user, token: res.token, isLoading: false, isHydrated: true });
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : 'Đăng ký thất bại';
+      set({ error: errorMessage, isLoading: false });
+      throw err;
+    }
+  },
+
+  // ── Logout ───────────────────────────────────────────────────────────────
+  logout: () => {
+    clearSession();
+    set({ user: null, token: null, error: null, isHydrated: true });
+  },
+
+  // ── Clear error ──────────────────────────────────────────────────────────
+  clearError: () => set({ error: null }),
+
+  // ── Hydrate (call once on client mount) ──────────────────────────────────
+  hydrate: () => {
+    if (typeof window === 'undefined') return;
+
+    const token = localStorage.getItem(TOKEN_KEY);
+
+    if (!token) {
+      set({ isHydrated: true });
+      return;
+    }
+
+    if (!isTokenAlive(token)) {
+      // Token expired — wipe storage and mark as logged-out
+      clearSession();
+      set({ user: null, token: null, isHydrated: true });
+      return;
+    }
+
+    // Token is valid — restore user from JWT claims + stored email
+    const payload = decodeJwt(token);
+    if (!payload) {
+      clearSession();
+      set({ user: null, token: null, isHydrated: true });
+      return;
+    }
+
+    const email = localStorage.getItem(EMAIL_KEY) ?? '';
+    const user: User = { ...userFromPayload(payload), email };
+
+    set({ user, token, isHydrated: true });
+  },
+}));
+
+// ─── Exported helper for axiosInstance 401 handler ──────────────────────────
+export function forceLogout() {
+  if (typeof window !== 'undefined') {
+    clearSession();
+  }
+  useAuthStore.setState({ user: null, token: null, isHydrated: true });
+}
+
+// ─── Cart Store ──────────────────────────────────────────────────────────────
+
+interface CartStore {
+  items: CartItemDto[];
+  isLoading: boolean;
+  fetchCart: () => Promise<void>;
+  addItem: (productId: number | string, quantity?: number) => Promise<void>;
+  removeItem: (itemId: number | string) => Promise<void>;
+  updateQuantity: (itemId: number | string, quantity: number) => Promise<void>;
+  clearCart: () => Promise<void>;
+}
+
+export const useCartStore = create<CartStore>()((set) => ({
+  items: [],
+  isLoading: false,
+
+  fetchCart: async () => {
+    set({ isLoading: true });
+    try {
+      const cart = await cartAPI.getCart();
+      set({ items: cart.items, isLoading: false });
+    } catch (err) {
+      console.error('Lỗi khi tải giỏ hàng', err);
+      set({ isLoading: false });
+    }
+  },
+
+  addItem: async (productId, quantity = 1) => {
+    set({ isLoading: true });
+    try {
+      const cart = await cartAPI.addToCart(productId, quantity);
+      set({ items: cart.items, isLoading: false });
+    } catch (err) {
+      console.error('Lỗi khi thêm vào giỏ hàng', err);
+      set({ isLoading: false });
+      throw err;
+    }
+  },
+
+  removeItem: async (itemId) => {
+    set({ isLoading: true });
+    try {
+      const cart = await cartAPI.removeItem(itemId);
+      set({ items: cart.items, isLoading: false });
+    } catch (err) {
+      console.error('Lỗi khi xóa khỏi giỏ hàng', err);
+      set({ isLoading: false });
+    }
+  },
+
+  updateQuantity: async (itemId, quantity) => {
+    set({ isLoading: true });
+    try {
+      const cart = await cartAPI.updateQuantity(itemId, quantity);
+      set({ items: cart.items, isLoading: false });
+    } catch (err) {
+      console.error('Lỗi khi cập nhật số lượng', err);
+      set({ isLoading: false });
+    }
+  },
+
+  clearCart: async () => {
+    set({ isLoading: true });
+    try {
+      await cartAPI.clearCart();
+      set({ items: [], isLoading: false });
+    } catch (err) {
+      console.error('Lỗi khi xóa giỏ hàng', err);
+      set({ isLoading: false });
+    }
+  },
+}));

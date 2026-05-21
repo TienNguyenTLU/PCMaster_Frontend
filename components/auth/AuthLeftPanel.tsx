@@ -8,10 +8,10 @@ export default function AuthLeftPanel() {
     <div className="col-span-7 flex flex-col gap-6 items-start self-center">
       {/* Label */}
       <p
-        className="text-[#0058be] text-[14px] tracking-[2.8px] uppercase font-normal"
+        className="text-[#0058be] text-[14px] tracking-[2.8px] uppercase font-semibold"
         style={{ fontFamily: 'Inter, sans-serif' }}
       >
-        LABORATORY ACCESS
+        TRUY CẬP HỆ THỐNG
       </p>
 
       {/* Heading */}
@@ -20,7 +20,7 @@ export default function AuthLeftPanel() {
         style={{ fontFamily: 'Inter, sans-serif' }}
       >
         <span className="text-[#191c1e] text-[96px] tracking-[-4.8px] leading-[96px] font-normal">
-          Join the
+          Gia nhập
         </span>
         <span className="text-[#191c1e] text-[96px] tracking-[-4.8px] leading-[96px] font-extrabold">
           PCMaster
@@ -33,8 +33,8 @@ export default function AuthLeftPanel() {
           className="text-[#424754] text-[20px] leading-[32.5px] font-normal"
           style={{ fontFamily: 'Inter, sans-serif' }}
         >
-          Precision-engineered tools for the ultimate PC building experience.
-          Access high-fidelity specifications and laboratory-grade guides.
+          Công cụ tối ưu dành cho trải nghiệm lắp ráp PC hoàn hảo.
+          Tiếp cận kho thông số kỹ thuật chi tiết cùng các hướng dẫn chuyên nghiệp.
         </p>
       </div>
 
@@ -60,7 +60,7 @@ export default function AuthLeftPanel() {
           className="text-[#424754] text-[14px] font-normal"
           style={{ fontFamily: 'Inter, sans-serif' }}
         >
-          Used by 50k+ builders worldwide.
+          Được tin dùng bởi hơn 50.000 kỹ thuật viên trên toàn thế giới.
         </p>
       </div>
     </div>

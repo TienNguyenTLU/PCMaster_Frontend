@@ -8,10 +8,10 @@ export default function AuthSocialButtons() {
       <div className="relative flex items-center justify-center py-4">
         <div className="absolute inset-x-0 top-1/2 border-t border-[rgba(194,198,214,0.3)]" />
         <span
-          className="relative bg-white px-4 text-[#424754] text-[12px] tracking-[1.2px] uppercase font-normal"
+          className="relative bg-white px-4 text-[#424754] text-[12px] tracking-[1.2px] uppercase font-semibold"
           style={{ fontFamily: 'Inter, sans-serif' }}
         >
-          PROTOCOL CONNECT
+          HOẶC ĐĂNG NHẬP QUA
         </span>
       </div>
 

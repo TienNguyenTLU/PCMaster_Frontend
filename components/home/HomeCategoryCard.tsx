@@ -1,44 +1,38 @@
+import { LucideIcon, ArrowRight } from 'lucide-react';
+import Link from 'next/link';
+
 interface CategoryCardProps {
-  image: string;
-  title: string;
-  description: string;
-  icon: string;
+  id: string | number;
+  name: string;
+  Icon: LucideIcon;
 }
 
-export default function HomeCategoryCard({ image, title, description, icon }: CategoryCardProps) {
+export default function HomeCategoryCard({ id, name, Icon }: CategoryCardProps) {
   return (
-    <div className="bg-white rounded-[8px] shadow-[0px_20px_20px_rgba(0,26,66,0.06)] p-8 flex flex-col gap-8">
-      {/* Image area */}
-      <div className="bg-[#f2f4f6] rounded-[8px] overflow-hidden">
-        <div className="h-[320px] relative">
-          <div className="absolute inset-0 overflow-hidden">
-            <img src={image} alt={title} className="absolute h-full max-w-none object-cover" style={{ left: 0, width: '100%', top: 0 }} />
-          </div>
-        </div>
+    <Link
+      href={`/explore?category=${id}`}
+      className="group bg-white border border-[#e8ecf2] rounded-[20px] p-6 flex flex-col items-center justify-center text-center gap-4 hover:border-[#0058be] hover:shadow-[0_12px_32px_rgba(0,88,190,0.08)] hover:-translate-y-1 transition-all duration-300 w-full"
+    >
+      {/* Icon Badge */}
+      <div className="size-14 bg-[#eff6ff] group-hover:bg-[#0058be] text-[#0058be] group-hover:text-white rounded-[16px] flex items-center justify-center transition-all duration-300 shadow-sm">
+        <Icon className="size-7 transition-transform duration-300 group-hover:scale-110" />
       </div>
 
-      {/* Card footer */}
-      <div className="flex items-start justify-between">
-        <div className="flex flex-col gap-2">
-          <h3
-            className="text-[#191c1e] text-[24px] tracking-[-0.6px] leading-[32px] font-normal"
-            style={{ fontFamily: 'Inter, sans-serif' }}
-          >
-            {title}
-          </h3>
-          <p
-            className="text-[#424754] text-[14px] leading-[20px] font-normal"
-            style={{ fontFamily: 'Inter, sans-serif' }}
-          >
-            {description}
-          </p>
-        </div>
-
-        {/* Arrow icon button */}
-        <div className="border border-[rgba(194,198,214,0.2)] rounded-full size-[40px] flex items-center justify-center shrink-0 cursor-pointer hover:border-[#0058be] transition-colors">
-          <img src={icon} alt="" className="size-[18px]" />
-        </div>
+      {/* Category Name */}
+      <div className="flex flex-col items-center gap-1 min-h-[46px] justify-center">
+        <h3
+          className="text-[#191c1e] text-[15px] sm:text-[16px] font-semibold tracking-[-0.3px] leading-tight group-hover:text-[#0058be] transition-colors"
+          style={{ fontFamily: 'Inter, sans-serif' }}
+        >
+          {name}
+        </h3>
+        
+        {/* Subtle hover reveal element */}
+        <span className="flex items-center gap-1 text-[11px] font-semibold text-[#0058be] opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
+          Khám phá ngay
+          <ArrowRight className="size-3" />
+        </span>
       </div>
-    </div>
+    </Link>
   );
 }
