@@ -14,15 +14,44 @@ export default function RegisterForm() {
   const { signup, isLoading, error, clearError } = useAuthStore();
 
   const [form, setForm] = useState({ username: '', email: '', password: '' });
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleChange =
     (field: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) => {
       clearError();
       setForm((prev) => ({ ...prev, [field]: e.target.value }));
+      setErrors((prev) => ({ ...prev, [field]: '' }));
     };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    const newErrors: Record<string, string> = {};
+    if (!form.username.trim()) {
+      newErrors.username = 'Vui lòng nhập tên đăng nhập';
+    } else if (form.username.trim().length < 3) {
+      newErrors.username = 'Tên đăng nhập phải chứa ít nhất 3 ký tự';
+    }
+
+    if (!form.email.trim()) {
+      newErrors.email = 'Vui lòng nhập địa chỉ email';
+    } else {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(form.email.trim())) {
+        newErrors.email = 'Địa chỉ email không đúng định dạng';
+      }
+    }
+
+    if (!form.password) {
+      newErrors.password = 'Vui lòng nhập mật khẩu';
+    } else if (form.password.length < 6) {
+      newErrors.password = 'Mật khẩu phải chứa ít nhất 6 ký tự';
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
     try {
       await signup(form.username, form.email, form.password);
       // After signup the store has user.role – re-read from store state
@@ -61,14 +90,14 @@ export default function RegisterForm() {
       </div>
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="flex flex-col gap-6 w-full pt-[8.5px]">
+      <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-6 w-full pt-[8.5px]">
         <AuthFormField
           label="TÊN ĐĂNG NHẬP"
           type="text"
           placeholder="nikola_tesla"
           value={form.username}
           onChange={handleChange('username')}
-          required
+          error={errors.username}
           autoComplete="username"
           id="register-username"
         />
@@ -79,7 +108,7 @@ export default function RegisterForm() {
           placeholder="builder@pcmaster.tech"
           value={form.email}
           onChange={handleChange('email')}
-          required
+          error={errors.email}
           autoComplete="email"
           id="register-email"
         />
@@ -90,7 +119,7 @@ export default function RegisterForm() {
           placeholder="••••••••"
           value={form.password}
           onChange={handleChange('password')}
-          required
+          error={errors.password}
           autoComplete="new-password"
           id="register-password"
         />

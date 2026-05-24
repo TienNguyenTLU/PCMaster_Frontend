@@ -228,6 +228,7 @@ function BrandFormModal({ brand, onClose, onSuccess }: { brand: Brand | null, on
   const [logoFile, setLogoFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState(brand?.logoUrl || '');
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -240,7 +241,7 @@ function BrandFormModal({ brand, onClose, onSuccess }: { brand: Brand | null, on
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) {
-      toast.error('Tên thương hiệu không được để trống.');
+      setErrors({ name: 'Tên thương hiệu không được để trống.' });
       return;
     }
 
@@ -277,12 +278,22 @@ function BrandFormModal({ brand, onClose, onSuccess }: { brand: Brand | null, on
         <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-5">
           <div className="flex flex-col gap-1.5">
             <label className="text-[13px] font-semibold text-[#475569]">Tên thương hiệu *</label>
+            {errors.name && (
+              <span className="text-red-500 text-[11px] font-semibold flex items-center gap-1 animate-in fade-in slide-in-from-top-1 duration-150">
+                ⚠️ {errors.name}
+              </span>
+            )}
             <input
               type="text"
               value={name}
-              onChange={(e) => setName(e.target.value)}
+              onChange={(e) => {
+                setName(e.target.value);
+                setErrors(prev => ({ ...prev, name: '' }));
+              }}
               placeholder="VD: ASUS, MSI, Samsung"
-              className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[8px] px-4 py-2 text-[14px] focus:outline-none focus:border-[#0058be]"
+              className={`bg-[#f8fafc] border rounded-[8px] px-4 py-2 text-[14px] focus:outline-none transition-all ${
+                errors.name ? 'border-red-500 focus:border-red-500' : 'border-[#e2e8f0] focus:border-[#0058be]'
+              }`}
             />
           </div>
           <div className="flex flex-col gap-1.5">

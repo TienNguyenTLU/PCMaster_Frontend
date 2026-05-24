@@ -19,16 +19,28 @@ interface EditPricesModalProps {
 
 export default function EditPricesModal({ batch, onClose, onSave, saving }: EditPricesModalProps) {
   const [newSellingPrice, setNewSellingPrice] = useState<number>(batch.sellingPrice);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
     const timer = setTimeout(() => {
       setNewSellingPrice(batch.sellingPrice);
+      setErrors({});
     }, 0);
     return () => clearTimeout(timer);
   }, [batch]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (!newSellingPrice) {
+      setErrors({ sellingPrice: 'Vui lòng nhập giá bán.' });
+      return;
+    }
+
+    if (newSellingPrice <= batch.importPrice) {
+      setErrors({ sellingPrice: `Giá bán mới phải cao hơn giá nhập (${batch.importPrice.toLocaleString('vi-VN')}₫).` });
+      return;
+    }
+
     onSave(batch.id, batch.importPrice, newSellingPrice);
   };
 
@@ -101,6 +113,11 @@ export default function EditPricesModal({ batch, onClose, onSave, saving }: Edit
               <label className="text-[12px] font-semibold text-[#475569] block mb-1.5">
                 Giá bán mới (VND) - Sản phẩm
               </label>
+              {errors.sellingPrice && (
+                <span className="text-red-500 text-[11px] font-semibold flex items-center gap-1 mb-1.5 animate-in fade-in slide-in-from-top-1 duration-150">
+                  ⚠️ {errors.sellingPrice}
+                </span>
+              )}
               <div className="relative">
                 <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[14px] font-medium text-[#94a3b8]">₫</span>
                 <input
@@ -110,9 +127,12 @@ export default function EditPricesModal({ batch, onClose, onSave, saving }: Edit
                     const rawVal = e.target.value.replace(/\./g, '');
                     if (/^\d*$/.test(rawVal)) {
                       setNewSellingPrice(Number(rawVal) || 0);
+                      setErrors(prev => ({ ...prev, sellingPrice: '' }));
                     }
                   }}
-                  className="w-full bg-[#f8fafc] border border-[#e2e8f0] rounded-[8px] pl-8 pr-4 py-2 text-[14px] text-[#0f172a] font-semibold focus:outline-none focus:border-[#0058be] focus:ring-1 focus:ring-[#0058be] transition-all"
+                  className={`w-full bg-[#f8fafc] border rounded-[8px] pl-8 pr-4 py-2 text-[14px] text-[#0f172a] font-semibold focus:outline-none transition-all ${
+                    errors.sellingPrice ? 'border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500' : 'border-[#e2e8f0] focus:border-[#0058be] focus:ring-1 focus:ring-[#0058be]'
+                  }`}
                   placeholder="Nhập giá bán..."
                 />
               </div>

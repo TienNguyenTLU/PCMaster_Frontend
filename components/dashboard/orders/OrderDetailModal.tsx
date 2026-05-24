@@ -222,6 +222,17 @@ export default function OrderDetailModal({ order, onClose, onRefresh }: OrderDet
               Tạo phiếu xuất kho
             </button>
           )}
+          {order.status === 'SHIPPED' && (
+            <button
+              type="button"
+              disabled={updating}
+              onClick={() => handleStatusUpdate('DELIVERED')}
+              className="flex items-center gap-2 px-4 py-2 bg-[#10b981] hover:bg-[#059669] text-white text-[13px] font-semibold rounded-[8px] shadow-sm transition-colors cursor-pointer disabled:opacity-50"
+            >
+              {updating ? <Loader2 className="size-4 animate-spin" /> : <CheckCircle2 className="size-4" />}
+              Đánh dấu là đã giao
+            </button>
+          )}
           {(order.status === 'DRAFT' || order.status === 'CONFIRMED') && (
             <button
               type="button"

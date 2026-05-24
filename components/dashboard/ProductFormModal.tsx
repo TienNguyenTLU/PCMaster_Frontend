@@ -18,9 +18,9 @@ interface SpecField {
 
 const SPECS_BY_CATEGORY: Record<string, SpecField[]> = {
   case: [
-    { key: 'size', label: 'Kích thước', type: 'select', options: ['Micro-ATX Tower', 'Mid Tower', 'Full Tower', 'Mini-ITX'] },
+    { key: 'size', label: 'Kích thước', type: 'select', options: ['Mini-ITX Desktop', 'Mini Tower', 'Mid Tower', 'Full Tower', 'Super Tower', 'HTPC / Desktop', 'Open Frame'] },
     { key: 'max_gpu_length_mm', label: 'Độ dài GPU tối đa (mm)', type: 'number', placeholder: '365' },
-    { key: 'supported_mainboards', label: 'Bo mạch hỗ trợ', type: 'multiselect', options: ['ITX', 'M-ATX', 'ATX', 'E-ATX'] },
+    { key: 'supported_mainboards', label: 'Bo mạch hỗ trợ', type: 'multiselect', options: ['Mini-ITX', 'Micro-ATX', 'ATX', 'E-ATX', 'SSI CEB', 'SSI EEB', 'XL-ATX'] },
     { key: 'max_cpu_cooler_height_mm', label: 'Chiều cao CPU Cooler tối đa (mm)', type: 'number', placeholder: '164' },
   ],
   cooler: [
@@ -30,13 +30,19 @@ const SPECS_BY_CATEGORY: Record<string, SpecField[]> = {
     { key: 'tdp_rating_w', label: 'TDP hỗ trợ (W)', type: 'number', placeholder: '300' },
     { key: 'noise_level_db', label: 'Độ ồn (dB)', type: 'number', placeholder: '30' },
     { key: 'radiator_size_mm', label: 'Radiator (mm)', type: 'select', options: ['120', '140', '240', '280', '360', '420'] },
-    { key: 'supported_sockets', label: 'Socket hỗ trợ', type: 'multiselect', options: ['LGA1700', 'AM5', 'AM4', 'LGA1200'] },
+    { key: 'supported_sockets', label: 'Socket hỗ trợ', type: 'multiselect', options: [
+      'AM5', 'AM4', 'AM3+', 'AM3', 'AM2+', 'AM2', 'FM2+', 'FM2', 'FM1', 'sTRX4', 'sTR4', 'sWRX8', 'SP3',
+      'LGA1851', 'LGA1700', 'LGA1200', 'LGA1151', 'LGA1150', 'LGA1155', 'LGA1156', 'LGA2066', 'LGA2011', 'LGA1366', 'LGA775'
+    ] },
   ],
   cpu: [
     { key: 'cores', label: 'Số nhân', type: 'select', options: ['2', '4', '6', '8', '10', '12', '14', '16', '20', '24', '32', '64'] },
     { key: 'tdp_w', label: 'TDP (W)', type: 'number', placeholder: '65' },
     { key: 'series', label: 'Series', type: 'text', placeholder: 'Ryzen 5' },
-    { key: 'socket', label: 'Socket', type: 'select', options: ['AM5', 'AM4', 'LGA1700', 'LGA1200'] },
+    { key: 'socket', label: 'Socket', type: 'select', options: [
+      'AM5', 'AM4', 'AM3+', 'AM3', 'AM2+', 'AM2', 'FM2+', 'FM2', 'FM1', 'sTRX4', 'sTR4', 'sWRX8', 'SP3',
+      'LGA1851', 'LGA1700', 'LGA1200', 'LGA1151', 'LGA1150', 'LGA1155', 'LGA1156', 'LGA2066', 'LGA2011', 'LGA1366', 'LGA775'
+    ] },
     { key: 'threads', label: 'Số luồng', type: 'select', options: ['2', '4', '8', '12', '16', '20', '24', '28', '32', '48', '64', '128'] },
     { key: 'cache_mb', label: 'Bộ nhớ đệm (MB)', type: 'number', placeholder: '16' },
     { key: 'base_clock_ghz', label: 'Xung cơ bản (GHz)', type: 'number', placeholder: '3.5' },
@@ -55,22 +61,28 @@ const SPECS_BY_CATEGORY: Record<string, SpecField[]> = {
     { key: 'is_addressable_rgb', label: 'LED ARGB', type: 'boolean' },
   ],
   mainboard: [
-    { key: 'socket', label: 'Socket', type: 'select', options: ['LGA1700', 'AM5', 'AM4', 'LGA1200'] },
-    { key: 'chipset', label: 'Chipset', type: 'select', options: ['Z790', 'B650', 'X670E', 'B760'] },
+    { key: 'socket', label: 'Socket', type: 'select', options: [
+      'AM5', 'AM4', 'AM3+', 'AM3', 'AM2+', 'AM2', 'FM2+', 'FM2', 'FM1', 'sTRX4', 'sTR4', 'sWRX8', 'SP3',
+      'LGA1851', 'LGA1700', 'LGA1200', 'LGA1151', 'LGA1150', 'LGA1155', 'LGA1156', 'LGA2066', 'LGA2011', 'LGA1366', 'LGA775'
+    ] },
+    { key: 'chipset', label: 'Chipset', type: 'select', options: [
+      'Z890', 'Z790', 'Z690', 'Z590', 'Z490', 'B860', 'B760', 'B660', 'B560', 'B460', 'H610', 'H510', 'H410', 
+      'X870E', 'X870', 'X670E', 'X670', 'X570', 'X470', 'B850', 'B650E', 'B650', 'B550', 'B450', 'A620', 'A520', 'A320'
+    ] },
     { key: 'has_wifi', label: 'Có Wifi', type: 'boolean' },
     { key: 'm2_slots', label: 'Số khe M.2', type: 'number', placeholder: '4' },
-    { key: 'ram_type', label: 'Loại RAM', type: 'select', options: ['DDR4', 'DDR5'] },
+    { key: 'ram_type', label: 'Loại RAM', type: 'select', options: ['DDR3', 'DDR4', 'DDR5', 'LPDDR4', 'LPDDR5', 'LPDDR5X'] },
     { key: 'ram_slots', label: 'Số khe RAM', type: 'select', options: ['2', '4', '8'] },
-    { key: 'max_ram_gb', label: 'RAM tối đa (GB)', type: 'select', options: ['32', '64', '128', '192', '256'] },
-    { key: 'form_factor', label: 'Form factor', type: 'select', options: ['ATX', 'Micro-ATX', 'Mini-ITX', 'E-ATX'] },
+    { key: 'max_ram_gb', label: 'RAM tối đa (GB)', type: 'select', options: ['16', '32', '64', '128', '192', '256', '512'] },
+    { key: 'form_factor', label: 'Form factor', type: 'select', options: ['Mini-ITX', 'Micro-ATX', 'ATX', 'E-ATX', 'Flex-ATX', 'SSI CEB', 'SSI EEB'] },
   ],
   monitor: [
-    { key: 'ports', label: 'Cổng kết nối', type: 'multiselect', options: ['HDMI 2.0', 'HDMI 2.1', 'DisplayPort 1.4', 'Type-C'] },
+    { key: 'ports', label: 'Cổng kết nối', type: 'multiselect', options: ['HDMI 2.0', 'HDMI 2.1', 'DisplayPort 1.4', 'DisplayPort 2.1', 'Type-C', 'VGA', 'DVI'] },
     { key: 'has_hdr', label: 'Hỗ trợ HDR', type: 'boolean' },
     { key: 'size_inch', label: 'Kích thước (inch)', type: 'number', placeholder: '27' },
-    { key: 'panel_type', label: 'Loại tấm nền', type: 'select', options: ['IPS', 'VA', 'TN', 'OLED', 'Mini-LED'] },
-    { key: 'resolution', label: 'Độ phân giải', type: 'select', options: ['1920x1080', '2560x1440', '3840x2160'] },
-    { key: 'aspect_ratio', label: 'Tỉ lệ màn hình', type: 'select', options: ['16:9', '21:9', '32:9'] },
+    { key: 'panel_type', label: 'Loại tấm nền', type: 'select', options: ['IPS', 'VA', 'TN', 'OLED', 'QD-OLED', 'Mini-LED'] },
+    { key: 'resolution', label: 'Độ phân giải', type: 'select', options: ['1920x1080', '2560x1440', '3440x1440', '3840x2160', '5120x2880'] },
+    { key: 'aspect_ratio', label: 'Tỉ lệ màn hình', type: 'select', options: ['16:9', '16:10', '21:9', '32:9', '4:3'] },
     { key: 'color_accuracy', label: 'Độ chuẩn màu', type: 'text', placeholder: '99% DCI-P3' },
     { key: 'brightness_cdm2', label: 'Độ sáng (cd/m2)', type: 'number', placeholder: '1000' },
     { key: 'refresh_rate_hz', label: 'Tần số quét (Hz)', type: 'number', placeholder: '240' },
@@ -79,31 +91,31 @@ const SPECS_BY_CATEGORY: Record<string, SpecField[]> = {
   psu: [
     { key: 'wattage', label: 'Công suất (W)', type: 'select', options: ['450', '500', '550', '600', '650', '700', '750', '800', '850', '1000', '1200', '1300', '1500', '1600'] },
     { key: 'modularity', label: 'Dạng dây (Modularity)', type: 'select', options: ['Full Modular', 'Semi Modular', 'Non Modular'] },
-    { key: 'form_factor', label: 'Form factor', type: 'select', options: ['ATX', 'SFX', 'SFX-L'] },
+    { key: 'form_factor', label: 'Form factor', type: 'select', options: ['ATX', 'SFX', 'SFX-L', 'TFX', 'Flex-ATX', 'EPS12V'] },
     { key: 'efficiency_rating', label: 'Hiệu suất', type: 'select', options: ['80 Plus', '80 Plus Bronze', '80 Plus Silver', '80 Plus Gold', '80 Plus Platinum', '80 Plus Titanium'] },
   ],
   ram: [
-    { key: 'kit', label: 'Kit RAM', type: 'select', options: ['1x8GB', '2x8GB', '1x16GB', '2x16GB', '2x32GB', '4x16GB'] },
-    { key: 'type', label: 'Loại RAM', type: 'select', options: ['DDR4', 'DDR5'] },
+    { key: 'kit', label: 'Kit RAM', type: 'select', options: ['1x8GB', '2x8GB', '1x16GB', '2x16GB', '2x32GB', '4x16GB', '2x24GB', '2x48GB', '4x32GB'] },
+    { key: 'type', label: 'Loại RAM', type: 'select', options: ['DDR3', 'DDR4', 'DDR5', 'LPDDR4', 'LPDDR5', 'LPDDR5X'] },
     { key: 'has_rgb', label: 'Có RGB', type: 'boolean' },
     { key: 'latency_cl', label: 'CAS Latency (CL)', type: 'number', placeholder: '18' },
-    { key: 'capacity_gb', label: 'Dung lượng tổng (GB)', type: 'select', options: ['8', '16', '32', '64', '128'] },
+    { key: 'capacity_gb', label: 'Dung lượng tổng (GB)', type: 'select', options: ['8', '16', '24', '32', '48', '64', '96', '128', '256'] },
     { key: 'bus_speed_mhz', label: 'Tốc độ Bus (MHz)', type: 'number', placeholder: '4000' },
   ],
   ssd: [
     { key: 'type', label: 'Loại', type: 'select', options: ['SSD', 'HDD'] },
-    { key: 'interface', label: 'Giao tiếp', type: 'select', options: ['NVMe PCIe Gen3', 'NVMe PCIe Gen4', 'NVMe PCIe Gen5', 'SATA III'] },
-    { key: 'capacity_gb', label: 'Dung lượng (GB)', type: 'select', options: ['250', '256', '480', '500', '512', '1000', '2000', '4000', '8000'] },
+    { key: 'interface', label: 'Giao tiếp', type: 'select', options: ['NVMe PCIe Gen3', 'NVMe PCIe Gen4', 'NVMe PCIe Gen5', 'SATA III', 'SATA II', 'SAS'] },
+    { key: 'capacity_gb', label: 'Dung lượng (GB)', type: 'select', options: ['120', '240', '250', '256', '480', '500', '512', '1000', '2000', '4000', '8000', '16000'] },
     { key: 'read_speed_mbps', label: 'Tốc độ đọc (MB/s)', type: 'number', placeholder: '3500' },
     { key: 'write_speed_mbps', label: 'Tốc độ ghi (MB/s)', type: 'number', placeholder: '2300' },
   ],
   vga: [
     { key: 'tdp_w', label: 'TDP (W)', type: 'number', placeholder: '100' },
     { key: 'chipset', label: 'Chipset', type: 'text', placeholder: 'GTX 1650 Super' },
-    { key: 'vram_gb', label: 'VRAM (GB)', type: 'select', options: ['4', '6', '8', '10', '12', '16', '20', '24'] },
+    { key: 'vram_gb', label: 'VRAM (GB)', type: 'select', options: ['2', '4', '6', '8', '10', '12', '16', '20', '24', '32', '48'] },
     { key: 'length_mm', label: 'Chiều dài (mm)', type: 'number', placeholder: '248' },
     { key: 'min_psu_w', label: 'Nguồn tối thiểu (W)', type: 'number', placeholder: '350' },
-    { key: 'vram_type', label: 'Loại VRAM', type: 'select', options: ['GDDR5', 'GDDR6', 'GDDR6X'] },
+    { key: 'vram_type', label: 'Loại VRAM', type: 'select', options: ['DDR3', 'GDDR5', 'GDDR5X', 'GDDR6', 'GDDR6X', 'GDDR7', 'HBM', 'HBM2', 'HBM2e', 'HBM3'] },
     { key: 'base_clock_mhz', label: 'Xung cơ bản (MHz)', type: 'number', placeholder: '1530' },
     { key: 'boost_clock_mhz', label: 'Xung boost (MHz)', type: 'number', placeholder: '1755' },
     { key: 'performance_score', label: 'Điểm hiệu năng', type: 'number', placeholder: '9000' },
@@ -170,6 +182,7 @@ export default function ProductFormModal({ isOpen, onClose, onSuccess, editingPr
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
   const [submitError, setSubmitError] = useState('');
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   // Step 2 & Multi-image state
   const [step, setStep] = useState<number>(1);
@@ -302,14 +315,21 @@ export default function ProductFormModal({ isOpen, onClose, onSuccess, editingPr
       }
       setThumbnailFile(null);
       setSubmitError('');
+      setErrors({});
     }, 0);
     return () => clearTimeout(timer);
   }, [editingProduct, isOpen]);
 
   // Removed reset specs on category change to prevent wiping data on edit load
 
-  const handleBasic = (field: keyof BasicForm, value: string) => setBasic(p => ({ ...p, [field]: value }));
-  const handleSpec = (key: string, value: string) => setSpecs(p => ({ ...p, [key]: value }));
+  const handleBasic = (field: keyof BasicForm, value: string) => {
+    setBasic(p => ({ ...p, [field]: value }));
+    setErrors(p => ({ ...p, [field]: '' }));
+  };
+  const handleSpec = (key: string, value: string) => {
+    setSpecs(p => ({ ...p, [key]: value }));
+    setErrors(p => ({ ...p, [key]: '' }));
+  };
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -320,8 +340,31 @@ export default function ProductFormModal({ isOpen, onClose, onSuccess, editingPr
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!basic.name || !basic.categoryId || !basic.brandId) {
-      setSubmitError('Vui lòng điền đầy đủ các trường bắt buộc (*).');
+    const newErrors: Record<string, string> = {};
+
+    if (!basic.name.trim()) {
+      newErrors.name = 'Tên sản phẩm không được để trống';
+    }
+    if (!basic.categoryId) {
+      newErrors.categoryId = 'Vui lòng chọn danh mục';
+    }
+    if (!basic.brandId) {
+      newErrors.brandId = 'Vui lòng chọn thương hiệu';
+    }
+
+    // Validate that all spec fields are filled
+    if (specFields.length > 0) {
+      for (const field of specFields) {
+        const val = specs[field.key];
+        if (val === undefined || val === null || String(val).trim() === '') {
+          newErrors[field.key] = `Vui lòng nhập thông số bắt buộc: ${field.label}`;
+        }
+      }
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      setSubmitError('Vui lòng kiểm tra lại thông tin bị thiếu hoặc sai.');
       return;
     }
 
@@ -579,12 +622,19 @@ export default function ProductFormModal({ isOpen, onClose, onSuccess, editingPr
               {/* Name */}
               <div className="flex flex-col gap-1.5">
                 <label className="text-[13px] font-medium text-[#374151]">Tên sản phẩm <span className="text-red-500">*</span></label>
+                {errors.name && (
+                  <span className="text-red-500 text-[11px] font-semibold flex items-center gap-1 animate-in fade-in slide-in-from-top-1 duration-150">
+                    ⚠️ {errors.name}
+                  </span>
+                )}
                 <input
                   type="text"
                   value={basic.name}
                   onChange={e => handleBasic('name', e.target.value)}
                   placeholder="VD: Jonsbo D32 Pro Black"
-                  className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[8px] px-3 py-2.5 text-[14px] focus:outline-none focus:border-[#0058be] focus:ring-1 focus:ring-[#0058be] transition-all"
+                  className={`bg-[#f8fafc] border rounded-[8px] px-3 py-2.5 text-[14px] focus:outline-none transition-all ${
+                    errors.name ? 'border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500' : 'border-[#e2e8f0] focus:border-[#0058be] focus:ring-1 focus:ring-[#0058be]'
+                  }`}
                 />
               </div>
 
@@ -592,10 +642,17 @@ export default function ProductFormModal({ isOpen, onClose, onSuccess, editingPr
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1.5">
                   <label className="text-[13px] font-medium text-[#374151]">Danh mục <span className="text-red-500">*</span></label>
+                  {errors.categoryId && (
+                    <span className="text-red-500 text-[11px] font-semibold flex items-center gap-1 animate-in fade-in slide-in-from-top-1 duration-150">
+                      ⚠️ {errors.categoryId}
+                    </span>
+                  )}
                   <select
                     value={basic.categoryId}
                     onChange={e => handleBasic('categoryId', e.target.value)}
-                    className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[8px] px-3 py-2.5 text-[14px] focus:outline-none focus:border-[#0058be] transition-all"
+                    className={`bg-[#f8fafc] border rounded-[8px] px-3 py-2.5 text-[14px] focus:outline-none transition-all ${
+                      errors.categoryId ? 'border-red-500 focus:border-red-500' : 'border-[#e2e8f0] focus:border-[#0058be]'
+                    }`}
                   >
                     <option value="">-- Chọn danh mục --</option>
                     {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
@@ -603,10 +660,17 @@ export default function ProductFormModal({ isOpen, onClose, onSuccess, editingPr
                 </div>
                 <div className="flex flex-col gap-1.5">
                   <label className="text-[13px] font-medium text-[#374151]">Thương hiệu <span className="text-red-500">*</span></label>
+                  {errors.brandId && (
+                    <span className="text-red-500 text-[11px] font-semibold flex items-center gap-1 animate-in fade-in slide-in-from-top-1 duration-150">
+                      ⚠️ {errors.brandId}
+                    </span>
+                  )}
                   <select
                     value={basic.brandId}
                     onChange={e => handleBasic('brandId', e.target.value)}
-                    className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[8px] px-3 py-2.5 text-[14px] focus:outline-none focus:border-[#0058be] transition-all"
+                    className={`bg-[#f8fafc] border rounded-[8px] px-3 py-2.5 text-[14px] focus:outline-none transition-all ${
+                      errors.brandId ? 'border-red-500 focus:border-red-500' : 'border-[#e2e8f0] focus:border-[#0058be]'
+                    }`}
                   >
                     <option value="">-- Chọn thương hiệu --</option>
                     {brands.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
@@ -713,11 +777,18 @@ export default function ProductFormModal({ isOpen, onClose, onSuccess, editingPr
                         {field.label}
                         {field.type === 'multiselect' && <span className="text-[#94a3b8] font-normal ml-1">(phân cách bằng dấu phẩy)</span>}
                       </label>
+                      {errors[field.key] && (
+                        <span className="text-red-500 text-[11px] font-semibold flex items-center gap-1 animate-in fade-in slide-in-from-top-1 duration-150">
+                          ⚠️ {errors[field.key]}
+                        </span>
+                      )}
                       {field.type === 'select' ? (
                         <select
                           value={specs[field.key] ?? ''}
                           onChange={e => handleSpec(field.key, e.target.value)}
-                          className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[8px] px-3 py-2.5 text-[14px] focus:outline-none focus:border-[#0058be] transition-all"
+                          className={`bg-[#f8fafc] border rounded-[8px] px-3 py-2.5 text-[14px] focus:outline-none transition-all ${
+                            errors[field.key] ? 'border-red-500 focus:border-red-500' : 'border-[#e2e8f0] focus:border-[#0058be]'
+                          }`}
                         >
                           <option value="">-- Chọn {field.label.toLowerCase()} --</option>
                           {field.options?.map(opt => (
@@ -728,7 +799,9 @@ export default function ProductFormModal({ isOpen, onClose, onSuccess, editingPr
                         <select
                           value={specs[field.key] ?? ''}
                           onChange={e => handleSpec(field.key, e.target.value)}
-                          className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[8px] px-3 py-2.5 text-[14px] focus:outline-none focus:border-[#0058be] transition-all"
+                          className={`bg-[#f8fafc] border rounded-[8px] px-3 py-2.5 text-[14px] focus:outline-none transition-all ${
+                            errors[field.key] ? 'border-red-500 focus:border-red-500' : 'border-[#e2e8f0] focus:border-[#0058be]'
+                          }`}
                         >
                           <option value="">-- Chọn --</option>
                           <option value="true">Có / Yes</option>
@@ -740,7 +813,9 @@ export default function ProductFormModal({ isOpen, onClose, onSuccess, editingPr
                           value={specs[field.key] ?? ''}
                           onChange={e => handleSpec(field.key, e.target.value)}
                           placeholder={field.placeholder ?? ''}
-                          className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[8px] px-3 py-2.5 text-[14px] focus:outline-none focus:border-[#0058be] focus:ring-1 focus:ring-[#0058be] transition-all"
+                          className={`bg-[#f8fafc] border rounded-[8px] px-3 py-2.5 text-[14px] focus:outline-none transition-all ${
+                            errors[field.key] ? 'border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500' : 'border-[#e2e8f0] focus:border-[#0058be] focus:ring-1 focus:ring-[#0058be]'
+                          }`}
                         />
                       )}
                     </div>

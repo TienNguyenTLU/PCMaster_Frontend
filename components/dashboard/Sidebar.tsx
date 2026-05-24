@@ -11,12 +11,14 @@ import {
   FileBox, 
   Settings,
   Image,
-  Warehouse
+  Warehouse,
+  Cpu
 } from 'lucide-react';
 
 const navItems = [
   { label: 'Tổng quan', href: '/dashboard', icon: LayoutDashboard },
   { label: 'Sản phẩm', href: '/dashboard/products', icon: Package },
+  { label: 'Cấu hình PC', href: '/dashboard/pc-configurations', icon: Cpu },
   { label: 'Thương hiệu', href: '/dashboard/brands', icon: Tag },
   { label: 'Banner quảng cáo', href: '/dashboard/banners', icon: Image },
   { label: 'Nhà cung cấp', href: '/dashboard/suppliers', icon: Factory },

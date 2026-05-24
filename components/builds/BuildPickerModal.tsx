@@ -7,11 +7,12 @@ import { adminAPI, Product } from '@/lib/api';
 interface BuildPickerModalProps {
   slotKey: string;
   slotLabel: string;
+  build: Record<string, Product | null>;
   onSelect: (product: Product) => void;
   onClose: () => void;
 }
 
-export default function BuildPickerModal({ slotKey, slotLabel, onSelect, onClose }: BuildPickerModalProps) {
+export default function BuildPickerModal({ slotKey, slotLabel, build, onSelect, onClose }: BuildPickerModalProps) {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -53,10 +54,139 @@ export default function BuildPickerModal({ slotKey, slotLabel, onSelect, onClose
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [slotKey]);
 
-  const filtered = products.filter(p =>
+  // Helper to safely parse specsJson
+  const getProductSpecs = (p?: Product | null) => {
+    if (!p || !p.specsJson) return {};
+    try {
+      return JSON.parse(p.specsJson);
+    } catch {
+      return {};
+    }
+  };
+
+  // Get compatibility parameters from current build state
+  const selectedCpu = build.cpu;
+  const selectedMainboard = build.mainboard;
+  const selectedRam = build.ram;
+  const selectedVga = build.vga;
+  const selectedCase = build.case;
+  const selectedStorage = build.storage;
+  const selectedCooler = build.cooler;
+
+  const cpuSpecs = getProductSpecs(selectedCpu);
+  const mainboardSpecs = getProductSpecs(selectedMainboard);
+  const ramSpecs = getProductSpecs(selectedRam);
+  const vgaSpecs = getProductSpecs(selectedVga);
+  // caseSpecs, storageSpecs, coolerSpecs are checked dynamically in other places
+
+  const cpuSocket = cpuSpecs.socket;
+  const mainboardSocket = mainboardSpecs.socket;
+  const mainboardRamType = mainboardSpecs.ram_type;
+  const ramType = ramSpecs.type;
+  const mainboardFormFactor = mainboardSpecs.form_factor;
+
+  // TDP calculations for power supply filtering
+  const totalTdp = (Number(cpuSpecs.tdp_w) || 0) + (Number(vgaSpecs.tdp_w) || 0);
+
+  const isCaseCompatible = (caseProd: Product, mbFormFactor: string) => {
+    const specs = getProductSpecs(caseProd);
+    const supported = specs.supported_mainboards;
+    if (!supported) return true;
+    if (Array.isArray(supported)) {
+      return supported.map(s => String(s).toLowerCase()).includes(mbFormFactor.toLowerCase());
+    }
+    return String(supported).toLowerCase().includes(mbFormFactor.toLowerCase());
+  };
+
+  const isSsdCompatible = (ssdProd: Product, mbProd: Product) => {
+    const ssdSpecs = getProductSpecs(ssdProd);
+    const mbSpecs = getProductSpecs(mbProd);
+    const ssdInt = String(ssdSpecs.interface || '').toLowerCase();
+    const ssdType = String(ssdSpecs.type || '').toLowerCase();
+    
+    if (ssdInt.includes('nvme') || ssdInt.includes('m.2') || ssdInt.includes('pcie') || ssdType.includes('m2')) {
+      const m2Slots = Number(mbSpecs.m2_slots) || 0;
+      return m2Slots > 0;
+    }
+    return true;
+  };
+
+  const isCoolerCompatible = (coolerProd: Product, socket: string) => {
+    const specs = getProductSpecs(coolerProd);
+    const supported = specs.supported_sockets;
+    if (!supported) return true;
+    if (Array.isArray(supported)) {
+      return supported.map(s => String(s).toLowerCase()).includes(socket.toLowerCase());
+    }
+    const supportedStr = String(supported).toLowerCase();
+    return supportedStr.includes(socket.toLowerCase()) || socket.toLowerCase().includes(supportedStr);
+  };
+
+  // Text search filter
+  let filtered = products.filter(p =>
     p.name.toLowerCase().includes(search.toLowerCase()) ||
     (p.brand?.name ?? '').toLowerCase().includes(search.toLowerCase())
   );
+
+  // Apply compatibility filters based on slots (Two-Way)
+  if (slotKey === 'mainboard') {
+    if (cpuSocket) {
+      filtered = filtered.filter(p => getProductSpecs(p).socket === cpuSocket);
+    }
+    if (ramType) {
+      filtered = filtered.filter(p => getProductSpecs(p).ram_type === ramType);
+    }
+    if (selectedCase) {
+      filtered = filtered.filter(p => {
+        const mbForm = getProductSpecs(p).form_factor;
+        return mbForm ? isCaseCompatible(selectedCase, mbForm) : true;
+      });
+    }
+    if (selectedStorage) {
+      filtered = filtered.filter(p => isSsdCompatible(selectedStorage, p));
+    }
+    if (selectedCooler) {
+      filtered = filtered.filter(p => {
+        const socket = getProductSpecs(p).socket;
+        return socket ? isCoolerCompatible(selectedCooler, socket) : true;
+      });
+    }
+  } else if (slotKey === 'cpu') {
+    if (mainboardSocket) {
+      filtered = filtered.filter(p => getProductSpecs(p).socket === mainboardSocket);
+    }
+    if (selectedCooler) {
+      filtered = filtered.filter(p => {
+        const socket = getProductSpecs(p).socket;
+        return socket ? isCoolerCompatible(selectedCooler, socket) : true;
+      });
+    }
+  } else if (slotKey === 'ram') {
+    if (mainboardRamType) {
+      filtered = filtered.filter(p => getProductSpecs(p).type === mainboardRamType);
+    }
+  } else if (slotKey === 'case') {
+    if (mainboardFormFactor) {
+      filtered = filtered.filter(p => isCaseCompatible(p, mainboardFormFactor));
+    }
+  } else if (slotKey === 'storage') {
+    if (selectedMainboard) {
+      filtered = filtered.filter(p => isSsdCompatible(p, selectedMainboard));
+    }
+  } else if (slotKey === 'cooler') {
+    if (cpuSocket) {
+      filtered = filtered.filter(p => isCoolerCompatible(p, cpuSocket));
+    } else if (mainboardSocket) {
+      filtered = filtered.filter(p => isCoolerCompatible(p, mainboardSocket));
+    }
+  } else if (slotKey === 'psu') {
+    if (totalTdp > 0) {
+      filtered = filtered.filter(p => {
+        const wattage = Number(getProductSpecs(p).wattage) || 0;
+        return wattage >= totalTdp;
+      });
+    }
+  }
 
   const imgSrc = (p: Product) => {
     if (!p.thumbnailUrl) return null;
@@ -127,16 +257,13 @@ export default function BuildPickerModal({ slotKey, slotLabel, onSelect, onClose
                   <button
                     key={p.id}
                     type="button"
-                    disabled={p.stock === 0}
                     onClick={() => { onSelect(p); onClose(); }}
                     onMouseEnter={() => setHoveredId(p.id)}
                     onMouseLeave={() => setHoveredId(null)}
                     className={`w-full flex items-center gap-4 p-4 rounded-[16px] border text-left transition-all duration-200 cursor-pointer ${
-                      p.stock === 0
-                        ? 'opacity-50 cursor-not-allowed border-[#e8ecf2] bg-[#f8fafc]'
-                        : isHovered
-                          ? 'border-[#0058be] bg-[#eff6ff] shadow-sm scale-[1.005]'
-                          : 'border-[#e8ecf2] bg-white hover:border-[#0058be]'
+                      isHovered
+                        ? 'border-[#0058be] bg-[#eff6ff] shadow-sm scale-[1.005]'
+                        : 'border-[#e8ecf2] bg-white hover:border-[#0058be]'
                     }`}
                   >
                     {/* Thumbnail */}
@@ -158,8 +285,8 @@ export default function BuildPickerModal({ slotKey, slotLabel, onSelect, onClose
                       <p className="text-[14px] font-semibold text-[#0f172a] leading-snug line-clamp-2">
                         {p.name}
                       </p>
-                      <p className={`text-[11px] mt-1 font-medium ${p.stock === 0 ? 'text-red-500' : 'text-[#64748b]'}`}>
-                        {p.stock === 0 ? 'Hết hàng' : `Còn ${p.stock} sản phẩm`}
+                      <p className={`text-[11px] mt-1 font-medium ${p.stock === 0 ? 'text-amber-600 font-semibold' : 'text-[#64748b]'}`}>
+                        {p.stock === 0 ? 'Hết hàng (Vẫn cho phép build)' : `Còn ${p.stock} sản phẩm`}
                       </p>
                     </div>
 
@@ -169,7 +296,7 @@ export default function BuildPickerModal({ slotKey, slotLabel, onSelect, onClose
                         {p.price.toLocaleString('vi-VN')}
                         <span className="text-[11px] font-normal ml-0.5 opacity-70">₫</span>
                       </p>
-                      {isHovered && p.stock > 0 && (
+                      {isHovered && (
                         <span className="flex items-center gap-1 text-[11px] font-bold text-white bg-[#0058be] px-2.5 py-1 rounded-full">
                           <Check className="size-3" /> Chọn
                         </span>

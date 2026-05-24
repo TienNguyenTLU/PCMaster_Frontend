@@ -10,7 +10,7 @@ import { ShoppingCart, User, Settings, ClipboardList, Cpu, LogOut } from 'lucide
 const navLinks = [
   { label: 'Build PC', href: '/builds' },
   { label: 'Linh Kiện', href: '/explore' },
-  { label: 'PC Đồng Bộ', href: '/explore' },
+  { label: 'PC build sẵn', href: '/prebuilt' },
   { label: 'Hỗ trợ', href: '/support' },
 ];
 
@@ -189,7 +189,7 @@ export default function HomeNavBar() {
                         Cài đặt tài khoản
                       </Link>
                       <Link
-                        href="#"
+                        href="/my-orders"
                         onClick={() => setIsDropdownOpen(false)}
                         className="flex items-center gap-3 px-3 py-2 text-[14px] text-[#475569] hover:bg-[#f1f5f9] hover:text-[#0058be] transition-all rounded-[6px]"
                       >
@@ -197,7 +197,7 @@ export default function HomeNavBar() {
                         Đơn hàng của tôi
                       </Link>
                       <Link
-                        href="#"
+                        href="/builds?tab=my-builds"
                         onClick={() => setIsDropdownOpen(false)}
                         className="flex items-center gap-3 px-3 py-2 text-[14px] text-[#475569] hover:bg-[#f1f5f9] hover:text-[#0058be] transition-all rounded-[6px]"
                       >

@@ -16,15 +16,29 @@ export default function LoginForm() {
   const { login, isLoading, error, clearError } = useAuthStore();
 
   const [form, setForm] = useState({ usernameOrEmail: '', password: '' });
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleChange =
     (field: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) => {
       clearError();
       setForm((prev) => ({ ...prev, [field]: e.target.value }));
+      setErrors((prev) => ({ ...prev, [field]: '' }));
     };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    const newErrors: Record<string, string> = {};
+    if (!form.usernameOrEmail.trim()) {
+      newErrors.usernameOrEmail = 'Vui lòng nhập tên đăng nhập hoặc email';
+    }
+    if (!form.password) {
+      newErrors.password = 'Vui lòng nhập mật khẩu';
+    }
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
     try {
       await login(form.usernameOrEmail, form.password);
       toast.success('Đăng nhập thành công!');
@@ -64,14 +78,14 @@ export default function LoginForm() {
       </div>
 
       {/* Form */}
-      <form onSubmit={handleSubmit} className="flex flex-col gap-6 w-full pt-[8.5px]">
+      <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-6 w-full pt-[8.5px]">
         <AuthFormField
           label="TÊN ĐĂNG NHẬP HOẶC EMAIL"
           type="text"
           placeholder="builder@pcmaster.tech"
           value={form.usernameOrEmail}
           onChange={handleChange('usernameOrEmail')}
-          required
+          error={errors.usernameOrEmail}
           autoComplete="username"
           id="login-email"
         />
@@ -82,7 +96,7 @@ export default function LoginForm() {
           placeholder="••••••••"
           value={form.password}
           onChange={handleChange('password')}
-          required
+          error={errors.password}
           autoComplete="current-password"
           id="login-password"
         />

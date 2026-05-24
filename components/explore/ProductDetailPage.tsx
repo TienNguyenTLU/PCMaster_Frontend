@@ -23,6 +23,12 @@ import toast from 'react-hot-toast';
 
 // ─── SPECS_BY_CATEGORY mirrors ExplorePage ────────────────────────────────────
 const SPEC_LABEL_MAP: Record<string, string> = {
+  // General & Pre-built
+  usage_need: 'Nhu cầu sử dụng',
+  brand: 'Thương hiệu',
+  component_type: 'Loại linh kiện',
+  series: 'Dòng sản phẩm (Series)',
+
   // CPU
   cores: 'Số nhân',
   threads: 'Số luồng',
@@ -73,6 +79,7 @@ const SPEC_LABEL_MAP: Record<string, string> = {
   size_inch: 'Kích thước (inch)',
   brightness_cdm2: 'Độ sáng (cd/m²)',
   response_time_ms: 'Phản hồi (ms)',
+  color_accuracy: 'Độ chuẩn màu',
   // Cooler
   fan_size_mm: 'Kích thước quạt (mm)',
   tdp_rating_w: 'TDP hỗ trợ (W)',
@@ -83,7 +90,9 @@ const SPEC_LABEL_MAP: Record<string, string> = {
   is_addressable_rgb: 'LED ARGB',
   size_mm: 'Kích thước (mm)',
   airflow_cfm: 'Lưu lượng gió (CFM)',
+  bearing_type: 'Loại trục quay (Bearing)',
   fan_speed_rpm: 'Tốc độ quay (RPM)',
+  connection_type: 'Chuẩn cắm',
   // Case
   size: 'Kích thước',
   max_gpu_length_mm: 'Độ dài GPU tối đa (mm)',

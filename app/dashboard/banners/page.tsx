@@ -178,20 +178,35 @@ function BannerFormModal({ banner, nextOrder, onClose, onSuccess }: BannerFormMo
   const [bannerFile, setBannerFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState(banner?.imageUrl || '');
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
       setBannerFile(file);
       setPreviewUrl(URL.createObjectURL(file));
+      setErrors(prev => ({ ...prev, image: '' }));
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const newErrors: Record<string, string> = {};
 
     if (!previewUrl) {
-      toast.error('Vui lòng chọn hình ảnh banner.');
+      newErrors.image = 'Vui lòng chọn hình ảnh banner.';
+    }
+
+    if (isNaN(displayOrder) || displayOrder < 0) {
+      newErrors.displayOrder = 'Thứ tự hiển thị không hợp lệ.';
+    }
+
+    if (!banner && !bannerFile) {
+      newErrors.image = 'Vui lòng chọn file hình ảnh cho banner mới.';
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
       return;
     }
 
@@ -208,11 +223,6 @@ function BannerFormModal({ banner, nextOrder, onClose, onSuccess }: BannerFormMo
         await adminAPI.updateBanner(banner.id, formData);
         toast.success('Cập nhật banner thành công!');
       } else {
-        if (!bannerFile) {
-          toast.error('Vui lòng chọn file hình ảnh cho banner mới.');
-          setLoading(false);
-          return;
-        }
         await adminAPI.createBanner(formData);
         toast.success('Thêm banner thành công!');
       }
@@ -242,6 +252,11 @@ function BannerFormModal({ banner, nextOrder, onClose, onSuccess }: BannerFormMo
           {/* File Upload Section */}
           <div className="flex flex-col gap-2">
             <label className="text-[13px] font-bold text-[#475569] uppercase tracking-wider">Hình Ảnh Banner *</label>
+            {errors.image && (
+              <span className="text-red-500 text-[11px] font-semibold flex items-center gap-1 animate-in fade-in slide-in-from-top-1 duration-150">
+                ⚠️ {errors.image}
+              </span>
+            )}
             <div className="relative group">
               <input
                 type="file"
@@ -253,7 +268,9 @@ function BannerFormModal({ banner, nextOrder, onClose, onSuccess }: BannerFormMo
               <label
                 htmlFor="banner-file-input"
                 className={`flex flex-col items-center justify-center w-full aspect-[21/9] border-2 border-dashed rounded-[12px] cursor-pointer transition-all bg-gray-50 hover:bg-gray-100/50 ${
-                  previewUrl ? 'border-solid border-[#e2e8f0] p-0' : 'border-[#cbd5e1] p-6'
+                  errors.image ? 'border-red-500 hover:border-red-500 bg-red-50/10' : 'border-[#cbd5e1]'
+                } ${
+                  previewUrl ? 'border-solid border-[#e2e8f0] p-0' : 'p-6'
                 }`}
               >
                 {previewUrl ? (
@@ -281,14 +298,24 @@ function BannerFormModal({ banner, nextOrder, onClose, onSuccess }: BannerFormMo
           {/* displayOrder Input */}
           <div className="flex flex-col gap-1.5">
             <label className="text-[13px] font-bold text-[#475569] uppercase tracking-wider">Thứ Tự Hiển Thị *</label>
+            {errors.displayOrder && (
+              <span className="text-red-500 text-[11px] font-semibold flex items-center gap-1 animate-in fade-in slide-in-from-top-1 duration-150">
+                ⚠️ {errors.displayOrder}
+              </span>
+            )}
             <input
               type="number"
               min="0"
               required
               value={displayOrder}
-              onChange={(e) => setDisplayOrder(parseInt(e.target.value) || 0)}
+              onChange={(e) => {
+                setDisplayOrder(parseInt(e.target.value) || 0);
+                setErrors(prev => ({ ...prev, displayOrder: '' }));
+              }}
               placeholder="e.g. 1, 2, 3"
-              className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[8px] px-4 py-2 text-[14px] focus:outline-none focus:border-[#0058be]"
+              className={`bg-[#f8fafc] border rounded-[8px] px-4 py-2 text-[14px] focus:outline-none transition-all ${
+                errors.displayOrder ? 'border-red-500 focus:border-red-500' : 'border-[#e2e8f0] focus:border-[#0058be]'
+              }`}
             />
           </div>
 

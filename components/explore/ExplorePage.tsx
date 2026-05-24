@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { Search, SlidersHorizontal, ChevronDown, X, ShoppingCart, Package, ChevronRight, ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
 import { adminAPI, Product, Category, Brand } from '@/lib/api';
@@ -594,6 +595,9 @@ function SpecFilterInput({
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function ExplorePage() {
+  const searchParams = useSearchParams();
+  const categoryParam = searchParams.get('category');
+
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [brands, setBrands] = useState<Brand[]>([]);
@@ -664,17 +668,32 @@ export default function ExplorePage() {
     ]).then(([cats, brs]) => {
       setCategories(cats.content || []);
       setBrands(brs.content || []);
-      
-      // Auto-select category from URL if present
-      if (typeof window !== 'undefined') {
-        const params = new URLSearchParams(window.location.search);
-        const catId = params.get('category');
-        if (catId) {
-          setSelectedCategory(catId);
-        }
-      }
     });
   }, []);
+
+  // Synchronize category selection with URL parameters dynamically
+  useEffect(() => {
+    if (categories.length === 0) return;
+    
+    if (categoryParam) {
+      if (!isNaN(Number(categoryParam))) {
+        setSelectedCategory(categoryParam);
+      } else {
+        const matched = categories.find(c => 
+          c.slug?.toLowerCase() === categoryParam.toLowerCase() ||
+          c.name.toLowerCase() === categoryParam.toLowerCase() ||
+          c.name.replace(/\s+/g, '-').toLowerCase() === categoryParam.toLowerCase()
+        );
+        if (matched) {
+          setSelectedCategory(String(matched.id));
+        } else {
+          setSelectedCategory('');
+        }
+      }
+    } else {
+      setSelectedCategory('');
+    }
+  }, [categoryParam, categories]);
 
   // ── Fetch products (All matching category & search to filter/paginate client-side) ─────────────────────
   const fetchProducts = useCallback(async () => {

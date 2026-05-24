@@ -40,6 +40,18 @@ export default function ReceiveItemsModal({ po, products, onClose, onSuccess }: 
   };
 
   const handleConfirm = async () => {
+    // Validate selling prices are higher than import prices
+    for (const item of po.items) {
+      const sp = sellingPrices[item.productId] || 0;
+      const ip = item.importPrice;
+      if (sp <= ip) {
+        const prod = getProduct(item.productId);
+        const prodName = prod?.name || `Sản phẩm #${item.productId}`;
+        toast.error(`Giá bán của "${prodName}" phải cao hơn giá nhập (${new Intl.NumberFormat('vi-VN').format(ip)}đ)`);
+        return;
+      }
+    }
+
     setLoading(true);
     try {
       await adminAPI.receivePurchaseOrder(po.id, sellingPrices);

@@ -252,11 +252,32 @@ function SupplierFormModal({ supplier, allBrands, onClose, onSuccess }: { suppli
     brandIds: supplier?.brandIds?.map(id => Number(id)) || [] as number[]
   });
   const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const newErrors: Record<string, string> = {};
+
     if (!formData.name.trim()) {
-      toast.error('Tên nhà cung cấp không được để trống.');
+      newErrors.name = 'Tên nhà cung cấp không được để trống.';
+    }
+
+    if (formData.email.trim()) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(formData.email.trim())) {
+        newErrors.email = 'Email không đúng định dạng.';
+      }
+    }
+
+    if (formData.phone.trim()) {
+      const phoneRegex = /^[0-9+()#.\s-]{8,20}$/;
+      if (!phoneRegex.test(formData.phone.trim())) {
+        newErrors.phone = 'Số điện thoại không hợp lệ.';
+      }
+    }
+
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
       return;
     }
 
@@ -297,32 +318,62 @@ function SupplierFormModal({ supplier, allBrands, onClose, onSuccess }: { suppli
           <div className="grid grid-cols-2 gap-4">
             <div className="flex flex-col gap-1.5 col-span-2">
               <label className="text-[13px] font-semibold text-[#475569]">Tên nhà cung cấp *</label>
+              {errors.name && (
+                <span className="text-red-500 text-[11px] font-semibold flex items-center gap-1 animate-in fade-in slide-in-from-top-1 duration-150">
+                  ⚠️ {errors.name}
+                </span>
+              )}
               <input
                 type="text"
                 value={formData.name}
-                onChange={e => setFormData({ ...formData, name: e.target.value })}
+                onChange={e => {
+                  setFormData({ ...formData, name: e.target.value });
+                  setErrors(prev => ({ ...prev, name: '' }));
+                }}
                 placeholder="Tên nhà cung cấp"
-                className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[8px] px-4 py-2 text-[14px] focus:outline-none focus:border-[#0058be]"
+                className={`bg-[#f8fafc] border rounded-[8px] px-4 py-2 text-[14px] focus:outline-none transition-all ${
+                  errors.name ? 'border-red-500 focus:border-red-500' : 'border-[#e2e8f0] focus:border-[#0058be]'
+                }`}
               />
             </div>
             <div className="flex flex-col gap-1.5">
               <label className="text-[13px] font-semibold text-[#475569]">Email</label>
+              {errors.email && (
+                <span className="text-red-500 text-[11px] font-semibold flex items-center gap-1 animate-in fade-in slide-in-from-top-1 duration-150">
+                  ⚠️ {errors.email}
+                </span>
+              )}
               <input
                 type="email"
                 value={formData.email}
-                onChange={e => setFormData({ ...formData, email: e.target.value })}
+                onChange={e => {
+                  setFormData({ ...formData, email: e.target.value });
+                  setErrors(prev => ({ ...prev, email: '' }));
+                }}
                 placeholder="email@example.com"
-                className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[8px] px-4 py-2 text-[14px] focus:outline-none focus:border-[#0058be]"
+                className={`bg-[#f8fafc] border rounded-[8px] px-4 py-2 text-[14px] focus:outline-none transition-all ${
+                  errors.email ? 'border-red-500 focus:border-red-500' : 'border-[#e2e8f0] focus:border-[#0058be]'
+                }`}
               />
             </div>
             <div className="flex flex-col gap-1.5">
               <label className="text-[13px] font-semibold text-[#475569]">Phone</label>
+              {errors.phone && (
+                <span className="text-red-500 text-[11px] font-semibold flex items-center gap-1 animate-in fade-in slide-in-from-top-1 duration-150">
+                  ⚠️ {errors.phone}
+                </span>
+              )}
               <input
                 type="text"
                 value={formData.phone}
-                onChange={e => setFormData({ ...formData, phone: e.target.value })}
+                onChange={e => {
+                  setFormData({ ...formData, phone: e.target.value });
+                  setErrors(prev => ({ ...prev, phone: '' }));
+                }}
                 placeholder="Số điện thoại"
-                className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[8px] px-4 py-2 text-[14px] focus:outline-none focus:border-[#0058be]"
+                className={`bg-[#f8fafc] border rounded-[8px] px-4 py-2 text-[14px] focus:outline-none transition-all ${
+                  errors.phone ? 'border-red-500 focus:border-red-500' : 'border-[#e2e8f0] focus:border-[#0058be]'
+                }`}
               />
             </div>
             <div className="flex flex-col gap-1.5 col-span-2">
