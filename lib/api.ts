@@ -85,6 +85,8 @@ export interface Product {
   name: string;
   slug?: string;
   price: number;
+  discountPrice?: number | null;
+  discountPercent?: number | null;
   stock: number;
   description?: string;
   specsJson?: string;
@@ -181,6 +183,7 @@ export interface CartItemDto {
   productName: string;
   productThumbnailUrl: string | null;
   productPrice: number; // BigDecimal serialised as number by Jackson
+  productDiscountPrice?: number | null;
   productStock: number;
   quantity: number;
 }
@@ -215,6 +218,8 @@ export interface OrderResponse {
   shippingAddress: string | null;
   documentUrl: string | null;
   createdAt: string;
+  couponCode?: string | null;
+  couponDiscount?: number;
   items: OrderItemResponse[];
 }
 
@@ -229,6 +234,7 @@ export interface OrderRequest {
   recipientName?: string;
   recipientPhone?: string;
   shippingAddress?: string;
+  couponCode?: string;
 }
 
 // Inventory & Issue Slip Models
@@ -524,6 +530,48 @@ export const adminAPI = {
     const { data } = await axiosInstance.post<IssueSlipResponse>(`/api/admin/inventory/issue-slips/${id}/dispatch`);
     return data;
   },
+
+  // Promotions Management
+  getPromotions: async (): Promise<Promotion[]> => {
+    const { data } = await axiosInstance.get<Promotion[]>('/api/admin/promotions');
+    return data;
+  },
+  getPromotionById: async (id: number | string): Promise<Promotion> => {
+    const { data } = await axiosInstance.get<Promotion>(`/api/admin/promotions/${id}`);
+    return data;
+  },
+  createPromotion: async (payload: PromotionRequest): Promise<Promotion> => {
+    const { data } = await axiosInstance.post<Promotion>('/api/admin/promotions', payload);
+    return data;
+  },
+  updatePromotion: async (id: number | string, payload: PromotionRequest): Promise<Promotion> => {
+    const { data } = await axiosInstance.put<Promotion>(`/api/admin/promotions/${id}`, payload);
+    return data;
+  },
+  deletePromotion: async (id: number | string): Promise<void> => {
+    await axiosInstance.delete(`/api/admin/promotions/${id}`);
+  },
+
+  // Coupons Management
+  getCoupons: async (): Promise<Coupon[]> => {
+    const { data } = await axiosInstance.get<Coupon[]>('/api/admin/coupons');
+    return data;
+  },
+  getCouponById: async (id: number | string): Promise<Coupon> => {
+    const { data } = await axiosInstance.get<Coupon>(`/api/admin/coupons/${id}`);
+    return data;
+  },
+  createCoupon: async (payload: CouponRequest): Promise<Coupon> => {
+    const { data } = await axiosInstance.post<Coupon>('/api/admin/coupons', payload);
+    return data;
+  },
+  updateCoupon: async (id: number | string, payload: CouponRequest): Promise<Coupon> => {
+    const { data } = await axiosInstance.put<Coupon>(`/api/admin/coupons/${id}`, payload);
+    return data;
+  },
+  deleteCoupon: async (id: number | string): Promise<void> => {
+    await axiosInstance.delete(`/api/admin/coupons/${id}`);
+  },
 };
 
 // Cart API Services
@@ -660,6 +708,99 @@ export const buildAPI = {
   /** Xóa cấu hình PC tự ráp khỏi danh mục lưu trữ */
   delete: async (id: number): Promise<void> => {
     await axiosInstance.delete(`/api/builds/${id}`);
+  }
+};
+
+// ─── Promotion & Coupon Interfaces ──────────────────────────────────────────
+
+export interface Promotion {
+  id: number;
+  name: string;
+  slug: string;
+  description?: string;
+  bannerUrl?: string;
+  discountPercent: number;
+  startDate: string;
+  endDate: string;
+  active: boolean;
+  productIds: number[];
+  createdAt: string;
+}
+
+export interface PromotionResponseWithProducts extends Omit<Promotion, 'productIds'> {
+  products: Product[];
+}
+
+export interface PromotionRequest {
+  name: string;
+  slug: string;
+  description?: string;
+  bannerUrl?: string;
+  discountPercent: number;
+  startDate: string;
+  endDate: string;
+  active?: boolean;
+  productIds?: number[];
+}
+
+export interface Coupon {
+  id: number;
+  code: string;
+  discountType: 'PERCENTAGE' | 'FIXED_AMOUNT';
+  discountValue: number;
+  minOrderAmount: number;
+  maxDiscountAmount?: number | null;
+  startDate: string;
+  endDate: string;
+  usageLimit?: number | null;
+  usageCount: number;
+  active: boolean;
+  createdAt: string;
+}
+
+export interface CouponRequest {
+  code: string;
+  discountType: 'PERCENTAGE' | 'FIXED_AMOUNT';
+  discountValue: number;
+  minOrderAmount?: number;
+  maxDiscountAmount?: number | null;
+  startDate: string;
+  endDate: string;
+  usageLimit?: number | null;
+  active?: boolean;
+}
+
+export interface CouponValidationResponse {
+  valid: boolean;
+  code: string;
+  discountAmount: number;
+  discountType: 'PERCENTAGE' | 'FIXED_AMOUNT';
+  discountValue: number;
+}
+
+// ─── Public Customer Promotion & Coupon API ─────────────────────────────────
+
+export const promotionAPI = {
+  /** Lấy danh sách tất cả các chương trình khuyến mãi đang hoạt động */
+  listActive: async (): Promise<Promotion[]> => {
+    const { data } = await axiosInstance.get<Promotion[]>('/api/promotions/active');
+    return data;
+  },
+
+  /** Lấy thông tin chi tiết của một chương trình khuyến mãi kèm các sản phẩm được giảm giá */
+  getBySlug: async (slug: string): Promise<PromotionResponseWithProducts> => {
+    const { data } = await axiosInstance.get<PromotionResponseWithProducts>(`/api/promotions/${slug}`);
+    return data;
+  }
+};
+
+export const couponAPI = {
+  /** Kiểm tra mã giảm giá và tính toán số tiền được chiết khấu */
+  validate: async (code: string, amount: number): Promise<CouponValidationResponse> => {
+    const { data } = await axiosInstance.get<CouponValidationResponse>(
+      `/api/coupons/validate?code=${encodeURIComponent(code)}&amount=${amount}`
+    );
+    return data;
   }
 };
 

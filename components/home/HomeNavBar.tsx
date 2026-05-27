@@ -11,6 +11,7 @@ const navLinks = [
   { label: 'Build PC', href: '/builds' },
   { label: 'Linh Kiện', href: '/explore' },
   { label: 'PC build sẵn', href: '/prebuilt' },
+  { label: 'Khuyến Mãi', href: '/promotions' },
   { label: 'Hỗ trợ', href: '/support' },
 ];
 

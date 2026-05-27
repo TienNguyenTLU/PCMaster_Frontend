@@ -50,7 +50,7 @@ export default function InventoryPage() {
     if (isRefresh) {
       setRefreshing(true);
     } else {
-      setTimeout(() => setLoading(true), 0);
+      setLoading(true);
     }
     
     try {

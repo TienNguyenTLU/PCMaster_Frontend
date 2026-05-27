@@ -21,10 +21,11 @@ import {
   MapPin,
   Phone,
   User,
+  Ticket,
 } from 'lucide-react';
 import { useCartStore } from '@/lib/store';
 import { useAuthStore } from '@/lib/store';
-import { orderAPI, OrderRequest, DeliveryType } from '@/lib/api';
+import { orderAPI, OrderRequest, DeliveryType, couponAPI } from '@/lib/api';
 import toast from 'react-hot-toast';
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
@@ -158,6 +159,7 @@ function CartItemRow({
     productName: string;
     productThumbnailUrl: string | null;
     productPrice: number;
+    productDiscountPrice?: number | null;
     productStock: number;
     quantity: number;
   };
@@ -168,7 +170,9 @@ function CartItemRow({
 }) {
   const [imgErr, setImgErr] = useState(false);
   const imgSrc = getImageSrc(item.productThumbnailUrl);
-  const lineTotal = item.productPrice * item.quantity;
+  const hasDiscount = item.productDiscountPrice !== null && item.productDiscountPrice !== undefined;
+  const currentPrice = hasDiscount && item.productDiscountPrice ? item.productDiscountPrice : item.productPrice;
+  const lineTotal = currentPrice * item.quantity;
   const isOutOfStock = item.productStock === 0;
 
   return (
@@ -247,9 +251,20 @@ function CartItemRow({
 
           {/* Line price */}
           <div className="flex items-center gap-3">
-            <span className="text-[15px] font-bold text-[#0058be]">
-              {formatPrice(lineTotal)}
-            </span>
+            {hasDiscount ? (
+              <div className="flex flex-col items-end">
+                <span className="text-[15px] font-bold text-red-500">
+                  {formatPrice(lineTotal)}
+                </span>
+                <span className="text-[11px] text-[#94a3b8] line-through font-medium">
+                  {formatPrice(item.productPrice * item.quantity)}
+                </span>
+              </div>
+            ) : (
+              <span className="text-[15px] font-bold text-[#0058be]">
+                {formatPrice(lineTotal)}
+              </span>
+            )}
             <button
               type="button"
               disabled={removing}
@@ -335,6 +350,12 @@ export default function CartPage() {
   const [recipientPhone, setRecipientPhone] = useState('');
   const [shippingAddress, setShippingAddress] = useState('');
 
+  // Coupon state
+  const [couponCodeInput, setCouponCodeInput] = useState('');
+  const [appliedCoupon, setAppliedCoupon] = useState<any | null>(null);
+  const [isValidatingCoupon, setIsValidatingCoupon] = useState(false);
+  const [couponError, setCouponError] = useState('');
+
   // Hydrate auth + fetch cart on mount
   useEffect(() => {
     hydrate();
@@ -347,10 +368,41 @@ export default function CartPage() {
   }, [isHydrated, user, fetchCart]);
 
   // Computed totals
-  const subtotal = items.reduce((sum, item) => sum + item.productPrice * item.quantity, 0);
+  const subtotal = items.reduce((sum, item) => {
+    const price = item.productDiscountPrice !== null && item.productDiscountPrice !== undefined ? item.productDiscountPrice : item.productPrice;
+    return sum + price * item.quantity;
+  }, 0);
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
   const hasOutOfStock = items.some((item) => item.productStock === 0);
   const availableItems = items.filter((item) => item.productStock > 0);
+
+  const couponDiscountAmount = appliedCoupon ? appliedCoupon.discountAmount : 0;
+  const finalTotalAmount = Math.max(0, subtotal - couponDiscountAmount);
+
+  const handleApplyCoupon = async () => {
+    if (!couponCodeInput.trim()) return;
+    setIsValidatingCoupon(true);
+    setCouponError('');
+    try {
+      const response = await couponAPI.validate(couponCodeInput.trim(), subtotal);
+      setAppliedCoupon(response);
+      toast.success(`Áp dụng mã ${response.code} thành công!`);
+    } catch (err: any) {
+      const msg = err.response?.data?.message || 'Mã giảm giá không hợp lệ.';
+      setCouponError(msg);
+      toast.error(msg);
+      setAppliedCoupon(null);
+    } finally {
+      setIsValidatingCoupon(false);
+    }
+  };
+
+  const handleRemoveCoupon = () => {
+    setAppliedCoupon(null);
+    setCouponCodeInput('');
+    setCouponError('');
+    toast.success('Đã gỡ mã giảm giá.');
+  };
 
   async function handleRemove(itemId: number) {
     setRemovingIds((s) => new Set(s).add(itemId));
@@ -424,6 +476,7 @@ export default function CartPage() {
         recipientName: deliveryType === 'HOME_DELIVERY' ? recipientName.trim() : undefined,
         recipientPhone: deliveryType === 'HOME_DELIVERY' ? recipientPhone.trim() : undefined,
         shippingAddress: deliveryType === 'HOME_DELIVERY' ? shippingAddress.trim() : undefined,
+        couponCode: appliedCoupon ? appliedCoupon.code : undefined,
       };
       const order = await orderAPI.create(request);
       await clearCart();
@@ -678,11 +731,65 @@ export default function CartPage() {
 
                   <div className="h-px bg-[#f1f5f9]" />
 
+                  {/* Coupon validation box */}
+                  <div className="flex flex-col gap-2">
+                    <p className="text-[13px] font-bold text-[#0f172a] flex items-center gap-1.5">
+                      <Ticket className="size-4 text-[#0058be]" />
+                      Mã giảm giá
+                    </p>
+                    <div className="flex gap-2">
+                      <div className="relative flex-1">
+                        <input
+                          type="text"
+                          placeholder="Nhập mã giảm giá..."
+                          value={couponCodeInput}
+                          disabled={appliedCoupon !== null}
+                          onChange={(e) => setCouponCodeInput(e.target.value.toUpperCase())}
+                          className={`w-full pl-3 pr-3 py-2 text-[13px] border rounded-[10px] focus:outline-none transition-colors uppercase font-mono font-bold ${
+                            appliedCoupon
+                              ? 'border-emerald-500 bg-emerald-50 text-emerald-700'
+                              : couponError
+                                ? 'border-red-500 focus:border-red-500 hover:border-red-500'
+                                : 'border-[#e2e8f0] focus:border-[#0058be]'
+                          }`}
+                        />
+                      </div>
+                      {appliedCoupon ? (
+                        <button
+                          type="button"
+                          onClick={handleRemoveCoupon}
+                          className="px-3 bg-red-50 text-red-600 border border-red-100 hover:bg-red-100 py-2 rounded-[10px] text-[13px] font-semibold transition-colors cursor-pointer"
+                        >
+                          Gỡ bỏ
+                        </button>
+                      ) : (
+                        <button
+                          type="button"
+                          onClick={handleApplyCoupon}
+                          disabled={isValidatingCoupon || !couponCodeInput.trim()}
+                          className="px-4 bg-[#f1f5f9] border border-[#cbd5e1] text-[#475569] hover:bg-[#cbd5e1] hover:text-[#0f172a] disabled:opacity-50 py-2 rounded-[10px] text-[13px] font-bold transition-all cursor-pointer flex items-center gap-1"
+                        >
+                          {isValidatingCoupon ? <Loader2 className="size-3.5 animate-spin" /> : 'Áp dụng'}
+                        </button>
+                      )}
+                    </div>
+                    {couponError && <p className="text-[11px] text-red-500 font-medium">⚠️ {couponError}</p>}
+                  </div>
+
+                  {appliedCoupon && (
+                    <div className="flex items-center justify-between text-[13px] text-emerald-600 font-semibold bg-emerald-50 border border-emerald-100 rounded-[10px] px-3 py-2 animate-in slide-in-from-top-1 duration-200">
+                      <span className="flex items-center gap-1"><Ticket className="size-3.5" /> Giảm giá ({appliedCoupon.code})</span>
+                      <span>-{formatPrice(couponDiscountAmount)}</span>
+                    </div>
+                  )}
+
+                  <div className="h-px bg-[#f1f5f9]" />
+
                   {/* Total */}
                   <div className="flex items-center justify-between">
                     <span className="text-[15px] font-bold text-[#0f172a]">Tổng cộng</span>
                     <span className="text-[20px] font-bold text-[#0058be]">
-                      {formatPrice(subtotal)}
+                      {formatPrice(finalTotalAmount)}
                     </span>
                   </div>
 

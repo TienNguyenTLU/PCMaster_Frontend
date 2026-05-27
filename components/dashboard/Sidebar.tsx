@@ -12,13 +12,17 @@ import {
   Settings,
   Image,
   Warehouse,
-  Cpu
+  Cpu,
+  Sparkles,
+  Ticket
 } from 'lucide-react';
 
 const navItems = [
   { label: 'Tổng quan', href: '/dashboard', icon: LayoutDashboard },
   { label: 'Sản phẩm', href: '/dashboard/products', icon: Package },
   { label: 'Cấu hình PC', href: '/dashboard/pc-configurations', icon: Cpu },
+  { label: 'Khuyến mãi', href: '/dashboard/promotions', icon: Sparkles },
+  { label: 'Mã giảm giá (Coupon)', href: '/dashboard/coupons', icon: Ticket },
   { label: 'Thương hiệu', href: '/dashboard/brands', icon: Tag },
   { label: 'Banner quảng cáo', href: '/dashboard/banners', icon: Image },
   { label: 'Nhà cung cấp', href: '/dashboard/suppliers', icon: Factory },

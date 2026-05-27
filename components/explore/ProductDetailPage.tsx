@@ -28,6 +28,10 @@ const SPEC_LABEL_MAP: Record<string, string> = {
   brand: 'Thương hiệu',
   component_type: 'Loại linh kiện',
   series: 'Dòng sản phẩm (Series)',
+  accessories: 'Phụ kiện đi kèm',
+  intended_use: 'Mục đích sử dụng',
+  technologies: 'Công nghệ tích hợp',
+  mainboard_type: 'Phân khúc bo mạch',
 
   // CPU
   cores: 'Số nhân',
@@ -153,9 +157,7 @@ export default function ProductDetailPage() {
 
   useEffect(() => {
     if (!id) return;
-    const timer = setTimeout(() => {
-      setLoading(true);
-    }, 0);
+    setLoading(true);
     adminAPI
       .getProductById(id)
       .then((p) => {
@@ -175,7 +177,6 @@ export default function ProductDetailPage() {
         setNotFound(true);
         setLoading(false);
       });
-    return () => clearTimeout(timer);
   }, [id]);
 
   const specs: Record<string, unknown> = (() => {
@@ -408,13 +409,30 @@ export default function ProductDetailPage() {
             </h2>
 
             {/* Price */}
-            <div className="flex items-baseline gap-2">
-              <span
-                className={`text-[32px] font-bold tracking-tight ${outOfStock ? 'text-[#94a3b8]' : 'text-[#0058be]'}`}
-              >
-                {product.price.toLocaleString('vi-VN')}
-                <span className="text-[16px] font-normal ml-1 opacity-70">₫</span>
-              </span>
+            <div className="flex items-baseline gap-3 flex-wrap">
+              {product.discountPrice ? (
+                <>
+                  <span
+                    className={`text-[32px] font-bold tracking-tight ${outOfStock ? 'text-[#94a3b8]' : 'text-red-500'}`}
+                  >
+                    {product.discountPrice.toLocaleString('vi-VN')}
+                    <span className="text-[16px] font-normal ml-1 opacity-70">₫</span>
+                  </span>
+                  <span className="text-[16px] text-[#cbd5e1] line-through font-semibold">
+                    {product.price.toLocaleString('vi-VN')}₫
+                  </span>
+                  <span className="bg-red-100 text-red-600 text-[12px] font-bold px-2 py-0.5 rounded-full border border-red-200 shadow-xs">
+                    Giảm -{product.discountPercent}%
+                  </span>
+                </>
+              ) : (
+                <span
+                  className={`text-[32px] font-bold tracking-tight ${outOfStock ? 'text-[#94a3b8]' : 'text-[#0058be]'}`}
+                >
+                  {product.price.toLocaleString('vi-VN')}
+                  <span className="text-[16px] font-normal ml-1 opacity-70">₫</span>
+                </span>
+              )}
             </div>
 
             {/* Stock status */}

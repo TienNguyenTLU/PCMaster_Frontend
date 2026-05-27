@@ -32,20 +32,26 @@ export default function HomeProductsSection({ title, subtitle, type }: HomeProdu
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    adminAPI.getProducts(0, 50)
+    adminAPI.getProducts(0, 100)
       .then(res => {
         let list = res.content || [];
+        
+        // Filter out of stock products
+        list = list.filter(p => p.stock > 0);
+
         if (type === 'new') {
-          // Sort by creation date if present
+          // Sort by creation date desc (recently imported)
           list = [...list].sort((a, b) => {
             const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
             const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
             return dateB - dateA;
           }).slice(0, 4);
         } else if (type === 'sale') {
-          // Take products starting from index 4 to show variety, or fallback
-          const offsetList = list.slice(4, 8);
-          list = offsetList.length === 4 ? offsetList : list.slice(0, 4);
+          // Only show products that have active discounts from promotions
+          list = list.filter(p => p.discountPercent !== null && p.discountPercent !== undefined && p.discountPercent > 0);
+          
+          // Sort by highest discount percentage first
+          list = [...list].sort((a, b) => (b.discountPercent || 0) - (a.discountPercent || 0)).slice(0, 4);
         }
         setProducts(list);
       })

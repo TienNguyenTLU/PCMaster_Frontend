@@ -10,7 +10,7 @@ import { CldImage } from 'next-cloudinary';
 import toast from 'react-hot-toast';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-type SpecFilterType = 'text' | 'number' | 'multiselect' | 'select' | 'boolean';
+type SpecFilterType = 'text' | 'number' | 'multiselect' | 'select' | 'boolean' | 'range';
 interface SpecFilterDef {
   key: string;
   label: string;
@@ -22,90 +22,131 @@ interface SpecFilterDef {
 // ─── Full SPECS_BY_CATEGORY (mirrors ProductFormModal exactly) ────────────────
 const SPECS_BY_CATEGORY: Record<string, SpecFilterDef[]> = {
   case: [
-    { key: 'size', label: 'Kích thước', type: 'select', options: ['Micro-ATX Tower', 'Mid Tower', 'Full Tower', 'Mini-ITX'] },
-    { key: 'max_gpu_length_mm', label: 'Độ dài GPU tối đa (mm)', type: 'number', placeholder: '365' },
-    { key: 'supported_mainboards', label: 'Bo mạch hỗ trợ', type: 'multiselect', options: ['ITX', 'M-ATX', 'ATX', 'E-ATX'] },
-    { key: 'max_cpu_cooler_height_mm', label: 'Chiều cao CPU Cooler tối đa (mm)', type: 'number', placeholder: '164' },
+    { key: 'size', label: 'Kích thước', type: 'select', options: ['Mini-ITX Desktop', 'Mini Tower', 'Mid Tower', 'Full Tower', 'Super Tower', 'HTPC / Desktop', 'Open Frame'] },
+    { key: 'supported_mainboards', label: 'Bo mạch hỗ trợ', type: 'multiselect', options: ['Mini-ITX', 'Micro-ATX', 'ATX', 'E-ATX', 'SSI CEB', 'SSI EEB', 'XL-ATX'] },
+    { key: 'max_gpu_length_mm', label: 'Độ dài GPU tối đa (mm)', type: 'range', placeholder: '365' },
+    { key: 'max_cpu_cooler_height_mm', label: 'Chiều cao CPU Cooler tối đa (mm)', type: 'range', placeholder: '164' },
+    { key: 'intended_use', label: 'Mục đích sử dụng', type: 'multiselect', options: ['Văn phòng', 'Chơi game', 'Đồ họa', 'Workstation / Server', 'Học tập'] },
   ],
   cooler: [
     { key: 'type', label: 'Loại tản nhiệt', type: 'select', options: ['Liquid Cooling', 'Air Cooling'] },
-    { key: 'has_rgb', label: 'Có RGB', type: 'boolean' },
-    { key: 'fan_size_mm', label: 'Kích thước quạt (mm)', type: 'select', options: ['80', '92', '120', '140', '200'] },
-    { key: 'tdp_rating_w', label: 'TDP hỗ trợ (W)', type: 'number', placeholder: '300' },
-    { key: 'noise_level_db', label: 'Độ ồn (dB)', type: 'number', placeholder: '30' },
+    { key: 'supported_sockets', label: 'Socket hỗ trợ', type: 'multiselect', options: [
+      'AM5', 'AM4', 'AM3+', 'AM3', 'AM2+', 'AM2', 'FM2+', 'FM2', 'FM1', 'sTRX4', 'sTR4', 'sWRX8', 'SP3',
+      'LGA1851', 'LGA1700', 'LGA1200', 'LGA1151', 'LGA1150', 'LGA1155', 'LGA1156', 'LGA2066', 'LGA2011', 'LGA1366', 'LGA775'
+    ] },
+    { key: 'tdp_rating_w', label: 'TDP hỗ trợ (W)', type: 'range', placeholder: '300' },
     { key: 'radiator_size_mm', label: 'Radiator (mm)', type: 'select', options: ['120', '140', '240', '280', '360', '420'] },
-    { key: 'supported_sockets', label: 'Socket hỗ trợ', type: 'multiselect', options: ['LGA1700', 'AM5', 'AM4', 'LGA1200'] },
+    { key: 'fan_size_mm', label: 'Kích thước quạt (mm)', type: 'select', options: ['80', '92', '120', '140', '200'] },
+    { key: 'noise_level_db', label: 'Độ ồn (dB)', type: 'range', placeholder: '30' },
+    { key: 'has_rgb', label: 'Có RGB', type: 'boolean' },
+    { key: 'intended_use', label: 'Mục đích sử dụng', type: 'multiselect', options: ['Văn phòng', 'Chơi game', 'Đồ họa', 'Workstation / Server', 'Học tập'] },
   ],
   cpu: [
+    { key: 'series', label: 'Series', type: 'select', options: [
+      'Core i3', 'Core i5', 'Core i7', 'Core i9', 'Core Ultra 5', 'Core Ultra 7', 'Core Ultra 9', 
+      'Ryzen 3', 'Ryzen 5', 'Ryzen 7', 'Ryzen 9', 'Ryzen Threadripper', 'Pentium', 'Celeron', 'Xeon'
+    ] },
+    { key: 'socket', label: 'Socket', type: 'select', options: [
+      'AM5', 'AM4', 'AM3+', 'AM3', 'AM2+', 'AM2', 'FM2+', 'FM2', 'FM1', 'sTRX4', 'sTR4', 'sWRX8', 'SP3',
+      'LGA1851', 'LGA1700', 'LGA1200', 'LGA1151', 'LGA1150', 'LGA1155', 'LGA1156', 'LGA2066', 'LGA2011', 'LGA1366', 'LGA775'
+    ] },
     { key: 'cores', label: 'Số nhân', type: 'select', options: ['2', '4', '6', '8', '10', '12', '14', '16', '20', '24', '32', '64'] },
-    { key: 'socket', label: 'Socket', type: 'select', options: ['AM5', 'AM4', 'LGA1700', 'LGA1200'] },
     { key: 'threads', label: 'Số luồng', type: 'select', options: ['2', '4', '8', '12', '16', '20', '24', '28', '32', '48', '64', '128'] },
+    { key: 'performance_score', label: 'Điểm hiệu năng', type: 'range', placeholder: '21000' },
+    { key: 'base_clock_ghz', label: 'Xung cơ bản (GHz)', type: 'range', placeholder: '3.5' },
+    { key: 'boost_clock_ghz', label: 'Xung tối đa (GHz)', type: 'range', placeholder: '5.0' },
+    { key: 'cache_mb', label: 'Bộ nhớ đệm (MB)', type: 'range', placeholder: '16' },
+    { key: 'tdp_w', label: 'TDP (W)', type: 'range', placeholder: '65' },
     { key: 'integrated_gpu', label: 'GPU tích hợp', type: 'boolean' },
-    { key: 'tdp_w', label: 'TDP (W)', type: 'number', placeholder: '65' },
-    { key: 'cache_mb', label: 'Bộ nhớ đệm (MB)', type: 'number', placeholder: '16' },
-    { key: 'base_clock_ghz', label: 'Xung cơ bản (GHz)', type: 'number', placeholder: '3.5' },
-    { key: 'boost_clock_ghz', label: 'Xung tối đa (GHz)', type: 'number', placeholder: '5.0' },
-    { key: 'performance_score', label: 'Điểm hiệu năng', type: 'number', placeholder: '21000' },
+    { key: 'intended_use', label: 'Mục đích sử dụng', type: 'multiselect', options: ['Văn phòng', 'Chơi game', 'Đồ họa', 'Workstation / Server', 'Học tập'] },
   ],
   fan: [
+    { key: 'size_mm', label: 'Kích thước (mm)', type: 'select', options: ['80', '92', '120', '140', '200'] },
+    { key: 'fan_speed_rpm', label: 'Tốc độ quay (RPM)', type: 'range', placeholder: '2100' },
+    { key: 'airflow_cfm', label: 'Lưu lượng gió (CFM)', type: 'range', placeholder: '72.8' },
+    { key: 'noise_level_db', label: 'Độ ồn (dB)', type: 'range', placeholder: '36' },
+    { key: 'connection_type', label: 'Chuẩn cắm', type: 'text', placeholder: '4-pin PWM' },
+    { key: 'bearing_type', label: 'Loại trục', type: 'text', placeholder: 'Magnetic Dome' },
     { key: 'has_rgb', label: 'Có RGB', type: 'boolean' },
     { key: 'is_addressable_rgb', label: 'LED ARGB', type: 'boolean' },
-    { key: 'size_mm', label: 'Kích thước (mm)', type: 'select', options: ['80', '92', '120', '140', '200'] },
-    { key: 'airflow_cfm', label: 'Lưu lượng gió (CFM)', type: 'number', placeholder: '72.8' },
-    { key: 'fan_speed_rpm', label: 'Tốc độ quay (RPM)', type: 'number', placeholder: '2100' },
-    { key: 'noise_level_db', label: 'Độ ồn (dB)', type: 'number', placeholder: '36' },
+    { key: 'intended_use', label: 'Mục đích sử dụng', type: 'multiselect', options: ['Văn phòng', 'Chơi game', 'Đồ họa', 'Workstation / Server', 'Học tập'] },
   ],
   mainboard: [
-    { key: 'socket', label: 'Socket', type: 'select', options: ['LGA1700', 'AM5', 'AM4', 'LGA1200'] },
-    { key: 'chipset', label: 'Chipset', type: 'select', options: ['Z790', 'B650', 'X670E', 'B760'] },
-    { key: 'ram_type', label: 'Loại RAM', type: 'select', options: ['DDR4', 'DDR5'] },
-    { key: 'form_factor', label: 'Form factor', type: 'select', options: ['ATX', 'Micro-ATX', 'Mini-ITX', 'E-ATX'] },
-    { key: 'has_wifi', label: 'Có Wifi', type: 'boolean' },
+    { key: 'chipset', label: 'Chipset', type: 'select', options: [
+      'Z890', 'Z790', 'Z690', 'Z590', 'Z490', 'B860', 'B760', 'B660', 'B560', 'B460', 'H610', 'H510', 'H410', 
+      'X870E', 'X870', 'X670E', 'X670', 'X570', 'X470', 'B850', 'B650E', 'B650', 'B550', 'B450', 'A620', 'A520', 'A320'
+    ] },
+    { key: 'socket', label: 'Socket', type: 'select', options: [
+      'AM5', 'AM4', 'AM3+', 'AM3', 'AM2+', 'AM2', 'FM2+', 'FM2', 'FM1', 'sTRX4', 'sTR4', 'sWRX8', 'SP3',
+      'LGA1851', 'LGA1700', 'LGA1200', 'LGA1151', 'LGA1150', 'LGA1155', 'LGA1156', 'LGA2066', 'LGA2011', 'LGA1366', 'LGA775'
+    ] },
+    { key: 'form_factor', label: 'Form factor', type: 'select', options: ['Mini-ITX', 'Micro-ATX', 'ATX', 'E-ATX', 'Flex-ATX', 'SSI CEB', 'SSI EEB'] },
+    { key: 'ram_type', label: 'Loại RAM', type: 'select', options: ['DDR3', 'DDR4', 'DDR5', 'LPDDR4', 'LPDDR5', 'LPDDR5X'] },
     { key: 'ram_slots', label: 'Số khe RAM', type: 'select', options: ['2', '4', '8'] },
-    { key: 'max_ram_gb', label: 'RAM tối đa (GB)', type: 'select', options: ['32', '64', '128', '192', '256'] },
-    { key: 'm2_slots', label: 'Số khe M.2', type: 'number', placeholder: '4' },
+    { key: 'max_ram_gb', label: 'RAM tối đa (GB)', type: 'select', options: ['16', '32', '64', '128', '192', '256', '512'] },
+    { key: 'm2_slots', label: 'Số khe M.2', type: 'range', placeholder: '4' },
+    { key: 'has_wifi', label: 'Có Wifi', type: 'boolean' },
+    { key: 'mainboard_type', label: 'Phân khúc bo mạch', type: 'select', options: ['Workstation', 'Gaming', 'Phổ thông'] },
+    { key: 'intended_use', label: 'Mục đích sử dụng', type: 'multiselect', options: ['Văn phòng', 'Chơi game', 'Đồ họa', 'Workstation / Server', 'Học tập'] },
   ],
   monitor: [
-    { key: 'panel_type', label: 'Loại tấm nền', type: 'select', options: ['IPS', 'VA', 'TN', 'OLED', 'Mini-LED'] },
-    { key: 'resolution', label: 'Độ phân giải', type: 'select', options: ['1920x1080', '2560x1440', '3840x2160'] },
-    { key: 'refresh_rate_hz', label: 'Tần số quét (Hz)', type: 'select', options: ['60', '75', '100', '120', '144', '165', '240', '360'] },
+    { key: 'size_inch', label: 'Kích thước (inch)', type: 'range', placeholder: '27' },
+    { key: 'resolution', label: 'Độ phân giải', type: 'select', options: ['1920x1080', '2560x1440', '3440x1440', '3840x2160', '5120x2880'] },
+    { key: 'refresh_rate_hz', label: 'Tần số quét (Hz)', type: 'range', placeholder: '240' },
+    { key: 'panel_type', label: 'Loại tấm nền', type: 'select', options: ['IPS', 'VA', 'TN', 'OLED', 'QD-OLED', 'Mini-LED'] },
+    { key: 'aspect_ratio', label: 'Tỉ lệ màn hình', type: 'select', options: ['16:9', '16:10', '21:9', '32:9', '4:3'] },
+    { key: 'response_time_ms', label: 'Thời gian phản hồi (ms)', type: 'range', placeholder: '1' },
+    { key: 'brightness_cdm2', label: 'Độ sáng (cd/m2)', type: 'range', placeholder: '1000' },
+    { key: 'ports', label: 'Cổng kết nối', type: 'multiselect', options: ['HDMI 2.0', 'HDMI 2.1', 'DisplayPort 1.4', 'DisplayPort 2.1', 'Type-C', 'VGA', 'DVI'] },
+    { key: 'color_accuracy', label: 'Độ chuẩn màu', type: 'text', placeholder: '99% DCI-P3' },
     { key: 'has_hdr', label: 'Hỗ trợ HDR', type: 'boolean' },
-    { key: 'aspect_ratio', label: 'Tỉ lệ màn hình', type: 'select', options: ['16:9', '21:9', '32:9'] },
-    { key: 'ports', label: 'Cổng kết nối', type: 'multiselect', options: ['HDMI 2.0', 'HDMI 2.1', 'DisplayPort 1.4', 'Type-C'] },
-    { key: 'size_inch', label: 'Kích thước (inch)', type: 'number', placeholder: '27' },
-    { key: 'brightness_cdm2', label: 'Độ sáng (cd/m²)', type: 'number', placeholder: '1000' },
-    { key: 'response_time_ms', label: 'Phản hồi (ms)', type: 'number', placeholder: '1' },
+    { key: 'intended_use', label: 'Mục đích sử dụng', type: 'multiselect', options: ['Văn phòng', 'Chơi game', 'Đồ họa', 'Workstation / Server', 'Học tập'] },
   ],
   psu: [
     { key: 'wattage', label: 'Công suất (W)', type: 'select', options: ['450', '500', '550', '600', '650', '700', '750', '800', '850', '1000', '1200', '1300', '1500', '1600'] },
     { key: 'efficiency_rating', label: 'Hiệu suất', type: 'select', options: ['80 Plus', '80 Plus Bronze', '80 Plus Silver', '80 Plus Gold', '80 Plus Platinum', '80 Plus Titanium'] },
-    { key: 'modularity', label: 'Modularity', type: 'select', options: ['Full Modular', 'Semi Modular', 'Non Modular'] },
-    { key: 'form_factor', label: 'Form factor', type: 'select', options: ['ATX', 'SFX', 'SFX-L'] },
+    { key: 'modularity', label: 'Dạng dây (Modularity)', type: 'select', options: ['Full Modular', 'Semi Modular', 'Non Modular'] },
+    { key: 'form_factor', label: 'Form factor', type: 'select', options: ['ATX', 'SFX', 'SFX-L', 'TFX', 'Flex-ATX', 'EPS12V'] },
+    { key: 'intended_use', label: 'Mục đích sử dụng', type: 'multiselect', options: ['Văn phòng', 'Chơi game', 'Đồ họa', 'Workstation / Server', 'Học tập'] },
   ],
   ram: [
-    { key: 'type', label: 'Loại RAM', type: 'select', options: ['DDR4', 'DDR5'] },
-    { key: 'capacity_gb', label: 'Dung lượng tổng (GB)', type: 'select', options: ['8', '16', '32', '64', '128'] },
-    { key: 'kit', label: 'Kit RAM', type: 'select', options: ['1x8GB', '2x8GB', '1x16GB', '2x16GB', '2x32GB', '4x16GB'] },
+    { key: 'type', label: 'Loại RAM', type: 'select', options: ['DDR3', 'DDR4', 'DDR5', 'LPDDR4', 'LPDDR5', 'LPDDR5X'] },
+    { key: 'capacity_gb', label: 'Dung lượng tổng (GB)', type: 'select', options: ['8', '16', '24', '32', '48', '64', '96', '128', '256'] },
+    { key: 'kit', label: 'Kit RAM', type: 'select', options: ['1x8GB', '2x8GB', '1x16GB', '2x16GB', '2x32GB', '4x16GB', '2x24GB', '2x48GB', '4x32GB'] },
+    { key: 'bus_speed_mhz', label: 'Tốc độ Bus (MHz)', type: 'range', placeholder: '4000' },
+    { key: 'latency_cl', label: 'CAS Latency (CL)', type: 'range', placeholder: '18' },
     { key: 'has_rgb', label: 'Có RGB', type: 'boolean' },
-    { key: 'bus_speed_mhz', label: 'Tốc độ Bus (MHz)', type: 'number', placeholder: '4000' },
-    { key: 'latency_cl', label: 'CAS Latency (CL)', type: 'number', placeholder: '18' },
+    { key: 'intended_use', label: 'Mục đích sử dụng', type: 'multiselect', options: ['Văn phòng', 'Chơi game', 'Đồ họa', 'Workstation / Server', 'Học tập'] },
   ],
   ssd: [
+    { key: 'capacity_gb', label: 'Dung lượng (GB)', type: 'select', options: ['120', '240', '250', '256', '480', '500', '512', '1000', '2000', '4000', '8000', '16000'] },
     { key: 'type', label: 'Loại', type: 'select', options: ['SSD', 'HDD'] },
-    { key: 'interface', label: 'Giao tiếp', type: 'select', options: ['NVMe PCIe Gen3', 'NVMe PCIe Gen4', 'NVMe PCIe Gen5', 'SATA III'] },
-    { key: 'capacity_gb', label: 'Dung lượng (GB)', type: 'select', options: ['250', '256', '480', '500', '512', '1000', '2000', '4000', '8000'] },
-    { key: 'read_speed_mbps', label: 'Tốc độ đọc (MB/s)', type: 'number', placeholder: '3500' },
-    { key: 'write_speed_mbps', label: 'Tốc độ ghi (MB/s)', type: 'number', placeholder: '2300' },
+    { key: 'interface', label: 'Giao tiếp', type: 'select', options: ['NVMe PCIe Gen3', 'NVMe PCIe Gen4', 'NVMe PCIe Gen5', 'SATA III', 'SATA II', 'SAS'] },
+    { key: 'read_speed_mbps', label: 'Tốc độ đọc (MB/s)', type: 'range', placeholder: '3500' },
+    { key: 'write_speed_mbps', label: 'Tốc độ ghi (MB/s)', type: 'range', placeholder: '2300' },
+    { key: 'intended_use', label: 'Mục đích sử dụng', type: 'multiselect', options: ['Văn phòng', 'Chơi game', 'Đồ họa', 'Workstation / Server', 'Học tập'] },
   ],
   vga: [
-    { key: 'vram_gb', label: 'VRAM (GB)', type: 'select', options: ['4', '6', '8', '10', '12', '16', '20', '24'] },
-    { key: 'vram_type', label: 'Loại VRAM', type: 'select', options: ['GDDR5', 'GDDR6', 'GDDR6X'] },
-    { key: 'tdp_w', label: 'TDP (W)', type: 'number', placeholder: '100' },
-    { key: 'min_psu_w', label: 'Nguồn tối thiểu (W)', type: 'number', placeholder: '350' },
-    { key: 'base_clock_mhz', label: 'Xung cơ bản (MHz)', type: 'number', placeholder: '1530' },
-    { key: 'boost_clock_mhz', label: 'Xung boost (MHz)', type: 'number', placeholder: '1755' },
-    { key: 'length_mm', label: 'Chiều dài (mm)', type: 'number', placeholder: '248' },
-    { key: 'performance_score', label: 'Điểm hiệu năng', type: 'number', placeholder: '9000' },
+    { key: 'chipset', label: 'Chipset', type: 'select', options: [
+      'GeForce RTX 5090', 'GeForce RTX 5080', 'GeForce RTX 5070', 'GeForce RTX 4090', 'GeForce RTX 4080 Super', 
+      'GeForce RTX 4080', 'GeForce RTX 4070 Ti Super', 'GeForce RTX 4070 Ti', 'GeForce RTX 4070 Super', 
+      'GeForce RTX 4070', 'GeForce RTX 4060 Ti', 'GeForce RTX 4060', 'GeForce RTX 3090 Ti', 'GeForce RTX 3090', 
+      'GeForce RTX 3080 Ti', 'GeForce RTX 3080', 'GeForce RTX 3070 Ti', 'GeForce RTX 3070', 'GeForce RTX 3060 Ti', 
+      'GeForce RTX 3060', 'GeForce RTX 3050', 'GeForce GTX 1660 Super', 'GeForce GTX 1660 Ti', 'GeForce GTX 1660', 
+      'GeForce GTX 1650 Super', 'GeForce GTX 1650', 'Radeon RX 7900 XTX', 'Radeon RX 7900 XT', 'Radeon RX 7800 XT', 
+      'Radeon RX 7700 XT', 'Radeon RX 7600 XT', 'Radeon RX 7600', 'Radeon RX 6950 XT', 'Radeon RX 6900 XT', 
+      'Radeon RX 6800 XT', 'Radeon RX 6800', 'Radeon RX 6750 XT', 'Radeon RX 6700 XT', 'Radeon RX 6600 XT', 
+      'Radeon RX 6600', 'Intel Arc A770', 'Intel Arc A750', 'Intel Arc A580', 'Intel Arc A380'
+    ] },
+    { key: 'vram_gb', label: 'VRAM (GB)', type: 'select', options: ['2', '4', '6', '8', '10', '12', '16', '20', '24', '32', '48'] },
+    { key: 'vram_type', label: 'Loại VRAM', type: 'select', options: ['DDR3', 'GDDR5', 'GDDR5X', 'GDDR6', 'GDDR6X', 'GDDR7', 'HBM', 'HBM2', 'HBM2e', 'HBM3'] },
+    { key: 'performance_score', label: 'Điểm hiệu năng', type: 'range', placeholder: '9000' },
+    { key: 'length_mm', label: 'Chiều dài (mm)', type: 'range', placeholder: '248' },
+    { key: 'min_psu_w', label: 'Nguồn tối thiểu (W)', type: 'range', placeholder: '350' },
+    { key: 'tdp_w', label: 'TDP (W)', type: 'range', placeholder: '100' },
+    { key: 'base_clock_mhz', label: 'Xung cơ bản (MHz)', type: 'range', placeholder: '1530' },
+    { key: 'boost_clock_mhz', label: 'Xung boost (MHz)', type: 'range', placeholder: '1755' },
+    { key: 'intended_use', label: 'Mục đích sử dụng', type: 'multiselect', options: ['Văn phòng', 'Chơi game', 'Đồ họa', 'Workstation / Server', 'Học tập'] },
   ],
 };
 
@@ -315,7 +356,7 @@ function BrandSwiper({
 }
 
 // ─── Product Card ─────────────────────────────────────────────────────────────
-function ProductCard({ product }: { product: Product }) {
+export function ProductCard({ product }: { product: Product }) {
   const [imgErr, setImgErr] = useState(false);
   const [adding, setAdding] = useState(false);
   const { addItem } = useCartStore();
@@ -393,6 +434,11 @@ function ProductCard({ product }: { product: Product }) {
             Hết hàng
           </span>
         )}
+        {product.stock > 0 && product.discountPercent && product.discountPercent > 0 ? (
+          <span className="absolute top-2.5 right-2.5 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-[6px] shadow-sm z-20 animate-pulse">
+            SALE -{product.discountPercent}%
+          </span>
+        ) : null}
         {product.stock > 0 && product.stock <= 5 && (
           <span className="absolute top-2.5 left-2.5 bg-amber-100 text-amber-700 text-[10px] font-bold px-2 py-0.5 rounded-full z-20">
             Còn {product.stock} SP
@@ -421,10 +467,22 @@ function ProductCard({ product }: { product: Product }) {
         )}
         <div className="flex-1" />
         <div className="flex items-center justify-between pt-2.5 border-t border-[#f1f5f9] relative z-20">
-          <p className={`text-[16px] font-bold ${product.stock === 0 ? 'text-[#94a3b8]' : 'text-[#0058be]'}`}>
-            {product.price.toLocaleString('vi-VN')}
-            <span className="text-[11px] font-normal ml-1 opacity-70">₫</span>
-          </p>
+          {product.discountPrice ? (
+            <div className="flex flex-col gap-0.5">
+              <p className={`text-[16px] font-bold ${product.stock === 0 ? 'text-[#94a3b8]' : 'text-red-500'}`}>
+                {product.discountPrice.toLocaleString('vi-VN')}
+                <span className="text-[11px] font-normal ml-0.5 opacity-70">₫</span>
+              </p>
+              <p className="text-[11px] text-[#94a3b8] line-through font-medium leading-none">
+                {product.price.toLocaleString('vi-VN')}₫
+              </p>
+            </div>
+          ) : (
+            <p className={`text-[16px] font-bold ${product.stock === 0 ? 'text-[#94a3b8]' : 'text-[#0058be]'}`}>
+              {product.price.toLocaleString('vi-VN')}
+              <span className="text-[11px] font-normal ml-1 opacity-70">₫</span>
+            </p>
+          )}
           <button
             type="button"
             disabled={product.stock === 0 || adding}
@@ -484,6 +542,119 @@ function FilterSection({ title, children, defaultOpen = true }: {
   );
 }
 
+// ─── Range Specification Slider Definitions ──────────────────────────────────
+const RANGE_SPEC_DEFS: Record<string, { min: number; max: number; step: number; suffix: string }> = {
+  tdp_w: { min: 0, max: 500, step: 5, suffix: 'W' },
+  tdp_rating_w: { min: 0, max: 500, step: 5, suffix: 'W' },
+  base_clock_ghz: { min: 0, max: 8, step: 0.1, suffix: 'GHz' },
+  boost_clock_ghz: { min: 0, max: 8, step: 0.1, suffix: 'GHz' },
+  performance_score: { min: 0, max: 60000, step: 500, suffix: 'đ' },
+  cache_mb: { min: 0, max: 256, step: 4, suffix: 'MB' },
+  max_gpu_length_mm: { min: 0, max: 500, step: 5, suffix: 'mm' },
+  length_mm: { min: 0, max: 500, step: 5, suffix: 'mm' },
+  max_cpu_cooler_height_mm: { min: 0, max: 250, step: 5, suffix: 'mm' },
+  noise_level_db: { min: 0, max: 60, step: 1, suffix: 'dB' },
+  airflow_cfm: { min: 0, max: 150, step: 2, suffix: 'CFM' },
+  fan_speed_rpm: { min: 0, max: 4000, step: 50, suffix: 'RPM' },
+  m2_slots: { min: 0, max: 8, step: 1, suffix: 'khe' },
+  size_inch: { min: 10, max: 60, step: 0.5, suffix: '"' },
+  brightness_cdm2: { min: 0, max: 2000, step: 50, suffix: 'nits' },
+  refresh_rate_hz: { min: 0, max: 540, step: 10, suffix: 'Hz' },
+  response_time_ms: { min: 0, max: 10, step: 0.1, suffix: 'ms' },
+  bus_speed_mhz: { min: 0, max: 10000, step: 100, suffix: 'MHz' },
+  latency_cl: { min: 0, max: 50, step: 1, suffix: 'CL' },
+  read_speed_mbps: { min: 0, max: 15000, step: 100, suffix: 'MB/s' },
+  write_speed_mbps: { min: 0, max: 15000, step: 100, suffix: 'MB/s' },
+  min_psu_w: { min: 0, max: 2000, step: 50, suffix: 'W' },
+};
+
+function SpecRangeSlider({
+  min,
+  max,
+  step,
+  suffix,
+  value,
+  onChange,
+}: {
+  min: number;
+  max: number;
+  step: number;
+  suffix: string;
+  value: string;
+  onChange: (val: string) => void;
+}) {
+  const [minVal, maxVal] = value
+    ? value.split(',').map(Number)
+    : [min, max];
+
+  const handleMinChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const v = Math.min(Number(e.target.value), maxVal - step);
+    onChange(`${v},${maxVal}`);
+  };
+  const handleMaxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const v = Math.max(Number(e.target.value), minVal + step);
+    onChange(`${minVal},${v}`);
+  };
+
+  const leftPercent = ((minVal - min) / (max - min)) * 100;
+  const rightPercent = 100 - ((maxVal - min) / (max - min)) * 100;
+
+  return (
+    <div className="flex flex-col gap-4 px-1 py-1">
+      <div className="relative h-1.5 bg-[#e2e8f0] rounded-full mt-2">
+        <div
+          className="absolute h-full bg-[#0058be] rounded-full pointer-events-none"
+          style={{ left: `${leftPercent}%`, right: `${rightPercent}%` }}
+        />
+        <input
+          type="range"
+          min={min}
+          max={max}
+          step={step}
+          value={minVal}
+          onChange={handleMinChange}
+          className="absolute w-full -top-1.5 h-1.5 appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-[#0058be] [&::-webkit-slider-thumb]:cursor-pointer"
+        />
+        <input
+          type="range"
+          min={min}
+          max={max}
+          step={step}
+          value={maxVal}
+          onChange={handleMaxChange}
+          className="absolute w-full -top-1.5 h-1.5 appearance-none bg-transparent pointer-events-none [&::-webkit-slider-thumb]:pointer-events-auto [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:border-2 [&::-webkit-slider-thumb]:border-[#0058be] [&::-webkit-slider-thumb]:cursor-pointer"
+        />
+      </div>
+      <div className="flex items-center gap-2">
+        <div className="flex-1 relative">
+          <input
+            type="number"
+            value={minVal}
+            onChange={e => onChange(`${Number(e.target.value)},${maxVal}`)}
+            className="w-full bg-[#f8fafc] border border-[#e2e8f0] rounded-[8px] pl-2 pr-10 py-1.5 text-[11px] font-medium text-[#374151] focus:outline-none focus:border-[#0058be] transition-all"
+          />
+          <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-semibold text-[#94a3b8]">{suffix}</span>
+        </div>
+        <span className="text-[#94a3b8] text-[12px] font-medium">-</span>
+        <div className="flex-1 relative">
+          <input
+            type="number"
+            value={maxVal}
+            onChange={e => onChange(`${minVal},${Number(e.target.value)}`)}
+            className="w-full bg-[#f8fafc] border border-[#e2e8f0] rounded-[8px] pl-2 pr-10 py-1.5 text-[11px] font-medium text-[#374151] focus:outline-none focus:border-[#0058be] transition-all"
+          />
+          <span className="absolute right-2 top-1/2 -translate-y-1/2 text-[10px] font-semibold text-[#94a3b8]">{suffix}</span>
+        </div>
+      </div>
+      {value && (
+        <button onClick={() => onChange('')} className="text-[11px] text-[#0058be] hover:underline text-left cursor-pointer font-medium mt-1">
+          Bỏ lọc khoảng này
+        </button>
+      )}
+    </div>
+  );
+}
+
 // ─── Spec filter input renderer ───────────────────────────────────────────────
 function SpecFilterInput({
   filter,
@@ -496,6 +667,20 @@ function SpecFilterInput({
   onChange: (v: string) => void;
   dynamicOptions?: string[];
 }) {
+  if (filter.type === 'range') {
+    const rangeDef = RANGE_SPEC_DEFS[filter.key] || { min: 0, max: 10000, step: 1, suffix: '' };
+    return (
+      <SpecRangeSlider
+        min={rangeDef.min}
+        max={rangeDef.max}
+        step={rangeDef.step}
+        suffix={rangeDef.suffix}
+        value={value}
+        onChange={onChange}
+      />
+    );
+  }
+
   if (filter.type === 'boolean') {
     return (
       <div className="flex gap-1.5">
@@ -522,7 +707,7 @@ function SpecFilterInput({
   }
 
   if (filter.type === 'select') {
-    const options = dynamicOptions || filter.options || [];
+    const options = (filter.options && filter.options.length > 0) ? filter.options : (dynamicOptions || []);
     return (
       <div className="relative">
         <select
@@ -543,7 +728,7 @@ function SpecFilterInput({
   }
 
   // multiselect / text / number treated as multiselect checkboxes based on dynamic options or static options
-  const options = dynamicOptions || filter.options || [];
+  const options = (filter.options && filter.options.length > 0) ? filter.options : (dynamicOptions || []);
   const selected = value ? value.split(',').map(s => s.trim()).filter(Boolean) : [];
 
   const toggle = (opt: string) => {
@@ -675,24 +860,27 @@ export default function ExplorePage() {
   useEffect(() => {
     if (categories.length === 0) return;
     
-    if (categoryParam) {
-      if (!isNaN(Number(categoryParam))) {
-        setSelectedCategory(categoryParam);
-      } else {
-        const matched = categories.find(c => 
-          c.slug?.toLowerCase() === categoryParam.toLowerCase() ||
-          c.name.toLowerCase() === categoryParam.toLowerCase() ||
-          c.name.replace(/\s+/g, '-').toLowerCase() === categoryParam.toLowerCase()
-        );
-        if (matched) {
-          setSelectedCategory(String(matched.id));
+    const timer = setTimeout(() => {
+      if (categoryParam) {
+        if (!isNaN(Number(categoryParam))) {
+          setSelectedCategory(categoryParam);
         } else {
-          setSelectedCategory('');
+          const matched = categories.find(c => 
+            c.slug?.toLowerCase() === categoryParam.toLowerCase() ||
+            c.name.toLowerCase() === categoryParam.toLowerCase() ||
+            c.name.replace(/\s+/g, '-').toLowerCase() === categoryParam.toLowerCase()
+          );
+          if (matched) {
+            setSelectedCategory(String(matched.id));
+          } else {
+            setSelectedCategory('');
+          }
         }
+      } else {
+        setSelectedCategory('');
       }
-    } else {
-      setSelectedCategory('');
-    }
+    }, 0);
+    return () => clearTimeout(timer);
   }, [categoryParam, categories]);
 
   // ── Fetch products (All matching category & search to filter/paginate client-side) ─────────────────────
@@ -756,6 +944,15 @@ export default function ExplorePage() {
             if (String(specVal) !== val) return false;
           } else if (def?.type === 'select') {
             if (String(specVal) !== val) return false;
+          } else if (def?.type === 'range') {
+            const [minStr, maxStr] = val.split(',');
+            const minVal = parseFloat(minStr);
+            const maxVal = parseFloat(maxStr);
+            const num = parseFloat(String(specVal));
+            if (!isNaN(num)) {
+              if (!isNaN(minVal) && num < minVal) return false;
+              if (!isNaN(maxVal) && num > maxVal) return false;
+            }
           } else {
             // multiselect / text / number treated as sets of selected values
             const wanted = val.split(',').map(v => v.trim()).filter(Boolean);

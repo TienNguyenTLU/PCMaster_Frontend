@@ -5,6 +5,7 @@ import { X, Save, Loader2, AlertCircle, Upload, ImageIcon, Check, Trash2 } from 
 import { adminAPI, Product, Brand, Category, ProductImage } from '@/lib/api';
 import toast from 'react-hot-toast';
 import { CldImage } from 'next-cloudinary';
+import axiosInstance from '@/lib/axiosInstance';
 
 // ─── Spec field definitions per category slug/name ─────────────────────────
 type SpecFieldType = 'text' | 'number' | 'multiselect' | 'select' | 'boolean';
@@ -22,6 +23,9 @@ const SPECS_BY_CATEGORY: Record<string, SpecField[]> = {
     { key: 'max_gpu_length_mm', label: 'Độ dài GPU tối đa (mm)', type: 'number', placeholder: '365' },
     { key: 'supported_mainboards', label: 'Bo mạch hỗ trợ', type: 'multiselect', options: ['Mini-ITX', 'Micro-ATX', 'ATX', 'E-ATX', 'SSI CEB', 'SSI EEB', 'XL-ATX'] },
     { key: 'max_cpu_cooler_height_mm', label: 'Chiều cao CPU Cooler tối đa (mm)', type: 'number', placeholder: '164' },
+    { key: 'accessories', label: 'Phụ kiện đi kèm', type: 'text', placeholder: 'Bộ ốc vít, dây rút, khay đệm...' },
+    { key: 'intended_use', label: 'Mục đích sử dụng', type: 'multiselect', options: ['Văn phòng', 'Chơi game', 'Đồ họa', 'Workstation / Server', 'Học tập'] },
+    { key: 'technologies', label: 'Công nghệ tích hợp', type: 'text', placeholder: 'Kính cường lực lực hút nam châm, lọc bụi từ tính...' },
   ],
   cooler: [
     { key: 'type', label: 'Loại tản nhiệt', type: 'select', options: ['Liquid Cooling', 'Air Cooling'] },
@@ -34,6 +38,9 @@ const SPECS_BY_CATEGORY: Record<string, SpecField[]> = {
       'AM5', 'AM4', 'AM3+', 'AM3', 'AM2+', 'AM2', 'FM2+', 'FM2', 'FM1', 'sTRX4', 'sTR4', 'sWRX8', 'SP3',
       'LGA1851', 'LGA1700', 'LGA1200', 'LGA1151', 'LGA1150', 'LGA1155', 'LGA1156', 'LGA2066', 'LGA2011', 'LGA1366', 'LGA775'
     ] },
+    { key: 'accessories', label: 'Phụ kiện đi kèm', type: 'text', placeholder: 'Keo tản nhiệt, gông socket, cáp chia...' },
+    { key: 'intended_use', label: 'Mục đích sử dụng', type: 'multiselect', options: ['Văn phòng', 'Chơi game', 'Đồ họa', 'Workstation / Server', 'Học tập'] },
+    { key: 'technologies', label: 'Công nghệ tích hợp', type: 'text', placeholder: 'Pump thế hệ mới, ống dẫn chống rò rỉ...' },
   ],
   cpu: [
     { key: 'cores', label: 'Số nhân', type: 'select', options: ['2', '4', '6', '8', '10', '12', '14', '16', '20', '24', '32', '64'] },
@@ -49,6 +56,9 @@ const SPECS_BY_CATEGORY: Record<string, SpecField[]> = {
     { key: 'integrated_gpu', label: 'GPU tích hợp', type: 'boolean' },
     { key: 'boost_clock_ghz', label: 'Xung tối đa (GHz)', type: 'number', placeholder: '5.0' },
     { key: 'performance_score', label: 'Điểm hiệu năng', type: 'number', placeholder: '21000' },
+    { key: 'accessories', label: 'Phụ kiện đi kèm', type: 'text', placeholder: 'Tản nhiệt stock, sticker Ryzen/Intel...' },
+    { key: 'intended_use', label: 'Mục đích sử dụng', type: 'multiselect', options: ['Văn phòng', 'Chơi game', 'Đồ họa', 'Workstation / Server', 'Học tập'] },
+    { key: 'technologies', label: 'Công nghệ tích hợp', type: 'text', placeholder: 'Intel Hyper-Threading, AMD 3D V-Cache...' },
   ],
   fan: [
     { key: 'has_rgb', label: 'Có RGB', type: 'boolean' },
@@ -59,6 +69,9 @@ const SPECS_BY_CATEGORY: Record<string, SpecField[]> = {
     { key: 'noise_level_db', label: 'Độ ồn (dB)', type: 'number', placeholder: '36' },
     { key: 'connection_type', label: 'Chuẩn cắm', type: 'text', placeholder: '4-pin PWM' },
     { key: 'is_addressable_rgb', label: 'LED ARGB', type: 'boolean' },
+    { key: 'accessories', label: 'Phụ kiện đi kèm', type: 'text', placeholder: 'Ốc gắn fan, đệm chống rung...' },
+    { key: 'intended_use', label: 'Mục đích sử dụng', type: 'multiselect', options: ['Văn phòng', 'Chơi game', 'Đồ họa', 'Workstation / Server', 'Học tập'] },
+    { key: 'technologies', label: 'Công nghệ tích hợp', type: 'text', placeholder: 'Magnetic Levitation, điều tốc PWM...' },
   ],
   mainboard: [
     { key: 'socket', label: 'Socket', type: 'select', options: [
@@ -75,6 +88,10 @@ const SPECS_BY_CATEGORY: Record<string, SpecField[]> = {
     { key: 'ram_slots', label: 'Số khe RAM', type: 'select', options: ['2', '4', '8'] },
     { key: 'max_ram_gb', label: 'RAM tối đa (GB)', type: 'select', options: ['16', '32', '64', '128', '192', '256', '512'] },
     { key: 'form_factor', label: 'Form factor', type: 'select', options: ['Mini-ITX', 'Micro-ATX', 'ATX', 'E-ATX', 'Flex-ATX', 'SSI CEB', 'SSI EEB'] },
+    { key: 'mainboard_type', label: 'Phân khúc bo mạch', type: 'select', options: ['Workstation', 'Gaming', 'Phổ thông'] },
+    { key: 'accessories', label: 'Phụ kiện đi kèm', type: 'text', placeholder: 'Cáp SATA, Chặn main, Sách HDSD...' },
+    { key: 'intended_use', label: 'Mục đích sử dụng', type: 'multiselect', options: ['Văn phòng', 'Chơi game', 'Đồ họa', 'Workstation / Server', 'Học tập'] },
+    { key: 'technologies', label: 'Công nghệ tích hợp', type: 'text', placeholder: 'PCIe 5.0, Thunderbolt 4, WiFi 7...' },
   ],
   monitor: [
     { key: 'ports', label: 'Cổng kết nối', type: 'multiselect', options: ['HDMI 2.0', 'HDMI 2.1', 'DisplayPort 1.4', 'DisplayPort 2.1', 'Type-C', 'VGA', 'DVI'] },
@@ -87,12 +104,18 @@ const SPECS_BY_CATEGORY: Record<string, SpecField[]> = {
     { key: 'brightness_cdm2', label: 'Độ sáng (cd/m2)', type: 'number', placeholder: '1000' },
     { key: 'refresh_rate_hz', label: 'Tần số quét (Hz)', type: 'number', placeholder: '240' },
     { key: 'response_time_ms', label: 'Thời gian phản hồi (ms)', type: 'number', placeholder: '1' },
+    { key: 'accessories', label: 'Phụ kiện đi kèm', type: 'text', placeholder: 'Cáp DisplayPort/HDMI, Adapter nguồn, chân đế...' },
+    { key: 'intended_use', label: 'Mục đích sử dụng', type: 'multiselect', options: ['Văn phòng', 'Chơi game', 'Đồ họa', 'Workstation / Server', 'Học tập'] },
+    { key: 'technologies', label: 'Công nghệ tích hợp', type: 'text', placeholder: 'NVIDIA G-Sync, AMD FreeSync Premium, chống xé hình...' },
   ],
   psu: [
     { key: 'wattage', label: 'Công suất (W)', type: 'select', options: ['450', '500', '550', '600', '650', '700', '750', '800', '850', '1000', '1200', '1300', '1500', '1600'] },
     { key: 'modularity', label: 'Dạng dây (Modularity)', type: 'select', options: ['Full Modular', 'Semi Modular', 'Non Modular'] },
     { key: 'form_factor', label: 'Form factor', type: 'select', options: ['ATX', 'SFX', 'SFX-L', 'TFX', 'Flex-ATX', 'EPS12V'] },
     { key: 'efficiency_rating', label: 'Hiệu suất', type: 'select', options: ['80 Plus', '80 Plus Bronze', '80 Plus Silver', '80 Plus Gold', '80 Plus Platinum', '80 Plus Titanium'] },
+    { key: 'accessories', label: 'Phụ kiện đi kèm', type: 'text', placeholder: 'Dây nguồn AC, ốc bắt case, túi đựng cáp...' },
+    { key: 'intended_use', label: 'Mục đích sử dụng', type: 'multiselect', options: ['Văn phòng', 'Chơi game', 'Đồ họa', 'Workstation / Server', 'Học tập'] },
+    { key: 'technologies', label: 'Công nghệ tích hợp', type: 'text', placeholder: 'Chuẩn ATX 3.0, PCIe 5.0, tụ điện Nhật 105°C...' },
   ],
   ram: [
     { key: 'kit', label: 'Kit RAM', type: 'select', options: ['1x8GB', '2x8GB', '1x16GB', '2x16GB', '2x32GB', '4x16GB', '2x24GB', '2x48GB', '4x32GB'] },
@@ -101,6 +124,9 @@ const SPECS_BY_CATEGORY: Record<string, SpecField[]> = {
     { key: 'latency_cl', label: 'CAS Latency (CL)', type: 'number', placeholder: '18' },
     { key: 'capacity_gb', label: 'Dung lượng tổng (GB)', type: 'select', options: ['8', '16', '24', '32', '48', '64', '96', '128', '256'] },
     { key: 'bus_speed_mhz', label: 'Tốc độ Bus (MHz)', type: 'number', placeholder: '4000' },
+    { key: 'accessories', label: 'Phụ kiện đi kèm', type: 'text', placeholder: 'Sách HDSD, sticker...' },
+    { key: 'intended_use', label: 'Mục đích sử dụng', type: 'multiselect', options: ['Văn phòng', 'Chơi game', 'Đồ họa', 'Workstation / Server', 'Học tập'] },
+    { key: 'technologies', label: 'Công nghệ tích hợp', type: 'text', placeholder: 'Intel XMP 3.0, AMD EXPO, On-Die ECC...' },
   ],
   ssd: [
     { key: 'type', label: 'Loại', type: 'select', options: ['SSD', 'HDD'] },
@@ -108,6 +134,9 @@ const SPECS_BY_CATEGORY: Record<string, SpecField[]> = {
     { key: 'capacity_gb', label: 'Dung lượng (GB)', type: 'select', options: ['120', '240', '250', '256', '480', '500', '512', '1000', '2000', '4000', '8000', '16000'] },
     { key: 'read_speed_mbps', label: 'Tốc độ đọc (MB/s)', type: 'number', placeholder: '3500' },
     { key: 'write_speed_mbps', label: 'Tốc độ ghi (MB/s)', type: 'number', placeholder: '2300' },
+    { key: 'accessories', label: 'Phụ kiện đi kèm', type: 'text', placeholder: 'Ốc M.2, tản nhiệt nhôm...' },
+    { key: 'intended_use', label: 'Mục đích sử dụng', type: 'multiselect', options: ['Văn phòng', 'Chơi game', 'Đồ họa', 'Workstation / Server', 'Học tập'] },
+    { key: 'technologies', label: 'Công nghệ tích hợp', type: 'text', placeholder: 'DRAM Cache, bảo vệ dữ liệu đột ngột mất điện...' },
   ],
   vga: [
     { key: 'tdp_w', label: 'TDP (W)', type: 'number', placeholder: '100' },
@@ -119,6 +148,9 @@ const SPECS_BY_CATEGORY: Record<string, SpecField[]> = {
     { key: 'base_clock_mhz', label: 'Xung cơ bản (MHz)', type: 'number', placeholder: '1530' },
     { key: 'boost_clock_mhz', label: 'Xung boost (MHz)', type: 'number', placeholder: '1755' },
     { key: 'performance_score', label: 'Điểm hiệu năng', type: 'number', placeholder: '9000' },
+    { key: 'accessories', label: 'Phụ kiện đi kèm', type: 'text', placeholder: 'Giá đỡ VGA, cáp chuyển đổi nguồn 12VHPWR...' },
+    { key: 'intended_use', label: 'Mục đích sử dụng', type: 'multiselect', options: ['Văn phòng', 'Chơi game', 'Đồ họa', 'Workstation / Server', 'Học tập'] },
+    { key: 'technologies', label: 'Công nghệ tích hợp', type: 'text', placeholder: 'Ray Tracing, DLSS 3, AMD FSR 3...' },
   ],
 };
 
@@ -331,11 +363,33 @@ export default function ProductFormModal({ isOpen, onClose, onSuccess, editingPr
     setErrors(p => ({ ...p, [key]: '' }));
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    setThumbnailFile(file);
-    setThumbnailPreview(URL.createObjectURL(file));
+
+    if (isEditing) {
+      const toastId = toast.loading('Đang tải ảnh đại diện lên Cloudinary...');
+      const uploadData = new FormData();
+      uploadData.append('file', file);
+
+      const categorySlug = categories.find(c => String(c.id) === basic.categoryId)?.slug || 'other';
+      const folder = `PCMAster_Storage/Product_thumbnails/${categorySlug}`;
+
+      try {
+        const response = await axiosInstance.post<{ url: string }>(
+          `/api/admin/media/upload?folder=${encodeURIComponent(folder)}`,
+          uploadData,
+          { headers: { 'Content-Type': 'multipart/form-data' } }
+        );
+        setThumbnailPreview(response.data.url);
+        toast.success('Tải ảnh đại diện mới thành công!', { id: toastId });
+      } catch {
+        toast.error('Tải ảnh đại diện mới thất bại.', { id: toastId });
+      }
+    } else {
+      setThumbnailFile(file);
+      setThumbnailPreview(URL.createObjectURL(file));
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -427,7 +481,7 @@ export default function ProductFormModal({ isOpen, onClose, onSuccess, editingPr
       price: Number(basic.price),
       stock: Number(basic.stock),
       description: basic.description,
-      thumbnailUrl: isEditing ? editingProduct?.thumbnailUrl : undefined,
+      thumbnailUrl: thumbnailPreview || undefined,
       specsJson: JSON.stringify(specsObj),
     };
 
@@ -775,7 +829,6 @@ export default function ProductFormModal({ isOpen, onClose, onSuccess, editingPr
                     <div key={field.key} className={`flex flex-col gap-1.5 ${field.type === 'multiselect' ? 'col-span-2' : ''}`}>
                       <label className="text-[13px] font-medium text-[#374151]">
                         {field.label}
-                        {field.type === 'multiselect' && <span className="text-[#94a3b8] font-normal ml-1">(phân cách bằng dấu phẩy)</span>}
                       </label>
                       {errors[field.key] && (
                         <span className="text-red-500 text-[11px] font-semibold flex items-center gap-1 animate-in fade-in slide-in-from-top-1 duration-150">
@@ -807,6 +860,37 @@ export default function ProductFormModal({ isOpen, onClose, onSuccess, editingPr
                           <option value="true">Có / Yes</option>
                           <option value="false">Không / No</option>
                         </select>
+                      ) : field.type === 'multiselect' ? (
+                        (() => {
+                          const selectedValues = specs[field.key]
+                            ? specs[field.key].split(',').map(s => s.trim()).filter(Boolean)
+                            : [];
+                          const handleCheckboxToggle = (option: string) => {
+                            const isSelected = selectedValues.includes(option);
+                            const updated = isSelected
+                              ? selectedValues.filter(val => val !== option)
+                              : [...selectedValues, option];
+                            handleSpec(field.key, updated.join(', '));
+                          };
+                          return (
+                            <div className="flex flex-wrap gap-x-4 gap-y-2.5 mt-1 p-3 bg-gray-50 border border-gray-200 rounded-[10px]">
+                              {field.options?.map(opt => {
+                                const isChecked = selectedValues.includes(opt);
+                                return (
+                                  <label key={opt} className="flex items-center gap-2 text-[13px] text-gray-700 cursor-pointer select-none font-medium hover:text-[#0058be] transition-colors">
+                                    <input
+                                      type="checkbox"
+                                      checked={isChecked}
+                                      onChange={() => handleCheckboxToggle(opt)}
+                                      className="size-4 rounded text-[#0058be] border-[#cbd5e1] focus:ring-[#0058be] cursor-pointer"
+                                    />
+                                    <span>{opt}</span>
+                                  </label>
+                                );
+                              })}
+                            </div>
+                          );
+                        })()
                       ) : (
                         <input
                           type={field.type === 'number' ? 'number' : 'text'}

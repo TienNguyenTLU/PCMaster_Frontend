@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist_Mono, Inter } from "next/font/google";
 import { Toaster } from "react-hot-toast";
+import ChatbotWidget from "@/components/chatbot/ChatbotWidget";
 import "./globals.css";
 
 const inter = Inter({
@@ -31,6 +32,7 @@ export default function RootLayout({
       <body className="min-h-full flex flex-col">
         {children}
         <Toaster position="top-right" />
+        <ChatbotWidget />
       </body>
     </html>
   );
