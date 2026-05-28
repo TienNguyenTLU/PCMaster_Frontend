@@ -1,3 +1,7 @@
+/**
+ * TypeScript types cho hệ thống Chatbot RAG (Ollama + PGVector)
+ */
+
 export interface RecommendedProduct {
   id: number;
   name: string;
@@ -10,10 +14,15 @@ export interface RecommendedProduct {
 }
 
 export interface ChatMessage {
-  role: 'user' | 'model';
+  role: 'user' | 'assistant';
   content: string;
   products?: RecommendedProduct[];
-  timestamp?: string; // Định dạng ISO string
+  timestamp?: string;
+}
+
+export interface ChatHistoryItem {
+  role: 'user' | 'assistant';
+  content: string;
 }
 
 export interface ChatResponse {

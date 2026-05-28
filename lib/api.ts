@@ -804,3 +804,39 @@ export const couponAPI = {
   }
 };
 
+// ─── Chatbot RAG API ─────────────────────────────────────────────────────────
+import type { ChatHistoryItem, ChatResponse as ChatbotResponse } from './types/chatbot';
+
+/**
+ * Dịch vụ chatbot RAG (Ollama + PGVector)
+ * Giao tiếp với Spring AI backend để tư vấn linh kiện PC theo ngữ nghĩa.
+ */
+export const chatbotAPI = {
+  /**
+   * Gửi tin nhắn và nhận câu trả lời AI kèm sản phẩm đề xuất.
+   */
+  chat: async (message: string, history: ChatHistoryItem[] = []): Promise<ChatbotResponse> => {
+    const { data } = await axiosInstance.post<ChatbotResponse>('/api/chat', {
+      message,
+      history,
+    });
+    return data;
+  },
+};
+
+/**
+ * Dịch vụ quản trị chatbot (chỉ dành cho ADMIN)
+ */
+export const adminChatbotAPI = {
+  /** Reindex toàn bộ catalog sản phẩm vào PGVector */
+  reindex: async (): Promise<{ success: boolean; indexedProducts: number; durationMs: number; message: string }> => {
+    const { data } = await axiosInstance.post('/api/admin/chatbot/reindex');
+    return data;
+  },
+
+  /** Lấy trạng thái hiện tại của vector store */
+  getStatus: async (): Promise<{ indexableProducts: number; chatModel: string; embeddingModel: string; message: string }> => {
+    const { data } = await axiosInstance.get('/api/admin/chatbot/status');
+    return data;
+  },
+};

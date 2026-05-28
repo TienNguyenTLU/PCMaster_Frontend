@@ -1,291 +1,230 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
-import { 
-  MessageSquare, 
-  X, 
-  Send, 
-  Sparkles, 
-  ShoppingCart, 
-  Package, 
-  Loader2, 
-  Cpu, 
-  Gamepad2, 
-  Monitor, 
+import { useState, useRef, useEffect, useCallback } from 'react';
+import {
+  MessageSquare,
+  X,
+  Send,
+  Sparkles,
+  ShoppingCart,
+  Package,
+  Loader2,
+  Cpu,
+  Gamepad2,
+  Monitor,
   HardDrive,
   ChevronLeft,
-  ChevronRight
+  ChevronRight,
+  Bot,
+  RefreshCw,
 } from 'lucide-react';
 import Link from 'next/link';
-import axiosInstance from '@/lib/axiosInstance';
+import { chatbotAPI } from '@/lib/api';
 import { ChatMessage, RecommendedProduct } from '@/lib/types/chatbot';
 import { useCartStore } from '@/lib/store';
 import toast from 'react-hot-toast';
 
+// ─── Hằng số & dữ liệu tĩnh ──────────────────────────────────────────────────
+const WELCOME_MESSAGE: ChatMessage = {
+  role: 'assistant',
+  content: 'Xin chào! Tôi là **Trợ lý AI PCMaster** 🤖\n\nTôi có thể giúp bạn:\n- *Tư vấn cấu hình PC theo ngân sách và nhu cầu*\n- *Tìm linh kiện (VGA, CPU, RAM, SSD...) phù hợp*\n- *So sánh và đề xuất sản phẩm tốt nhất*\n\nHãy đặt câu hỏi bất kỳ!',
+  timestamp: new Date().toISOString(),
+};
+
+const QUICK_PROMPTS = [
+  { text: 'PC gaming tầm 20 triệu', icon: <Gamepad2 className="size-3 text-violet-400" /> },
+  { text: 'Tư vấn VGA dưới 8 triệu', icon: <Cpu className="size-3 text-blue-400" /> },
+  { text: 'Màn hình 144Hz tốt nhất', icon: <Monitor className="size-3 text-emerald-400" /> },
+  { text: 'SSD tốc độ cao giá tốt', icon: <HardDrive className="size-3 text-orange-400" /> },
+];
+
+// ─── Main Component ───────────────────────────────────────────────────────────
 export default function ChatbotWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [addingId, setAddingId] = useState<number | null>(null);
-  
-  // Trạng thái lưu lịch sử trò chuyện
-  const [messages, setMessages] = useState<ChatMessage[]>([
-    {
-      role: 'model',
-      content: 'Xin chào! Tôi là **Trợ lý ảo PCMaster**. 🤖\n\nTôi có thể giúp gì cho bạn hôm nay? Hãy thử yêu cầu tôi:\n- *Tư vấn PC chơi game, đồ họa trong tầm giá cụ thể*\n- *Tìm kiếm linh kiện (VGA, CPU, RAM...) theo ngân sách*\n- *Hỏi đáp về độ tương thích linh kiện*',
-      timestamp: new Date().toISOString()
-    }
-  ]);
+  const [messages, setMessages] = useState<ChatMessage[]>([WELCOME_MESSAGE]);
 
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
   const { addItem } = useCartStore();
 
   // Tự động cuộn xuống khi có tin nhắn mới
   useEffect(() => {
-    if (chatEndRef.current) {
-      chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
+    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, isLoading]);
 
-  // Các câu gợi ý nhanh
-  const quickPrompts = [
-    { text: 'PC Gaming tầm 15tr', icon: <Gamepad2 className="size-3 text-blue-500" /> },
-    { text: 'Tư vấn VGA dưới 8 triệu', icon: <Cpu className="size-3 text-violet-500" /> },
-    { text: 'Tìm Màn hình 144Hz', icon: <Monitor className="size-3 text-emerald-500" /> },
-    { text: 'SSD 1TB tốc độ cao', icon: <HardDrive className="size-3 text-orange-500" /> }
-  ];
+  // Focus input khi mở widget
+  useEffect(() => {
+    if (isOpen) {
+      setTimeout(() => inputRef.current?.focus(), 150);
+    }
+  }, [isOpen]);
 
-  // Gửi tin nhắn lên Backend
-  async function handleSendMessage(textToSend: string) {
+  // Gửi tin nhắn lên backend RAG
+  const handleSendMessage = useCallback(async (textToSend: string) => {
     if (!textToSend.trim() || isLoading) return;
 
     const userMsg: ChatMessage = {
       role: 'user',
-      content: textToSend,
-      timestamp: new Date().toISOString()
+      content: textToSend.trim(),
+      timestamp: new Date().toISOString(),
     };
 
     setMessages(prev => [...prev, userMsg]);
     setInput('');
     setIsLoading(true);
 
-    try {
-      // Chuẩn bị lịch sử chat ở định dạng Gemini mong đợi: [{role: 'user'|'model', content: '...'}]
-      // Bỏ qua tin nhắn chào mừng tĩnh đầu tiên (index 0, role: model) để hội thoại luôn bắt đầu bằng user (yêu cầu bắt buộc của Gemini)
-      const historyPayload = messages
-        .slice(1)
-        .map(msg => ({
-          role: msg.role,
-          content: msg.content
-        }));
+    // Chuẩn bị lịch sử hội thoại (bỏ tin chào đầu tiên)
+    const historyPayload = messages
+      .slice(1)
+      .map(msg => ({ role: msg.role, content: msg.content }));
 
-      const response = await axiosInstance.post('/api/chat', {
-        message: textToSend,
-        history: historyPayload
-      });
+    try {
+      const response = await chatbotAPI.chat(textToSend.trim(), historyPayload);
 
       const aiMsg: ChatMessage = {
-        role: 'model',
-        content: response.data.message,
-        products: response.data.recommendedProducts || [],
-        timestamp: new Date().toISOString()
+        role: 'assistant',
+        content: response.message,
+        products: response.recommendedProducts || [],
+        timestamp: new Date().toISOString(),
       };
-
       setMessages(prev => [...prev, aiMsg]);
-    } catch (err: any) {
-      console.error(err);
+    } catch {
       setMessages(prev => [
         ...prev,
         {
-          role: 'model',
-          content: 'Xin lỗi bạn, máy chủ đang bận xử lý dữ liệu. Bạn vui lòng gửi lại câu hỏi nhé! 🛠️',
-          timestamp: new Date().toISOString()
-        }
+          role: 'assistant',
+          content: 'Xin lỗi bạn, trợ lý AI đang gặp sự cố kết nối 🛠️\n\nVui lòng đảm bảo **Ollama** đang chạy và thử lại sau nhé!',
+          timestamp: new Date().toISOString(),
+        },
       ]);
     } finally {
       setIsLoading(false);
     }
-  }
+  }, [isLoading, messages]);
 
-  // Thêm sản phẩm trực tiếp vào giỏ hàng từ bong bóng chat
-  async function handleAddToCart(e: React.MouseEvent, product: RecommendedProduct) {
+  // Thêm sản phẩm vào giỏ hàng từ card đề xuất
+  const handleAddToCart = useCallback(async (e: React.MouseEvent, product: RecommendedProduct) => {
     e.preventDefault();
     if (product.stock === 0 || addingId !== null) return;
-    
+
     setAddingId(product.id);
     try {
       await addItem(product.id, 1);
-      toast.success(`Đã thêm ${product.name} vào giỏ hàng!`);
+      toast.success(`Đã thêm "${product.name}" vào giỏ hàng!`);
     } catch {
       toast.error('Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng.');
     } finally {
       setAddingId(null);
     }
-  }
+  }, [addingId, addItem]);
 
-  // Chuyển đổi ký tự Markdown đơn giản (đậm, nghiêng, xuống dòng) sang HTML để hiển thị đẹp mắt
-  function renderMarkdown(text: string) {
-    let html = text;
-    // Thay đổi xuống dòng kép thành thẻ p, đơn thành br
-    html = html.replace(/\n\n/g, '</p><p class="mt-2">');
-    html = html.replace(/\n/g, '<br />');
-    
-    // In đậm: **text** hoặc __text__
-    html = html.replace(/\*\*(.*?)\*\*/g, '<strong class="font-semibold text-gray-900">$1</strong>');
-    html = html.replace(/__(.*?)__/g, '<strong class="font-semibold text-gray-900">$1</strong>');
-
-    // In nghiêng: *text* hoặc _text_
-    html = html.replace(/\*(.*?)\*/g, '<em class="italic text-gray-600">$1</em>');
-    html = html.replace(/_(.*?)_/g, '<em class="italic text-gray-600">$1</em>');
-
-    // Gạch đầu dòng: - text hoặc * text
-    html = html.replace(/(?:^|<br \/>)\s*-\s+(.*?)(?=<br \/>|$)/g, '<li class="ml-4 list-disc text-gray-700 mt-1">$1</li>');
-
-    return <div dangerouslySetInnerHTML={{ __html: `<p>${html}</p>` }} />;
-  }
-
-  /**
-   * Lọc sản phẩm được đề cập trong phần trả lời AI.
-   * Nếu AI đề cập cụ thể tên sản phẩm, hiển thị chính xác sản phẩm đó.
-   * Nếu không tìm thấy sản phẩm nào khớp tên, hiển thị toàn bộ danh sách đề xuất tương tự.
-   */
-  function filterRelevantProducts(
-    aiContent: string, 
-    allProducts: RecommendedProduct[]
-  ): { matched: RecommendedProduct[]; isExact: boolean } {
-    if (!allProducts || allProducts.length === 0) {
-      return { matched: [], isExact: false };
-    }
-
-    // Tìm sản phẩm mà tên xuất hiện trong phần trả lời AI
-    const contentLower = aiContent.toLowerCase();
-    const exactMatches = allProducts.filter(p => {
-      // Kiểm tra tên sản phẩm hoặc một phần tên đủ dài (>= 8 ký tự) có xuất hiện trong phần trả lời
-      const nameLower = p.name.toLowerCase();
-      if (contentLower.includes(nameLower)) return true;
-      
-      // Kiểm tra từng phần của tên sản phẩm (tách bởi dấu phẩy, dấu ngoặc)
-      const nameTokens = nameLower
-        .split(/[,\-()\/]+/)
-        .map(t => t.trim())
-        .filter(t => t.length >= 6);
-      return nameTokens.some(token => contentLower.includes(token));
-    });
-
-    if (exactMatches.length > 0) {
-      return { matched: exactMatches, isExact: true };
-    }
-
-    // Nếu không có sản phẩm nào khớp chính xác → hiển thị toàn bộ danh sách đề xuất tương tự
-    return { matched: allProducts, isExact: false };
-  }
+  // Reset cuộc trò chuyện
+  const handleReset = useCallback(() => {
+    setMessages([WELCOME_MESSAGE]);
+    setInput('');
+  }, []);
 
   return (
     <>
-      {/* ─── Nút tròn Floating Bong Bóng Nổi ────────────────────────────────────── */}
+      {/* ── Floating Action Button ─────────────────────────────────────────── */}
       <button
-        onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-6 right-6 z-50 p-4 rounded-full bg-gradient-to-tr from-blue-500 to-indigo-600 hover:from-blue-400 hover:to-indigo-500 text-white shadow-lg shadow-blue-500/25 border border-blue-400/30 cursor-pointer hover:scale-110 active:scale-95 transition-all duration-300 group"
-        aria-label="Trợ lý ảo PCMaster"
+        onClick={() => setIsOpen(prev => !prev)}
+        className="fixed bottom-6 right-6 z-50 group"
+        aria-label="Trợ lý AI PCMaster"
       >
-        <div className="relative">
+        <div className="relative p-4 rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-600/50 shadow-xl shadow-black/40 hover:shadow-violet-500/20 hover:border-violet-500/50 hover:scale-105 active:scale-95 transition-all duration-300">
+          {/* Glow effect */}
+          <div className="absolute inset-0 rounded-2xl bg-violet-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
           {isOpen ? (
-            <X className="size-6 transition-transform duration-300 rotate-90" />
+            <X className="size-6 text-slate-300 relative z-10 transition-transform duration-300 rotate-90" />
           ) : (
             <div className="relative">
-              <MessageSquare className="size-6 group-hover:rotate-6 transition-transform" />
-              {/* Chấm nhấp nháy báo hiệu chatbot online */}
-              <span className="absolute -top-1 -right-1 flex h-3 w-3">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-3 w-3 bg-emerald-500"></span>
+              <Bot className="size-6 text-violet-400 relative z-10 group-hover:text-violet-300 transition-colors" />
+              {/* Online indicator pulse */}
+              <span className="absolute -top-1 -right-1 flex size-3">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+                <span className="relative inline-flex rounded-full size-3 bg-emerald-500" />
               </span>
             </div>
           )}
         </div>
       </button>
 
-      {/* ─── Hộp thoại Panel trò chuyện (Light Theme) ──────────────────────────────── */}
+      {/* ── Chat Panel ────────────────────────────────────────────────────── */}
       {isOpen && (
-        <div className="fixed bottom-24 right-6 w-96 h-[560px] z-50 flex flex-col bg-white border border-gray-200 rounded-2xl shadow-2xl shadow-black/10 overflow-hidden animate-dropdown">
-          
-          {/* Header - Gradient xanh thanh lịch */}
-          <div className="px-5 py-4 bg-gradient-to-r from-blue-500 to-indigo-600 flex items-center justify-between">
+        <div className="fixed bottom-24 right-6 w-96 h-[580px] z-50 flex flex-col rounded-2xl overflow-hidden shadow-2xl shadow-black/50 border border-slate-700/60 animate-chat-in">
+
+          {/* Header */}
+          <div className="px-5 py-4 bg-gradient-to-r from-slate-800 to-slate-900 border-b border-slate-700/60 flex items-center justify-between flex-shrink-0">
             <div className="flex items-center gap-3">
-              <div className="relative p-2 rounded-xl bg-white/20 backdrop-blur-sm">
-                <Sparkles className="size-5 text-white animate-pulse" />
+              <div className="relative p-2.5 rounded-xl bg-violet-500/15 border border-violet-500/25">
+                <Sparkles className="size-4 text-violet-400" />
               </div>
               <div>
-                <h3 className="text-sm font-bold text-white flex items-center gap-1.5 leading-none">
-                  Trợ Lý Ảo PCMaster
+                <h3 className="text-sm font-bold text-white flex items-center gap-2">
+                  Trợ Lý AI PCMaster
                   <span className="inline-block size-2 rounded-full bg-emerald-400 animate-pulse" />
                 </h3>
-                <p className="text-[11px] text-blue-100 mt-1">Tư vấn cấu hình & linh kiện 24/7</p>
+                <p className="text-[11px] text-slate-400 mt-0.5">Powered by Ollama · RAG · PGVector</p>
               </div>
             </div>
-            <button 
-              onClick={() => setIsOpen(false)}
-              className="p-1.5 rounded-lg hover:bg-white/20 text-white/80 hover:text-white transition-colors cursor-pointer"
-            >
-              <X className="size-4" />
-            </button>
+
+            <div className="flex items-center gap-1">
+              <button
+                onClick={handleReset}
+                className="p-1.5 rounded-lg hover:bg-slate-700 text-slate-400 hover:text-slate-200 transition-colors cursor-pointer"
+                title="Bắt đầu cuộc trò chuyện mới"
+              >
+                <RefreshCw className="size-3.5" />
+              </button>
+              <button
+                onClick={() => setIsOpen(false)}
+                className="p-1.5 rounded-lg hover:bg-slate-700 text-slate-400 hover:text-slate-200 transition-colors cursor-pointer"
+              >
+                <X className="size-4" />
+              </button>
+            </div>
           </div>
 
-          {/* Chat Messages Area - Nền sáng */}
-          <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 bg-gray-50/80">
-            {messages.map((msg, index) => {
-              // Lọc sản phẩm phù hợp cho mỗi tin nhắn AI
-              const productData = msg.role === 'model' && msg.products && msg.products.length > 0
-                ? filterRelevantProducts(msg.content, msg.products)
-                : null;
+          {/* Messages Area */}
+          <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 bg-slate-950 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent">
+            {messages.map((msg, index) => (
+              <MessageBubble
+                key={index}
+                message={msg}
+                addingId={addingId}
+                onAddToCart={handleAddToCart}
+              />
+            ))}
 
-              return (
-                <div key={index} className={`flex flex-col ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
-                  {/* Bong bóng chat chính */}
-                  <div 
-                    className={`max-w-[85%] rounded-2xl px-4 py-3 text-xs leading-relaxed transition-all duration-200 ${
-                      msg.role === 'user' 
-                        ? 'bg-gradient-to-tr from-blue-500 to-indigo-600 text-white rounded-tr-sm shadow-md shadow-blue-500/20' 
-                        : 'bg-white text-gray-700 border border-gray-200 rounded-tl-sm shadow-sm'
-                    }`}
-                  >
-                    {renderMarkdown(msg.content)}
-                  </div>
-
-                  {/* Slider Đề Xuất Sản Phẩm Thực Tế (Chỉ hiển thị cho câu trả lời từ AI) */}
-                  {productData && productData.matched.length > 0 && (
-                    <ProductSlider
-                      products={productData.matched}
-                      isExact={productData.isExact}
-                      addingId={addingId}
-                      onAddToCart={handleAddToCart}
-                    />
-                  )}
-                </div>
-              );
-            })}
-
-            {/* Bouncing Dots Loading Indicator */}
+            {/* Typing indicator */}
             {isLoading && (
-              <div className="flex flex-col items-start">
-                <div className="bg-white border border-gray-200 rounded-2xl rounded-tl-sm px-4 py-3 flex items-center gap-1.5 shadow-sm">
-                  <div className="size-2 rounded-full bg-blue-400 animate-bounce [animation-delay:-0.3s]" />
-                  <div className="size-2 rounded-full bg-blue-400 animate-bounce [animation-delay:-0.15s]" />
-                  <div className="size-2 rounded-full bg-blue-400 animate-bounce" />
+              <div className="flex items-start gap-2">
+                <div className="p-1.5 rounded-lg bg-violet-500/15 border border-violet-500/20">
+                  <Bot className="size-3.5 text-violet-400" />
+                </div>
+                <div className="bg-slate-800 border border-slate-700/60 rounded-2xl rounded-tl-sm px-4 py-3 flex items-center gap-1.5">
+                  <div className="size-2 rounded-full bg-violet-400 animate-bounce [animation-delay:-0.3s]" />
+                  <div className="size-2 rounded-full bg-violet-400 animate-bounce [animation-delay:-0.15s]" />
+                  <div className="size-2 rounded-full bg-violet-400 animate-bounce" />
                 </div>
               </div>
             )}
-            
             <div ref={chatEndRef} />
           </div>
 
-          {/* Quick Prompts Suggestions (Hiện khi rảnh, ko loading) */}
+          {/* Quick Prompts */}
           {!isLoading && messages.length <= 2 && (
-            <div className="px-4 py-2.5 border-t border-gray-100 bg-white flex flex-wrap gap-2">
-              {quickPrompts.map((prompt, i) => (
+            <div className="px-4 py-3 bg-slate-900 border-t border-slate-700/60 flex flex-wrap gap-2 flex-shrink-0">
+              {QUICK_PROMPTS.map((prompt, i) => (
                 <button
                   key={i}
                   onClick={() => handleSendMessage(prompt.text)}
-                  className="px-2.5 py-1.5 rounded-lg border border-gray-200 hover:border-blue-400 bg-gray-50 hover:bg-blue-50 text-[10px] text-gray-600 hover:text-blue-700 transition-all flex items-center gap-1.5 cursor-pointer hover:-translate-y-0.5"
+                  className="px-2.5 py-1.5 rounded-lg border border-slate-700 hover:border-violet-500/50 bg-slate-800/50 hover:bg-violet-500/10 text-[10px] text-slate-400 hover:text-violet-300 transition-all flex items-center gap-1.5 cursor-pointer hover:-translate-y-0.5"
                 >
                   {prompt.icon}
                   {prompt.text}
@@ -294,129 +233,168 @@ export default function ChatbotWidget() {
             </div>
           )}
 
-          {/* Input Chat Message Form */}
-          <form 
-            onSubmit={(e) => {
-              e.preventDefault();
-              handleSendMessage(input);
-            }}
-            className="p-4 bg-white border-t border-gray-100 flex items-center gap-2"
+          {/* Input Form */}
+          <form
+            onSubmit={(e) => { e.preventDefault(); handleSendMessage(input); }}
+            className="p-4 bg-slate-900 border-t border-slate-700/60 flex items-center gap-2 flex-shrink-0"
           >
             <input
+              ref={inputRef}
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               disabled={isLoading}
               placeholder="Hỏi tư vấn cấu hình, linh kiện..."
-              className="flex-1 px-4 py-2.5 rounded-xl bg-gray-50 border border-gray-200 text-xs text-gray-800 placeholder-gray-400 focus:outline-none focus:border-blue-400 focus:ring-2 focus:ring-blue-500/20 transition-all disabled:opacity-50"
+              className="flex-1 px-4 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-violet-500/50 focus:ring-2 focus:ring-violet-500/15 transition-all disabled:opacity-50"
             />
             <button
               type="submit"
               disabled={isLoading || !input.trim()}
-              className="p-2.5 rounded-xl bg-gradient-to-r from-blue-500 to-indigo-600 text-white hover:from-blue-400 hover:to-indigo-500 font-medium transition-all hover:scale-105 active:scale-95 disabled:opacity-40 disabled:scale-100 disabled:cursor-not-allowed cursor-pointer shadow-sm"
+              className="p-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 text-white transition-all hover:scale-105 active:scale-95 disabled:opacity-40 disabled:scale-100 disabled:cursor-not-allowed cursor-pointer shadow-sm shadow-violet-500/25"
             >
               <Send className="size-4" />
             </button>
           </form>
-
         </div>
       )}
+
+      {/* ── CSS Animations ────────────────────────────────────────────────── */}
+      <style>{`
+        @keyframes chat-in {
+          from { opacity: 0; transform: translateY(16px) scale(0.97); }
+          to   { opacity: 1; transform: translateY(0)    scale(1);    }
+        }
+        .animate-chat-in { animation: chat-in 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+      `}</style>
     </>
   );
 }
 
-interface ProductSliderProps {
-  products: RecommendedProduct[];
-  isExact: boolean;
+// ─── MessageBubble Component ─────────────────────────────────────────────────
+interface MessageBubbleProps {
+  message: ChatMessage;
   addingId: number | null;
   onAddToCart: (e: React.MouseEvent, product: RecommendedProduct) => void;
 }
 
-function ProductSlider({ products, isExact, addingId, onAddToCart }: ProductSliderProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
-  const [showLeftArrow, setShowLeftArrow] = useState(false);
-  const [showRightArrow, setShowRightArrow] = useState(false);
+function MessageBubble({ message, addingId, onAddToCart }: MessageBubbleProps) {
+  const isUser = message.role === 'user';
 
-  const checkScroll = () => {
-    if (containerRef.current) {
-      const { scrollLeft, scrollWidth, clientWidth } = containerRef.current;
-      setShowLeftArrow(scrollLeft > 5);
-      setShowRightArrow(scrollLeft + clientWidth < scrollWidth - 5);
-    }
-  };
+  return (
+    <div className={`flex flex-col ${isUser ? 'items-end' : 'items-start'} gap-2`}>
+      {/* Avatar + Bubble row */}
+      <div className={`flex items-start gap-2 max-w-[88%] ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
+        {/* Avatar */}
+        {!isUser && (
+          <div className="p-1.5 rounded-lg bg-violet-500/15 border border-violet-500/20 flex-shrink-0 mt-0.5">
+            <Bot className="size-3.5 text-violet-400" />
+          </div>
+        )}
+
+        {/* Message Bubble */}
+        <div className={`px-4 py-3 rounded-2xl text-xs leading-relaxed ${
+          isUser
+            ? 'bg-gradient-to-br from-violet-600 to-violet-700 text-white rounded-tr-sm shadow-lg shadow-violet-500/20'
+            : 'bg-slate-800 text-slate-200 border border-slate-700/60 rounded-tl-sm'
+        }`}>
+          <MarkdownText text={message.content} isUser={isUser} />
+        </div>
+      </div>
+
+      {/* Product Recommendation Slider */}
+      {!isUser && message.products && message.products.length > 0 && (
+        <ProductSlider
+          products={message.products}
+          addingId={addingId}
+          onAddToCart={onAddToCart}
+        />
+      )}
+    </div>
+  );
+}
+
+// ─── Markdown Renderer ────────────────────────────────────────────────────────
+function MarkdownText({ text, isUser }: { text: string; isUser: boolean }) {
+  const html = text
+    .replace(/\n\n/g, '</p><p class="mt-2">')
+    .replace(/\n/g, '<br />')
+    .replace(/\*\*(.*?)\*\*/g, `<strong class="font-semibold ${isUser ? 'text-violet-200' : 'text-white'}">$1</strong>`)
+    .replace(/\*(.*?)\*/g, `<em class="italic ${isUser ? 'text-violet-300' : 'text-slate-400'}">$1</em>`)
+    .replace(/(?:^|<br \/>)\s*[-•]\s+(.*?)(?=<br \/>|$)/g,
+      `<li class="ml-4 list-disc ${isUser ? 'text-violet-100' : 'text-slate-300'} mt-1">$1</li>`);
+
+  return <div dangerouslySetInnerHTML={{ __html: `<p>${html}</p>` }} />;
+}
+
+// ─── Product Slider ───────────────────────────────────────────────────────────
+interface ProductSliderProps {
+  products: RecommendedProduct[];
+  addingId: number | null;
+  onAddToCart: (e: React.MouseEvent, product: RecommendedProduct) => void;
+}
+
+function ProductSlider({ products, addingId, onAddToCart }: ProductSliderProps) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [showLeft, setShowLeft] = useState(false);
+  const [showRight, setShowRight] = useState(false);
+
+  const checkScroll = useCallback(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    setShowLeft(el.scrollLeft > 5);
+    setShowRight(el.scrollLeft + el.clientWidth < el.scrollWidth - 5);
+  }, []);
 
   useEffect(() => {
     const el = containerRef.current;
-    if (el) {
-      checkScroll();
-      el.addEventListener('scroll', checkScroll);
-      window.addEventListener('resize', checkScroll);
+    if (!el) return;
+    checkScroll();
+    el.addEventListener('scroll', checkScroll);
+    window.addEventListener('resize', checkScroll);
+    const observer = new ResizeObserver(checkScroll);
+    observer.observe(el);
+    return () => {
+      el.removeEventListener('scroll', checkScroll);
+      window.removeEventListener('resize', checkScroll);
+      observer.disconnect();
+    };
+  }, [products, checkScroll]);
 
-      // Theo dõi khi các hình ảnh tải xong để tính toán lại scroll
-      const imgElements = el.querySelectorAll('img');
-      imgElements.forEach(img => {
-        img.addEventListener('load', checkScroll);
-      });
-
-      const observer = new ResizeObserver(checkScroll);
-      observer.observe(el);
-
-      return () => {
-        el.removeEventListener('scroll', checkScroll);
-        window.removeEventListener('resize', checkScroll);
-        imgElements.forEach(img => {
-          img.removeEventListener('load', checkScroll);
-        });
-        observer.disconnect();
-      };
-    }
-  }, [products]);
-
-  const handleScroll = (direction: 'left' | 'right') => {
-    if (containerRef.current) {
-      // 188px tương ứng chính xác kích thước 1 card (w-44 = 176px + gap-3 = 12px) giúp cuộn và snap mượt mà
-      const scrollAmount = direction === 'left' ? -188 : 188;
-      containerRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
-    }
+  const scroll = (dir: 'left' | 'right') => {
+    containerRef.current?.scrollBy({ left: dir === 'left' ? -192 : 192, behavior: 'smooth' });
   };
 
   return (
-    <div className="w-full mt-3 overflow-hidden">
-      {/* Nhãn trạng thái: Chính xác hoặc Đề xuất tương tự */}
-      <p className="text-[10px] font-bold uppercase tracking-wider mb-2 flex items-center gap-1.5">
-        <ShoppingCart className={`size-3 ${isExact ? 'text-blue-500' : 'text-amber-500'}`} />
-        <span className={isExact ? 'text-blue-600' : 'text-amber-600'}>
-          {isExact ? 'Sản phẩm phù hợp yêu cầu:' : 'Đề xuất sản phẩm tương tự:'}
-        </span>
+    <div className="w-full ml-8">
+      <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-2 flex items-center gap-1.5">
+        <ShoppingCart className="size-3 text-violet-500" />
+        <span className="text-violet-400">Sản phẩm đề xuất:</span>
       </p>
 
-      {/* Wrapper relative để định vị các nút điều khiển scroll tuyệt đối */}
       <div className="relative group/slider">
-        {/* Nút cuộn sang trái (Chỉ hiện khi có thể cuộn trái) */}
-        {showLeftArrow && (
+        {/* Left arrow */}
+        {showLeft && (
           <button
             type="button"
-            onClick={() => handleScroll('left')}
-            className="absolute left-1 top-1/2 -translate-y-1/2 z-10 size-7 flex items-center justify-center rounded-full bg-white/95 shadow-md border border-gray-200 text-gray-700 hover:bg-blue-600 hover:text-white hover:border-blue-600 hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer"
-            aria-label="Cuộn trái"
+            onClick={() => scroll('left')}
+            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 size-7 flex items-center justify-center rounded-full bg-slate-800 border border-slate-600 text-slate-300 hover:bg-violet-600 hover:border-violet-600 hover:text-white hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer shadow-md"
           >
             <ChevronLeft className="size-4" />
           </button>
         )}
 
-        {/* Nút cuộn sang phải (Chỉ hiện khi có thể cuộn phải) */}
-        {showRightArrow && (
+        {/* Right arrow */}
+        {showRight && (
           <button
             type="button"
-            onClick={() => handleScroll('right')}
-            className="absolute right-1 top-1/2 -translate-y-1/2 z-10 size-7 flex items-center justify-center rounded-full bg-white/95 shadow-md border border-gray-200 text-gray-700 hover:bg-blue-600 hover:text-white hover:border-blue-600 hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer"
-            aria-label="Cuộn phải"
+            onClick={() => scroll('right')}
+            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 size-7 flex items-center justify-center rounded-full bg-slate-800 border border-slate-600 text-slate-300 hover:bg-violet-600 hover:border-violet-600 hover:text-white hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer shadow-md"
           >
             <ChevronRight className="size-4" />
           </button>
         )}
 
-        {/* Hộp cuộn Flex ngang chứa danh sách sản phẩm */}
+        {/* Product cards */}
         <div
           ref={containerRef}
           className="flex overflow-x-auto gap-3 pb-2 scrollbar-none snap-x snap-mandatory"
@@ -428,14 +406,15 @@ function ProductSlider({ products, isExact, addingId, onAddToCart }: ProductSlid
               : product.thumbnailUrl
                 ? `http://localhost:8080${product.thumbnailUrl}`
                 : null;
+            const displayPrice = product.discountPrice ?? product.price;
 
             return (
               <div
                 key={product.id}
-                className="flex-shrink-0 w-44 snap-start bg-white border border-gray-200 rounded-xl overflow-hidden hover:border-blue-400 hover:shadow-md hover:shadow-blue-500/10 transition-all duration-300 flex flex-col"
+                className="flex-shrink-0 w-44 snap-start bg-slate-800 border border-slate-700/60 rounded-xl overflow-hidden hover:border-violet-500/40 hover:shadow-md hover:shadow-violet-500/10 transition-all duration-300 flex flex-col"
               >
-                {/* Khung ảnh sản phẩm */}
-                <Link href={`/explore/${product.id}`} className="block h-24 bg-gray-50 relative overflow-hidden group">
+                {/* Product image */}
+                <Link href={`/explore/${product.id}`} className="block h-24 bg-slate-900 relative overflow-hidden group">
                   {imgSrc ? (
                     <img
                       src={imgSrc}
@@ -443,13 +422,12 @@ function ProductSlider({ products, isExact, addingId, onAddToCart }: ProductSlid
                       className="w-full h-full object-contain p-2 group-hover:scale-105 transition-transform duration-300"
                     />
                   ) : (
-                    <div className="flex flex-col items-center justify-center h-full text-gray-400">
+                    <div className="flex flex-col items-center justify-center h-full text-slate-600">
                       <Package className="size-6" />
-                      <span className="text-[9px] mt-1">Không có ảnh</span>
+                      <span className="text-[9px] mt-1">Chưa có ảnh</span>
                     </div>
                   )}
-
-                  {/* Nhãn giảm giá */}
+                  {/* Sale badge */}
                   {isSale && (
                     <span className="absolute top-1.5 left-1.5 bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded">
                       -{product.discountPercent}%
@@ -457,24 +435,24 @@ function ProductSlider({ products, isExact, addingId, onAddToCart }: ProductSlid
                   )}
                 </Link>
 
-                {/* Khung thông tin chi tiết */}
+                {/* Product info */}
                 <div className="p-3 flex-1 flex flex-col justify-between gap-1.5">
                   <Link
                     href={`/explore/${product.id}`}
-                    className="text-[11px] font-semibold text-gray-800 hover:text-blue-600 transition-colors line-clamp-2 leading-snug min-h-[32px]"
+                    className="text-[11px] font-semibold text-slate-200 hover:text-violet-400 transition-colors line-clamp-2 leading-snug min-h-[32px]"
                   >
                     {product.name}
                   </Link>
 
-                  <div className="flex items-end justify-between pt-1 border-t border-gray-100">
+                  <div className="flex items-end justify-between pt-1 border-t border-slate-700/60">
                     <div className="flex flex-col">
-                      {isSale && product.discountPrice && (
-                        <span className="text-[9px] text-gray-400 line-through">
+                      {isSale && (
+                        <span className="text-[9px] text-slate-500 line-through">
                           {product.price.toLocaleString('vi-VN')}₫
                         </span>
                       )}
-                      <span className="text-[11px] font-bold text-blue-600">
-                        {(product.discountPrice || product.price).toLocaleString('vi-VN')}₫
+                      <span className="text-[11px] font-bold text-violet-400">
+                        {displayPrice.toLocaleString('vi-VN')}₫
                       </span>
                     </div>
 
@@ -482,7 +460,7 @@ function ProductSlider({ products, isExact, addingId, onAddToCart }: ProductSlid
                       type="button"
                       disabled={product.stock === 0 || addingId === product.id}
                       onClick={(e) => onAddToCart(e, product)}
-                      className="p-1.5 rounded-md bg-gray-100 hover:bg-blue-500 text-gray-500 hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                      className="p-1.5 rounded-md bg-slate-700 hover:bg-violet-600 text-slate-400 hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
                       aria-label="Thêm vào giỏ"
                     >
                       {addingId === product.id ? (
