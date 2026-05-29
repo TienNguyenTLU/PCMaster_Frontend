@@ -32,10 +32,10 @@ const WELCOME_MESSAGE: ChatMessage = {
 };
 
 const QUICK_PROMPTS = [
-  { text: 'PC gaming tầm 20 triệu', icon: <Gamepad2 className="size-3 text-violet-400" /> },
-  { text: 'Tư vấn VGA dưới 8 triệu', icon: <Cpu className="size-3 text-blue-400" /> },
-  { text: 'Màn hình 144Hz tốt nhất', icon: <Monitor className="size-3 text-emerald-400" /> },
-  { text: 'SSD tốc độ cao giá tốt', icon: <HardDrive className="size-3 text-orange-400" /> },
+  { text: 'PC gaming tầm 20 triệu', icon: <Gamepad2 className="size-3 text-violet-500" /> },
+  { text: 'Tư vấn VGA dưới 8 triệu', icon: <Cpu className="size-3 text-blue-500" /> },
+  { text: 'Màn hình 144Hz tốt nhất', icon: <Monitor className="size-3 text-emerald-500" /> },
+  { text: 'SSD tốc độ cao giá tốt', icon: <HardDrive className="size-3 text-orange-500" /> },
 ];
 
 // ─── Main Component ───────────────────────────────────────────────────────────
@@ -135,15 +135,15 @@ export default function ChatbotWidget() {
         className="fixed bottom-6 right-6 z-50 group"
         aria-label="Trợ lý AI PCMaster"
       >
-        <div className="relative p-4 rounded-2xl bg-gradient-to-br from-slate-800 to-slate-900 border border-slate-600/50 shadow-xl shadow-black/40 hover:shadow-violet-500/20 hover:border-violet-500/50 hover:scale-105 active:scale-95 transition-all duration-300">
+        <div className="relative p-4 rounded-2xl bg-white border border-gray-200 shadow-lg shadow-gray-200/60 hover:shadow-xl hover:shadow-blue-100 hover:border-blue-300 hover:scale-105 active:scale-95 transition-all duration-300">
           {/* Glow effect */}
-          <div className="absolute inset-0 rounded-2xl bg-violet-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          <div className="absolute inset-0 rounded-2xl bg-blue-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
           {isOpen ? (
-            <X className="size-6 text-slate-300 relative z-10 transition-transform duration-300 rotate-90" />
+            <X className="size-6 text-gray-500 relative z-10 transition-transform duration-300 rotate-90" />
           ) : (
             <div className="relative">
-              <Bot className="size-6 text-violet-400 relative z-10 group-hover:text-violet-300 transition-colors" />
+              <Bot className="size-6 text-[#0058be] relative z-10 group-hover:text-blue-600 transition-colors" />
               {/* Online indicator pulse */}
               <span className="absolute -top-1 -right-1 flex size-3">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
@@ -156,34 +156,33 @@ export default function ChatbotWidget() {
 
       {/* ── Chat Panel ────────────────────────────────────────────────────── */}
       {isOpen && (
-        <div className="fixed bottom-24 right-6 w-96 h-[580px] z-50 flex flex-col rounded-2xl overflow-hidden shadow-2xl shadow-black/50 border border-slate-700/60 animate-chat-in">
+        <div className="fixed bottom-24 right-6 w-96 h-[580px] z-50 flex flex-col rounded-2xl overflow-hidden shadow-2xl shadow-gray-300/50 border border-gray-200 animate-chat-in bg-white">
 
           {/* Header */}
-          <div className="px-5 py-4 bg-gradient-to-r from-slate-800 to-slate-900 border-b border-slate-700/60 flex items-center justify-between flex-shrink-0">
+          <div className="px-5 py-4 bg-gradient-to-r from-[#0058be] to-[#0070e0] flex items-center justify-between flex-shrink-0">
             <div className="flex items-center gap-3">
-              <div className="relative p-2.5 rounded-xl bg-violet-500/15 border border-violet-500/25">
-                <Sparkles className="size-4 text-violet-400" />
+              <div className="relative p-2.5 rounded-xl bg-white/20 border border-white/25">
+                <Sparkles className="size-4 text-white" />
               </div>
               <div>
                 <h3 className="text-sm font-bold text-white flex items-center gap-2">
                   Trợ Lý AI PCMaster
                   <span className="inline-block size-2 rounded-full bg-emerald-400 animate-pulse" />
                 </h3>
-                <p className="text-[11px] text-slate-400 mt-0.5">Powered by Ollama · RAG · PGVector</p>
               </div>
             </div>
 
             <div className="flex items-center gap-1">
               <button
                 onClick={handleReset}
-                className="p-1.5 rounded-lg hover:bg-slate-700 text-slate-400 hover:text-slate-200 transition-colors cursor-pointer"
+                className="p-1.5 rounded-lg hover:bg-white/15 text-white/70 hover:text-white transition-colors cursor-pointer"
                 title="Bắt đầu cuộc trò chuyện mới"
               >
                 <RefreshCw className="size-3.5" />
               </button>
               <button
                 onClick={() => setIsOpen(false)}
-                className="p-1.5 rounded-lg hover:bg-slate-700 text-slate-400 hover:text-slate-200 transition-colors cursor-pointer"
+                className="p-1.5 rounded-lg hover:bg-white/15 text-white/70 hover:text-white transition-colors cursor-pointer"
               >
                 <X className="size-4" />
               </button>
@@ -191,7 +190,7 @@ export default function ChatbotWidget() {
           </div>
 
           {/* Messages Area */}
-          <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 bg-slate-950 scrollbar-thin scrollbar-thumb-slate-700 scrollbar-track-transparent">
+          <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 bg-gray-50 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
             {messages.map((msg, index) => (
               <MessageBubble
                 key={index}
@@ -204,13 +203,13 @@ export default function ChatbotWidget() {
             {/* Typing indicator */}
             {isLoading && (
               <div className="flex items-start gap-2">
-                <div className="p-1.5 rounded-lg bg-violet-500/15 border border-violet-500/20">
-                  <Bot className="size-3.5 text-violet-400" />
+                <div className="p-1.5 rounded-lg bg-blue-50 border border-blue-100 flex-shrink-0">
+                  <Bot className="size-3.5 text-[#0058be]" />
                 </div>
-                <div className="bg-slate-800 border border-slate-700/60 rounded-2xl rounded-tl-sm px-4 py-3 flex items-center gap-1.5">
-                  <div className="size-2 rounded-full bg-violet-400 animate-bounce [animation-delay:-0.3s]" />
-                  <div className="size-2 rounded-full bg-violet-400 animate-bounce [animation-delay:-0.15s]" />
-                  <div className="size-2 rounded-full bg-violet-400 animate-bounce" />
+                <div className="bg-white border border-gray-200 rounded-2xl rounded-tl-sm px-4 py-3 flex items-center gap-1.5 shadow-sm">
+                  <div className="size-2 rounded-full bg-[#0058be] animate-bounce [animation-delay:-0.3s]" />
+                  <div className="size-2 rounded-full bg-[#0058be] animate-bounce [animation-delay:-0.15s]" />
+                  <div className="size-2 rounded-full bg-[#0058be] animate-bounce" />
                 </div>
               </div>
             )}
@@ -219,12 +218,12 @@ export default function ChatbotWidget() {
 
           {/* Quick Prompts */}
           {!isLoading && messages.length <= 2 && (
-            <div className="px-4 py-3 bg-slate-900 border-t border-slate-700/60 flex flex-wrap gap-2 flex-shrink-0">
+            <div className="px-4 py-3 bg-white border-t border-gray-100 flex flex-wrap gap-2 flex-shrink-0">
               {QUICK_PROMPTS.map((prompt, i) => (
                 <button
                   key={i}
                   onClick={() => handleSendMessage(prompt.text)}
-                  className="px-2.5 py-1.5 rounded-lg border border-slate-700 hover:border-violet-500/50 bg-slate-800/50 hover:bg-violet-500/10 text-[10px] text-slate-400 hover:text-violet-300 transition-all flex items-center gap-1.5 cursor-pointer hover:-translate-y-0.5"
+                  className="px-2.5 py-1.5 rounded-lg border border-gray-200 hover:border-blue-300 bg-gray-50 hover:bg-blue-50 text-[10px] text-gray-500 hover:text-[#0058be] transition-all flex items-center gap-1.5 cursor-pointer hover:-translate-y-0.5"
                 >
                   {prompt.icon}
                   {prompt.text}
@@ -236,7 +235,7 @@ export default function ChatbotWidget() {
           {/* Input Form */}
           <form
             onSubmit={(e) => { e.preventDefault(); handleSendMessage(input); }}
-            className="p-4 bg-slate-900 border-t border-slate-700/60 flex items-center gap-2 flex-shrink-0"
+            className="p-4 bg-white border-t border-gray-100 flex items-center gap-2 flex-shrink-0"
           >
             <input
               ref={inputRef}
@@ -245,12 +244,12 @@ export default function ChatbotWidget() {
               onChange={(e) => setInput(e.target.value)}
               disabled={isLoading}
               placeholder="Hỏi tư vấn cấu hình, linh kiện..."
-              className="flex-1 px-4 py-2.5 rounded-xl bg-slate-800 border border-slate-700 text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-violet-500/50 focus:ring-2 focus:ring-violet-500/15 transition-all disabled:opacity-50"
+              className="flex-1 px-4 py-2.5 rounded-xl bg-gray-50 border border-gray-200 text-xs text-gray-800 placeholder-gray-400 focus:outline-none focus:border-blue-300 focus:ring-2 focus:ring-blue-100 transition-all disabled:opacity-50"
             />
             <button
               type="submit"
               disabled={isLoading || !input.trim()}
-              className="p-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 text-white transition-all hover:scale-105 active:scale-95 disabled:opacity-40 disabled:scale-100 disabled:cursor-not-allowed cursor-pointer shadow-sm shadow-violet-500/25"
+              className="p-2.5 rounded-xl bg-[#0058be] hover:bg-[#0047a3] text-white transition-all hover:scale-105 active:scale-95 disabled:opacity-40 disabled:scale-100 disabled:cursor-not-allowed cursor-pointer shadow-sm shadow-blue-200"
             >
               <Send className="size-4" />
             </button>
@@ -265,7 +264,8 @@ export default function ChatbotWidget() {
           to   { opacity: 1; transform: translateY(0)    scale(1);    }
         }
         .animate-chat-in { animation: chat-in 0.25s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
-      `}</style>
+      `}
+      </style>
     </>
   );
 }
@@ -286,16 +286,16 @@ function MessageBubble({ message, addingId, onAddToCart }: MessageBubbleProps) {
       <div className={`flex items-start gap-2 max-w-[88%] ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
         {/* Avatar */}
         {!isUser && (
-          <div className="p-1.5 rounded-lg bg-violet-500/15 border border-violet-500/20 flex-shrink-0 mt-0.5">
-            <Bot className="size-3.5 text-violet-400" />
+          <div className="p-1.5 rounded-lg bg-blue-50 border border-blue-100 flex-shrink-0 mt-0.5">
+            <Bot className="size-3.5 text-[#0058be]" />
           </div>
         )}
 
         {/* Message Bubble */}
         <div className={`px-4 py-3 rounded-2xl text-xs leading-relaxed ${
           isUser
-            ? 'bg-gradient-to-br from-violet-600 to-violet-700 text-white rounded-tr-sm shadow-lg shadow-violet-500/20'
-            : 'bg-slate-800 text-slate-200 border border-slate-700/60 rounded-tl-sm'
+            ? 'bg-[#0058be] text-white rounded-tr-sm shadow-md shadow-blue-200/40'
+            : 'bg-white text-gray-700 border border-gray-200 rounded-tl-sm shadow-sm'
         }`}>
           <MarkdownText text={message.content} isUser={isUser} />
         </div>
@@ -318,10 +318,10 @@ function MarkdownText({ text, isUser }: { text: string; isUser: boolean }) {
   const html = text
     .replace(/\n\n/g, '</p><p class="mt-2">')
     .replace(/\n/g, '<br />')
-    .replace(/\*\*(.*?)\*\*/g, `<strong class="font-semibold ${isUser ? 'text-violet-200' : 'text-white'}">$1</strong>`)
-    .replace(/\*(.*?)\*/g, `<em class="italic ${isUser ? 'text-violet-300' : 'text-slate-400'}">$1</em>`)
+    .replace(/\*\*(.*?)\*\*/g, `<strong class="font-semibold ${isUser ? 'text-blue-100' : 'text-gray-900'}">${'$1'}</strong>`)
+    .replace(/\*(.*?)\*/g, `<em class="italic ${isUser ? 'text-blue-200' : 'text-gray-500'}">${'$1'}</em>`)
     .replace(/(?:^|<br \/>)\s*[-•]\s+(.*?)(?=<br \/>|$)/g,
-      `<li class="ml-4 list-disc ${isUser ? 'text-violet-100' : 'text-slate-300'} mt-1">$1</li>`);
+      `<li class="ml-4 list-disc ${isUser ? 'text-blue-50' : 'text-gray-600'} mt-1">${'$1'}</li>`);
 
   return <div dangerouslySetInnerHTML={{ __html: `<p>${html}</p>` }} />;
 }
@@ -366,9 +366,9 @@ function ProductSlider({ products, addingId, onAddToCart }: ProductSliderProps) 
 
   return (
     <div className="w-full ml-8">
-      <p className="text-[10px] font-semibold uppercase tracking-wider text-slate-500 mb-2 flex items-center gap-1.5">
-        <ShoppingCart className="size-3 text-violet-500" />
-        <span className="text-violet-400">Sản phẩm đề xuất:</span>
+      <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 mb-2 flex items-center gap-1.5">
+        <ShoppingCart className="size-3 text-[#0058be]" />
+        <span className="text-[#0058be]">Sản phẩm đề xuất:</span>
       </p>
 
       <div className="relative group/slider">
@@ -377,7 +377,7 @@ function ProductSlider({ products, addingId, onAddToCart }: ProductSliderProps) 
           <button
             type="button"
             onClick={() => scroll('left')}
-            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 size-7 flex items-center justify-center rounded-full bg-slate-800 border border-slate-600 text-slate-300 hover:bg-violet-600 hover:border-violet-600 hover:text-white hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer shadow-md"
+            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 size-7 flex items-center justify-center rounded-full bg-white border border-gray-200 text-gray-500 hover:bg-[#0058be] hover:border-[#0058be] hover:text-white hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer shadow-md"
           >
             <ChevronLeft className="size-4" />
           </button>
@@ -388,7 +388,7 @@ function ProductSlider({ products, addingId, onAddToCart }: ProductSliderProps) 
           <button
             type="button"
             onClick={() => scroll('right')}
-            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 size-7 flex items-center justify-center rounded-full bg-slate-800 border border-slate-600 text-slate-300 hover:bg-violet-600 hover:border-violet-600 hover:text-white hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer shadow-md"
+            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 size-7 flex items-center justify-center rounded-full bg-white border border-gray-200 text-gray-500 hover:bg-[#0058be] hover:border-[#0058be] hover:text-white hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer shadow-md"
           >
             <ChevronRight className="size-4" />
           </button>
@@ -411,10 +411,10 @@ function ProductSlider({ products, addingId, onAddToCart }: ProductSliderProps) 
             return (
               <div
                 key={product.id}
-                className="flex-shrink-0 w-44 snap-start bg-slate-800 border border-slate-700/60 rounded-xl overflow-hidden hover:border-violet-500/40 hover:shadow-md hover:shadow-violet-500/10 transition-all duration-300 flex flex-col"
+                className="flex-shrink-0 w-44 snap-start bg-white border border-gray-200 rounded-xl overflow-hidden hover:border-blue-300 hover:shadow-md hover:shadow-blue-50 transition-all duration-300 flex flex-col"
               >
                 {/* Product image */}
-                <Link href={`/explore/${product.id}`} className="block h-24 bg-slate-900 relative overflow-hidden group">
+                <Link href={`/explore/${product.id}`} className="block h-24 bg-gray-50 relative overflow-hidden group">
                   {imgSrc ? (
                     <img
                       src={imgSrc}
@@ -422,7 +422,7 @@ function ProductSlider({ products, addingId, onAddToCart }: ProductSliderProps) 
                       className="w-full h-full object-contain p-2 group-hover:scale-105 transition-transform duration-300"
                     />
                   ) : (
-                    <div className="flex flex-col items-center justify-center h-full text-slate-600">
+                    <div className="flex flex-col items-center justify-center h-full text-gray-300">
                       <Package className="size-6" />
                       <span className="text-[9px] mt-1">Chưa có ảnh</span>
                     </div>
@@ -439,19 +439,19 @@ function ProductSlider({ products, addingId, onAddToCart }: ProductSliderProps) 
                 <div className="p-3 flex-1 flex flex-col justify-between gap-1.5">
                   <Link
                     href={`/explore/${product.id}`}
-                    className="text-[11px] font-semibold text-slate-200 hover:text-violet-400 transition-colors line-clamp-2 leading-snug min-h-[32px]"
+                    className="text-[11px] font-semibold text-gray-700 hover:text-[#0058be] transition-colors line-clamp-2 leading-snug min-h-[32px]"
                   >
                     {product.name}
                   </Link>
 
-                  <div className="flex items-end justify-between pt-1 border-t border-slate-700/60">
+                  <div className="flex items-end justify-between pt-1 border-t border-gray-100">
                     <div className="flex flex-col">
                       {isSale && (
-                        <span className="text-[9px] text-slate-500 line-through">
+                        <span className="text-[9px] text-gray-400 line-through">
                           {product.price.toLocaleString('vi-VN')}₫
                         </span>
                       )}
-                      <span className="text-[11px] font-bold text-violet-400">
+                      <span className="text-[11px] font-bold text-[#0058be]">
                         {displayPrice.toLocaleString('vi-VN')}₫
                       </span>
                     </div>
@@ -460,7 +460,7 @@ function ProductSlider({ products, addingId, onAddToCart }: ProductSliderProps) 
                       type="button"
                       disabled={product.stock === 0 || addingId === product.id}
                       onClick={(e) => onAddToCart(e, product)}
-                      className="p-1.5 rounded-md bg-slate-700 hover:bg-violet-600 text-slate-400 hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
+                      className="p-1.5 rounded-md bg-gray-100 hover:bg-[#0058be] text-gray-400 hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
                       aria-label="Thêm vào giỏ"
                     >
                       {addingId === product.id ? (

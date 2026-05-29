@@ -35,7 +35,9 @@ export default function BuildPickerModal({ slotKey, slotLabel, build, onSelect, 
 
   useEffect(() => {
     searchRef.current?.focus();
-    const keywords = slotCategoryKeywords[slotKey] ?? [slotKey];
+    const keywords = slotKey.startsWith('storage_extra_')
+      ? slotCategoryKeywords['storage']
+      : slotCategoryKeywords[slotKey] ?? [slotKey];
 
     adminAPI.getCategories(0, 200).then(res => {
       const cats = res.content || [];
@@ -169,9 +171,17 @@ export default function BuildPickerModal({ slotKey, slotLabel, build, onSelect, 
     if (mainboardFormFactor) {
       filtered = filtered.filter(p => isCaseCompatible(p, mainboardFormFactor));
     }
-  } else if (slotKey === 'storage') {
+  } else if (slotKey === 'storage' || slotKey.startsWith('storage_extra_')) {
     if (selectedMainboard) {
       filtered = filtered.filter(p => isSsdCompatible(p, selectedMainboard));
+    }
+    if (slotKey.startsWith('storage_extra_')) {
+      filtered = filtered.filter(p => {
+        const specs = getProductSpecs(p);
+        const ssdInt = String(specs.interface || '').toLowerCase();
+        const ssdType = String(specs.type || '').toLowerCase();
+        return ssdInt.includes('nvme') || ssdInt.includes('m.2') || ssdInt.includes('pcie') || ssdType.includes('m2');
+      });
     }
   } else if (slotKey === 'cooler') {
     if (cpuSocket) {

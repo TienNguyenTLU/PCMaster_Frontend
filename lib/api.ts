@@ -840,3 +840,33 @@ export const adminChatbotAPI = {
     return data;
   },
 };
+
+// ─── Bottleneck Analysis API ──────────────────────────────────────────────────
+
+export interface BottleneckResponse {
+  id: number | null;
+  cpuProductId: number;
+  gpuProductId: number;
+  cpuName: string;
+  gpuName: string;
+  resolution: string;
+  bottleneckPercent: number;
+  bottleneckSide: 'CPU' | 'GPU' | 'BALANCED';
+  fpsEstimate: number;
+  recommendations: string[];
+  details: Record<string, unknown>;
+}
+
+/**
+ * Dịch vụ phân tích nghẽn cổ chai (Bottleneck) giữa CPU và GPU
+ * Sử dụng mô hình ML (LightGBM) với fallback về dữ liệu tĩnh
+ */
+export const bottleneckAPI = {
+  /** Phân tích mức độ nghẽn giữa CPU và GPU tại một độ phân giải cho trước */
+  analyze: async (cpuId: number, gpuId: number, resolution: string = '1080p'): Promise<BottleneckResponse> => {
+    const { data } = await axiosInstance.get<BottleneckResponse>(
+      `/api/bottleneck?cpuId=${cpuId}&gpuId=${gpuId}&res=${encodeURIComponent(resolution)}`
+    );
+    return data;
+  },
+};

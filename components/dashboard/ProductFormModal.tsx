@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useEffect, useRef } from 'react';
-import { X, Save, Loader2, AlertCircle, Upload, ImageIcon, Check, Trash2 } from 'lucide-react';
+import { X, Save, Loader2, AlertCircle, Upload, ImageIcon, Check, Trash2, FileSpreadsheet, Download, Info, RotateCcw } from 'lucide-react';
 import { adminAPI, Product, Brand, Category, ProductImage } from '@/lib/api';
 import toast from 'react-hot-toast';
 import { CldImage } from 'next-cloudinary';
@@ -228,6 +228,12 @@ export default function ProductFormModal({ isOpen, onClose, onSuccess, editingPr
   // Dynamic spec fields (key → value)
   const [specs, setSpecs] = useState<Record<string, string>>({});
 
+  // CSV import state
+  const [csvImportMode, setCsvImportMode] = useState(false);
+  const [csvPreview, setCsvPreview] = useState<{ key: string; value: string }[]>([]);
+  const [csvFileName, setCsvFileName] = useState('');
+  const csvInputRef = useRef<HTMLInputElement>(null);
+
   // Thumbnail file
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
   const [thumbnailPreview, setThumbnailPreview] = useState<string>('');
@@ -307,6 +313,110 @@ export default function ProductFormModal({ isOpen, onClose, onSuccess, editingPr
     }
   };
 
+  // ─── CSV Parser ─────────────────────────────────────────────────────────────
+  const parseCSV = (text: string): { key: string; value: string }[] => {
+    const lines = text.split(/\r?\n/).filter(line => line.trim() !== '');
+    const results: { key: string; value: string }[] = [];
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i].trim();
+      // Skip header row
+      if (i === 0 && /^key\s*[,;\t]\s*value$/i.test(line)) continue;
+
+      // Handle quoted values: key,"value with, comma"
+      let key = '';
+      let value = '';
+
+      const match = line.match(/^([^,;\t]+)[,;\t]\s*"(.*)"\s*$/);
+      if (match) {
+        key = match[1].trim();
+        value = match[2].trim();
+      } else {
+        const sepIdx = line.search(/[,;\t]/);
+        if (sepIdx === -1) continue;
+        key = line.substring(0, sepIdx).trim();
+        value = line.substring(sepIdx + 1).trim();
+      }
+
+      if (key) results.push({ key, value });
+    }
+
+    return results;
+  };
+
+  const handleCsvFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (!file.name.endsWith('.csv') && !file.name.endsWith('.txt')) {
+      toast.error('Vui lòng chọn file CSV hoặc TXT.');
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const text = ev.target?.result as string;
+      const parsed = parseCSV(text);
+
+      if (parsed.length === 0) {
+        toast.error('File CSV không có dữ liệu hợp lệ. Kiểm tra lại format: key,value');
+        return;
+      }
+
+      setCsvPreview(parsed);
+      setCsvFileName(file.name);
+
+      // Overwrite specs entirely with CSV data
+      const newSpecs: Record<string, string> = {};
+      for (const row of parsed) {
+        newSpecs[row.key] = row.value;
+      }
+      setSpecs(newSpecs);
+      toast.success(`Đã import ${parsed.length} thông số từ file CSV.`);
+    };
+    reader.readAsText(file, 'UTF-8');
+
+    // Reset input so same file can be re-selected
+    e.target.value = '';
+  };
+
+  const handleClearCsv = () => {
+    setCsvPreview([]);
+    setCsvFileName('');
+    // Reset specs based on editing product or empty
+    if (editingProduct?.specsJson) {
+      try {
+        const parsed = JSON.parse(editingProduct.specsJson);
+        const stringified: Record<string, string> = {};
+        for (const [k, v] of Object.entries(parsed)) {
+          stringified[k] = Array.isArray(v) ? (v as string[]).join(', ') : String(v);
+        }
+        setSpecs(stringified);
+      } catch { setSpecs({}); }
+    } else {
+      setSpecs({});
+    }
+    toast('Đã xóa dữ liệu CSV. Quay lại thông số ban đầu.', { icon: '↩️' });
+  };
+
+  const handleDownloadSample = () => {
+    const sampleFields = specFields.length > 0 ? specFields : [
+      { key: 'example_key_1', label: 'Ví dụ 1' },
+      { key: 'example_key_2', label: 'Ví dụ 2' },
+    ];
+    let csv = 'key,value\n';
+    for (const f of sampleFields) {
+      csv += `${f.key},\n`;
+    }
+    const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `specs_template_${selectedCategoryName || 'product'}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
   // Load refs data once
   useEffect(() => {
     adminAPI.getBrands(0, 200).then(r => setBrands(r.content || []));
@@ -321,6 +431,9 @@ export default function ProductFormModal({ isOpen, onClose, onSuccess, editingPr
       setCreatedProduct(null);
       setUploadingFiles([]);
       setUploadedImages([]);
+      setCsvImportMode(false);
+      setCsvPreview([]);
+      setCsvFileName('');
       if (editingProduct) {
         setBasic({
           name: editingProduct.name,
@@ -406,8 +519,8 @@ export default function ProductFormModal({ isOpen, onClose, onSuccess, editingPr
       newErrors.brandId = 'Vui lòng chọn thương hiệu';
     }
 
-    // Validate that all spec fields are filled
-    if (specFields.length > 0) {
+    // Validate that all spec fields are filled (only in manual mode)
+    if (!csvImportMode && specFields.length > 0) {
       for (const field of specFields) {
         const val = specs[field.key];
         if (val === undefined || val === null || String(val).trim() === '') {
@@ -426,30 +539,54 @@ export default function ProductFormModal({ isOpen, onClose, onSuccess, editingPr
     setSubmitError('');
 
     // Build specsJson from spec fields
-    const specsObj: Record<string, unknown> = (isEditing && editingProduct?.specsJson) 
-      ? JSON.parse(editingProduct.specsJson) 
-      : {};
+    let specsObj: Record<string, unknown> = {};
 
-    for (const field of specFields) {
-      const val = specs[field.key];
-      if (val === undefined || val === '') {
-        // Remove empty fields
-        delete specsObj[field.key];
-        continue;
+    if (csvImportMode && csvPreview.length > 0) {
+      // CSV mode: overwrite entirely with CSV data
+      for (const [key, val] of Object.entries(specs)) {
+        if (val === undefined || val === '') continue;
+        // Auto-detect types
+        if (val === 'true' || val === 'false') {
+          specsObj[key] = val === 'true';
+        } else if (!isNaN(Number(val)) && val.trim() !== '') {
+          specsObj[key] = Number(val);
+        } else if (val.includes(',')) {
+          // Check if it looks like a multiselect (multiple comma-separated values)
+          const parts = val.split(',').map(s => s.trim()).filter(Boolean);
+          if (parts.length > 1) {
+            specsObj[key] = parts;
+          } else {
+            specsObj[key] = val;
+          }
+        } else {
+          specsObj[key] = val;
+        }
       }
+    } else {
+      // Manual mode: use existing logic
+      specsObj = (isEditing && editingProduct?.specsJson) 
+        ? JSON.parse(editingProduct.specsJson) 
+        : {};
 
-      if (field.type === 'number') {
-        specsObj[field.key] = Number(val);
-      } else if (field.type === 'multiselect') {
-        specsObj[field.key] = typeof val === 'string' ? val.split(',').map(s => s.trim()).filter(Boolean) : val;
-      } else if (field.type === 'select') {
-        // Try to convert to number if it's a valid number string
-        const numVal = Number(val);
-        specsObj[field.key] = isNaN(numVal) ? val : numVal;
-      } else if (field.type === 'boolean') {
-        specsObj[field.key] = val === 'true';
-      } else {
-        specsObj[field.key] = val;
+      for (const field of specFields) {
+        const val = specs[field.key];
+        if (val === undefined || val === '') {
+          delete specsObj[field.key];
+          continue;
+        }
+
+        if (field.type === 'number') {
+          specsObj[field.key] = Number(val);
+        } else if (field.type === 'multiselect') {
+          specsObj[field.key] = typeof val === 'string' ? val.split(',').map(s => s.trim()).filter(Boolean) : val;
+        } else if (field.type === 'select') {
+          const numVal = Number(val);
+          specsObj[field.key] = isNaN(numVal) ? val : numVal;
+        } else if (field.type === 'boolean') {
+          specsObj[field.key] = val === 'true';
+        } else {
+          specsObj[field.key] = val;
+        }
       }
     }
 
@@ -817,96 +954,209 @@ export default function ProductFormModal({ isOpen, onClose, onSuccess, editingPr
             </section>
 
             {/* ── SECTION: Thông số kỹ thuật (dynamic) ── */}
-            {specFields.length > 0 && (
-              <section className="flex flex-col gap-4">
-                <div className="flex items-center justify-between">
-                  <h4 className="text-[13px] font-semibold text-[#0058be] uppercase tracking-wider">
-                    Thông số kỹ thuật — {selectedCategoryName}
-                  </h4>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  {specFields.map(field => (
-                    <div key={field.key} className={`flex flex-col gap-1.5 ${field.type === 'multiselect' ? 'col-span-2' : ''}`}>
-                      <label className="text-[13px] font-medium text-[#374151]">
-                        {field.label}
-                      </label>
-                      {errors[field.key] && (
-                        <span className="text-red-500 text-[11px] font-semibold flex items-center gap-1 animate-in fade-in slide-in-from-top-1 duration-150">
-                          ⚠️ {errors[field.key]}
-                        </span>
-                      )}
-                      {field.type === 'select' ? (
-                        <select
-                          value={specs[field.key] ?? ''}
-                          onChange={e => handleSpec(field.key, e.target.value)}
-                          className={`bg-[#f8fafc] border rounded-[8px] px-3 py-2.5 text-[14px] focus:outline-none transition-all ${
-                            errors[field.key] ? 'border-red-500 focus:border-red-500' : 'border-[#e2e8f0] focus:border-[#0058be]'
-                          }`}
-                        >
-                          <option value="">-- Chọn {field.label.toLowerCase()} --</option>
-                          {field.options?.map(opt => (
-                            <option key={opt} value={opt}>{opt}</option>
-                          ))}
-                        </select>
-                      ) : field.type === 'boolean' ? (
-                        <select
-                          value={specs[field.key] ?? ''}
-                          onChange={e => handleSpec(field.key, e.target.value)}
-                          className={`bg-[#f8fafc] border rounded-[8px] px-3 py-2.5 text-[14px] focus:outline-none transition-all ${
-                            errors[field.key] ? 'border-red-500 focus:border-red-500' : 'border-[#e2e8f0] focus:border-[#0058be]'
-                          }`}
-                        >
-                          <option value="">-- Chọn --</option>
-                          <option value="true">Có / Yes</option>
-                          <option value="false">Không / No</option>
-                        </select>
-                      ) : field.type === 'multiselect' ? (
-                        (() => {
-                          const selectedValues = specs[field.key]
-                            ? specs[field.key].split(',').map(s => s.trim()).filter(Boolean)
-                            : [];
-                          const handleCheckboxToggle = (option: string) => {
-                            const isSelected = selectedValues.includes(option);
-                            const updated = isSelected
-                              ? selectedValues.filter(val => val !== option)
-                              : [...selectedValues, option];
-                            handleSpec(field.key, updated.join(', '));
-                          };
-                          return (
-                            <div className="flex flex-wrap gap-x-4 gap-y-2.5 mt-1 p-3 bg-gray-50 border border-gray-200 rounded-[10px]">
-                              {field.options?.map(opt => {
-                                const isChecked = selectedValues.includes(opt);
-                                return (
-                                  <label key={opt} className="flex items-center gap-2 text-[13px] text-gray-700 cursor-pointer select-none font-medium hover:text-[#0058be] transition-colors">
-                                    <input
-                                      type="checkbox"
-                                      checked={isChecked}
-                                      onChange={() => handleCheckboxToggle(opt)}
-                                      className="size-4 rounded text-[#0058be] border-[#cbd5e1] focus:ring-[#0058be] cursor-pointer"
-                                    />
-                                    <span>{opt}</span>
-                                  </label>
-                                );
-                              })}
-                            </div>
-                          );
-                        })()
-                      ) : (
-                        <input
-                          type={field.type === 'number' ? 'number' : 'text'}
-                          value={specs[field.key] ?? ''}
-                          onChange={e => handleSpec(field.key, e.target.value)}
-                          placeholder={field.placeholder ?? ''}
-                          className={`bg-[#f8fafc] border rounded-[8px] px-3 py-2.5 text-[14px] focus:outline-none transition-all ${
-                            errors[field.key] ? 'border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500' : 'border-[#e2e8f0] focus:border-[#0058be] focus:ring-1 focus:ring-[#0058be]'
-                          }`}
-                        />
-                      )}
+            <section className="flex flex-col gap-4">
+              <div className="flex items-center justify-between">
+                <h4 className="text-[13px] font-semibold text-[#0058be] uppercase tracking-wider">
+                  Thông số kỹ thuật {selectedCategoryName ? `— ${selectedCategoryName}` : ''}
+                </h4>
+              </div>
+
+              {/* Toggle: Manual / CSV */}
+              <div className="flex items-center gap-1 p-1 bg-[#f1f5f9] rounded-[10px] w-fit">
+                <button
+                  type="button"
+                  onClick={() => setCsvImportMode(false)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-[8px] text-[13px] font-medium transition-all cursor-pointer ${
+                    !csvImportMode
+                      ? 'bg-white text-[#0058be] shadow-sm'
+                      : 'text-[#64748b] hover:text-[#475569]'
+                  }`}
+                >
+                  <Save className="size-3.5" />
+                  Nhập thủ công
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setCsvImportMode(true)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-[8px] text-[13px] font-medium transition-all cursor-pointer ${
+                    csvImportMode
+                      ? 'bg-white text-[#0058be] shadow-sm'
+                      : 'text-[#64748b] hover:text-[#475569]'
+                  }`}
+                >
+                  <FileSpreadsheet className="size-3.5" />
+                  Import CSV
+                </button>
+              </div>
+
+              {csvImportMode ? (
+                /* ── CSV Import Mode ── */
+                <div className="flex flex-col gap-4">
+                  {/* Info banner */}
+                  <div className="flex items-start gap-2.5 bg-amber-50 border border-amber-200 rounded-[10px] px-4 py-3">
+                    <Info className="size-4 text-amber-600 shrink-0 mt-0.5" />
+                    <div className="text-[13px] text-amber-800">
+                      <p className="font-semibold">Format CSV: <code className="bg-amber-100 px-1.5 py-0.5 rounded text-[12px]">key,value</code></p>
+                      <p className="mt-1 opacity-80">Mỗi dòng chứa 1 thông số. Dòng đầu tiên <code className="bg-amber-100 px-1 rounded text-[11px]">key,value</code> sẽ tự động bỏ qua (header).</p>
+                      {isEditing && <p className="mt-1 text-amber-900 font-semibold">⚠️ Khi sửa sản phẩm, CSV sẽ ghi đè toàn bộ thông số cũ.</p>}
                     </div>
-                  ))}
+                  </div>
+
+                  {/* Upload zone + download sample */}
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1">
+                      <input
+                        ref={csvInputRef}
+                        type="file"
+                        accept=".csv,.txt"
+                        onChange={handleCsvFileChange}
+                        className="hidden"
+                        id="csv-specs-input"
+                      />
+                      <label
+                        htmlFor="csv-specs-input"
+                        className="flex items-center justify-center gap-2 w-full py-3 border-2 border-dashed border-[#cbd5e1] hover:border-[#0058be] bg-[#f8fafc] hover:bg-[#0058be]/[0.02] rounded-[10px] cursor-pointer transition-all group"
+                      >
+                        <FileSpreadsheet className="size-5 text-[#94a3b8] group-hover:text-[#0058be] transition-colors" />
+                        <span className="text-[13px] font-medium text-[#475569] group-hover:text-[#0058be] transition-colors">
+                          {csvFileName ? `📄 ${csvFileName}` : 'Chọn file CSV thông số...'}
+                        </span>
+                      </label>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={handleDownloadSample}
+                      className="flex items-center gap-1.5 px-3 py-2.5 text-[12px] font-medium text-[#0058be] border border-[#0058be]/20 bg-[#0058be]/[0.04] hover:bg-[#0058be]/[0.08] rounded-[8px] transition-colors cursor-pointer whitespace-nowrap"
+                    >
+                      <Download className="size-3.5" />
+                      Tải file mẫu
+                    </button>
+                  </div>
+
+                  {/* CSV Preview Table */}
+                  {csvPreview.length > 0 && (
+                    <div className="flex flex-col gap-2">
+                      <div className="flex items-center justify-between">
+                        <h5 className="text-[12px] font-bold text-[#475569] uppercase tracking-wider">
+                          Xem trước ({csvPreview.length} thông số)
+                        </h5>
+                        <button
+                          type="button"
+                          onClick={handleClearCsv}
+                          className="flex items-center gap-1 text-[12px] text-red-500 hover:text-red-700 font-medium cursor-pointer transition-colors"
+                        >
+                          <RotateCcw className="size-3" />
+                          Xóa CSV
+                        </button>
+                      </div>
+                      <div className="border border-[#e2e8f0] rounded-[10px] overflow-hidden max-h-[280px] overflow-y-auto">
+                        <table className="w-full text-[13px]">
+                          <thead className="bg-[#f8fafc] sticky top-0">
+                            <tr>
+                              <th className="text-left px-3 py-2 font-semibold text-[#475569] border-b border-[#e2e8f0] w-[40%]">Key</th>
+                              <th className="text-left px-3 py-2 font-semibold text-[#475569] border-b border-[#e2e8f0]">Value</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {csvPreview.map((row, idx) => (
+                              <tr key={idx} className={idx % 2 === 0 ? 'bg-white' : 'bg-[#fafbfc]'}>
+                                <td className="px-3 py-2 text-[#0f172a] font-mono text-[12px] border-b border-[#f1f5f9]">{row.key}</td>
+                                <td className="px-3 py-2 text-[#475569] border-b border-[#f1f5f9]">{row.value || <span className="text-[#cbd5e1] italic">trống</span>}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    </div>
+                  )}
                 </div>
-              </section>
-            )}
+              ) : (
+                /* ── Manual Mode ── */
+                specFields.length > 0 && (
+                  <div className="grid grid-cols-2 gap-4">
+                    {specFields.map(field => (
+                      <div key={field.key} className={`flex flex-col gap-1.5 ${field.type === 'multiselect' ? 'col-span-2' : ''}`}>
+                        <label className="text-[13px] font-medium text-[#374151]">
+                          {field.label}
+                        </label>
+                        {errors[field.key] && (
+                          <span className="text-red-500 text-[11px] font-semibold flex items-center gap-1 animate-in fade-in slide-in-from-top-1 duration-150">
+                            ⚠️ {errors[field.key]}
+                          </span>
+                        )}
+                        {field.type === 'select' ? (
+                          <select
+                            value={specs[field.key] ?? ''}
+                            onChange={e => handleSpec(field.key, e.target.value)}
+                            className={`bg-[#f8fafc] border rounded-[8px] px-3 py-2.5 text-[14px] focus:outline-none transition-all ${
+                              errors[field.key] ? 'border-red-500 focus:border-red-500' : 'border-[#e2e8f0] focus:border-[#0058be]'
+                            }`}
+                          >
+                            <option value="">-- Chọn {field.label.toLowerCase()} --</option>
+                            {field.options?.map(opt => (
+                              <option key={opt} value={opt}>{opt}</option>
+                            ))}
+                          </select>
+                        ) : field.type === 'boolean' ? (
+                          <select
+                            value={specs[field.key] ?? ''}
+                            onChange={e => handleSpec(field.key, e.target.value)}
+                            className={`bg-[#f8fafc] border rounded-[8px] px-3 py-2.5 text-[14px] focus:outline-none transition-all ${
+                              errors[field.key] ? 'border-red-500 focus:border-red-500' : 'border-[#e2e8f0] focus:border-[#0058be]'
+                            }`}
+                          >
+                            <option value="">-- Chọn --</option>
+                            <option value="true">Có / Yes</option>
+                            <option value="false">Không / No</option>
+                          </select>
+                        ) : field.type === 'multiselect' ? (
+                          (() => {
+                            const selectedValues = specs[field.key]
+                              ? specs[field.key].split(',').map(s => s.trim()).filter(Boolean)
+                              : [];
+                            const handleCheckboxToggle = (option: string) => {
+                              const isSelected = selectedValues.includes(option);
+                              const updated = isSelected
+                                ? selectedValues.filter(val => val !== option)
+                                : [...selectedValues, option];
+                              handleSpec(field.key, updated.join(', '));
+                            };
+                            return (
+                              <div className="flex flex-wrap gap-x-4 gap-y-2.5 mt-1 p-3 bg-gray-50 border border-gray-200 rounded-[10px]">
+                                {field.options?.map(opt => {
+                                  const isChecked = selectedValues.includes(opt);
+                                  return (
+                                    <label key={opt} className="flex items-center gap-2 text-[13px] text-gray-700 cursor-pointer select-none font-medium hover:text-[#0058be] transition-colors">
+                                      <input
+                                        type="checkbox"
+                                        checked={isChecked}
+                                        onChange={() => handleCheckboxToggle(opt)}
+                                        className="size-4 rounded text-[#0058be] border-[#cbd5e1] focus:ring-[#0058be] cursor-pointer"
+                                      />
+                                      <span>{opt}</span>
+                                    </label>
+                                  );
+                                })}
+                              </div>
+                            );
+                          })()
+                        ) : (
+                          <input
+                            type={field.type === 'number' ? 'number' : 'text'}
+                            value={specs[field.key] ?? ''}
+                            onChange={e => handleSpec(field.key, e.target.value)}
+                            placeholder={field.placeholder ?? ''}
+                            className={`bg-[#f8fafc] border rounded-[8px] px-3 py-2.5 text-[14px] focus:outline-none transition-all ${
+                              errors[field.key] ? 'border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500' : 'border-[#e2e8f0] focus:border-[#0058be] focus:ring-1 focus:ring-[#0058be]'
+                            }`}
+                          />
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )
+              )}
+            </section>
 
             {/* ── Actions ── */}
             <div className="flex items-center justify-end gap-3 pt-2 border-t border-[#e2e8f0]">

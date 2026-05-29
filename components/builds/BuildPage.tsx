@@ -27,8 +27,8 @@ const SLOTS: SlotDef[] = [
   { key: 'cpu',      label: 'Vi xử lý (CPU)',        description: 'Bộ não của hệ thống', Icon: Cpu,    required: true  },
   { key: 'mainboard',label: 'Bo mạch chủ',            description: 'Nền tảng kết nối',   Icon: Folder,  required: true  },
   { key: 'ram',      label: 'Bộ nhớ RAM',             description: 'Bộ nhớ tạm thời',    Icon: Layers,  required: true  },
+  { key: 'vga',      label: 'Card đồ họa (GPU)',      description: 'Sức mạnh đồ họa',    Icon: Tv,      required: true  },
   { key: 'storage',  label: 'Ổ cứng (SSD/HDD)',       description: 'Lưu trữ dữ liệu',    Icon: HardDrive,required: true },
-  { key: 'vga',      label: 'Card đồ họa (GPU)',      description: 'Sức mạnh đồ họa',    Icon: Tv,      required: false },
   { key: 'psu',      label: 'Nguồn (PSU)',             description: 'Nguồn cấp điện',     Icon: Zap,     required: true  },
   { key: 'case',     label: 'Vỏ máy (Case)',           description: 'Khung chứa linh kiện',Icon: Box,   required: true  },
   { key: 'cooler',   label: 'Tản nhiệt CPU',           description: 'Giải nhiệt vi xử lý',Icon: Wind,   required: false },
@@ -40,13 +40,15 @@ type BuildState = Record<string, Product | null>;
 
 // ─── Summary panel ───────────────────────────────────────────────────────────
 
-function SummaryPanel({ build, totalPrice, onAddAllToCart, adding }: {
+function SummaryPanel({ build, totalPrice, onAddAllToCart, adding, extraStorageSlots = [] }: {
   build: BuildState;
   totalPrice: number;
   onAddAllToCart: () => void;
   adding: boolean;
+  extraStorageSlots?: SlotDef[];
 }) {
-  const selectedCount = Object.values(build).filter(Boolean).length;
+  const allSlots = [...SLOTS, ...extraStorageSlots];
+  const selectedCount = allSlots.filter(s => !!build[s.key]).length;
   const requiredSlots = SLOTS.filter(s => s.required);
   const missingRequired = requiredSlots.filter(s => !build[s.key]);
 
@@ -73,11 +75,17 @@ function SummaryPanel({ build, totalPrice, onAddAllToCart, adding }: {
             {totalPrice.toLocaleString('vi-VN')}
             <span className="text-[18px] font-extrabold text-[#0058be] ml-1">₫</span>
           </p>
-          <p className="text-[12.5px] text-[#64748b] mt-2 font-medium">{selectedCount}/{SLOTS.length} linh kiện đã chọn</p>
+          <p className="text-[12.5px] text-[#64748b] mt-2 font-medium">{selectedCount}/{allSlots.length} linh kiện đã chọn</p>
           {totalTdp > 0 && (
-            <div className="mt-2.5 flex items-center gap-1.5 self-start bg-amber-50/60 border border-amber-100/50 px-2.5 py-1 rounded-[6px] text-amber-700 font-bold text-[11px] uppercase tracking-[0.5px] w-max">
-              <Zap className="size-3.5" />
-              Công suất ước tính: {totalTdp}W
+            <div className="mt-2.5 flex flex-col gap-1.5 self-start bg-amber-50/60 border border-amber-100/50 px-3 py-2 rounded-[10px] w-full text-amber-700 font-bold text-[11px] uppercase tracking-[0.5px]">
+              <div className="flex items-center gap-1.5">
+                <Zap className="size-3.5 shrink-0" />
+                Công suất ước tính: {totalTdp}W
+              </div>
+              <div className="flex items-center gap-1.5 border-t border-amber-200/30 pt-1.5 mt-0.5">
+                <span className="size-3.5 text-center leading-none shrink-0">🛡️</span>
+                PSU khuyến nghị: {Math.ceil((totalTdp + 150) / 50) * 50}W
+              </div>
             </div>
           )}
         </div>
@@ -86,7 +94,7 @@ function SummaryPanel({ build, totalPrice, onAddAllToCart, adding }: {
         <div className="h-2 bg-[#f1f5f9] rounded-full overflow-hidden border border-[#cbd5e1]/10">
           <div
             className="h-full bg-gradient-to-r from-[#0058be] to-[#2563eb] rounded-full transition-all duration-500"
-            style={{ width: `${(selectedCount / SLOTS.length) * 100}%` }}
+            style={{ width: `${(selectedCount / allSlots.length) * 100}%` }}
           />
         </div>
 
@@ -127,7 +135,7 @@ function SummaryPanel({ build, totalPrice, onAddAllToCart, adding }: {
         <div className="bg-white rounded-[24px] border border-[#e8ecf2] p-5 flex flex-col gap-3.5 shadow-sm hover:shadow-md transition-shadow duration-300">
           <p className="text-[12px] font-extrabold text-[#475569] uppercase tracking-[1px] border-b border-[#f1f5f9] pb-2">Danh sách chi tiết</p>
           <div className="flex flex-col gap-2.5 max-h-[300px] overflow-y-auto pr-1" style={{ scrollbarWidth: 'thin' }}>
-            {SLOTS.map(slot => {
+            {allSlots.map(slot => {
               const product = build[slot.key];
               if (!product) return null;
               return (
@@ -188,7 +196,57 @@ export default function BuildPage() {
   const [savingBuild, setSavingBuild] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
+  // Helper to parse specsJson
+  const getProductSpecs = (p?: Product | null) => {
+    if (!p || !p.specsJson) return {};
+    try {
+      return JSON.parse(p.specsJson);
+    } catch {
+      return {};
+    }
+  };
+
+  // Dynamic slots based on motherboard M.2 slots
+  const extraStorageSlots: SlotDef[] = [];
+  const mb = build.mainboard;
+  const mbSpecs = mb ? getProductSpecs(mb) : {};
+  const m2Slots = Number(mbSpecs.m2_slots) || 0;
+  for (let i = 1; i <= m2Slots; i++) {
+    extraStorageSlots.push({
+      key: `storage_extra_${i}`,
+      label: `Ổ cứng M.2 bổ sung ${i}`,
+      description: `Ổ cứng SSD M.2 gắn thêm vào khe thứ ${i}`,
+      Icon: HardDrive,
+      required: false,
+    });
+  }
+
+  const allSlots = [...SLOTS, ...extraStorageSlots];
+  const selectedCount = allSlots.filter(s => !!build[s.key]).length;
   const totalPrice = Object.values(build).reduce((sum, p) => sum + (p?.price ?? 0), 0);
+
+  // Clean up dynamic slots if motherboard changes and reduces M.2 slots
+  useEffect(() => {
+    const mbSpecsObj = build.mainboard ? getProductSpecs(build.mainboard) : {};
+    const currentM2Slots = Number(mbSpecsObj.m2_slots) || 0;
+
+    let hasChanges = false;
+    const newBuild = { ...build };
+
+    Object.keys(build).forEach(key => {
+      if (key.startsWith('storage_extra_')) {
+        const index = parseInt(key.replace('storage_extra_', ''), 10);
+        if (isNaN(index) || index > currentM2Slots) {
+          delete newBuild[key];
+          hasChanges = true;
+        }
+      }
+    });
+
+    if (hasChanges) {
+      setBuild(newBuild);
+    }
+  }, [build.mainboard]);
 
   // Fetch saved builds when active tab changes to 'my-builds'
   const fetchMyBuilds = async () => {
@@ -245,16 +303,6 @@ export default function BuildPage() {
       toast.success(`Đã thêm ${selected.length} linh kiện vào giỏ hàng!`);
     } else {
       toast.error(`${failed} sản phẩm không thể thêm (có thể do hết hàng hoặc chưa đăng nhập).`);
-    }
-  };
-
-  // Helper to parse specsJson
-  const getProductSpecs = (p?: Product | null) => {
-    if (!p || !p.specsJson) return {};
-    try {
-      return JSON.parse(p.specsJson);
-    } catch {
-      return {};
     }
   };
 
@@ -352,7 +400,6 @@ export default function BuildPage() {
       toast.error('Vui lòng đăng nhập trước khi lưu cấu hình!');
       return;
     }
-    const selectedCount = Object.values(build).filter(Boolean).length;
     if (selectedCount === 0) {
       toast.error('Vui lòng chọn ít nhất 1 linh kiện trước khi lưu!');
       return;
@@ -388,10 +435,15 @@ export default function BuildPage() {
 
       const selectedItems = Object.entries(build)
         .filter(([, prod]) => !!prod)
-        .map(([slotKey, prod]) => ({
-          productId: Number(prod!.id),
-          componentType: slotToTypeMap[slotKey]
-        }))
+        .map(([slotKey, prod]) => {
+          const componentType = slotKey.startsWith('storage_extra_')
+            ? 'STORAGE'
+            : slotToTypeMap[slotKey];
+          return {
+            productId: Number(prod!.id),
+            componentType
+          };
+        })
         .filter(item => !!item.componentType); // ignore monitor and fan since they are not in the core backend enum
 
       // 3. Add components sequentially
@@ -430,9 +482,17 @@ export default function BuildPage() {
         'COOLER': 'cooler'
       };
 
+      let storageCount = 0;
+
       for (const item of savedBuild.items) {
         if (item.productId) {
-          const slotKey = typeToSlotMap[item.componentType];
+          let slotKey = typeToSlotMap[item.componentType];
+          if (item.componentType === 'STORAGE') {
+            if (storageCount > 0) {
+              slotKey = `storage_extra_${storageCount}`;
+            }
+            storageCount++;
+          }
           if (slotKey) {
             try {
               const product = await adminAPI.getProductById(item.productId);
@@ -472,7 +532,6 @@ export default function BuildPage() {
   };
 
   const compatNotes = getCompatibilityNotes();
-  const selectedCount = Object.values(build).filter(Boolean).length;
 
   return (
     <div className="flex flex-col min-h-screen w-full" style={{ background: 'linear-gradient(180deg, #f7f9fb 0%, #f0f4f8 100%)' }}>
@@ -595,6 +654,18 @@ export default function BuildPage() {
                     onRemove={() => handleRemove(slot.key)}
                   />
                 ))}
+                {extraStorageSlots.map(slot => (
+                  <BuildSlot
+                    key={slot.key}
+                    slotKey={slot.key}
+                    label={slot.label}
+                    description={slot.description}
+                    Icon={slot.Icon}
+                    product={build[slot.key]}
+                    onPick={() => setActiveSlot(slot.key)}
+                    onRemove={() => handleRemove(slot.key)}
+                  />
+                ))}
               </div>
             </div>
 
@@ -604,6 +675,7 @@ export default function BuildPage() {
               totalPrice={totalPrice}
               onAddAllToCart={handleAddAllToCart}
               adding={addingToCart}
+              extraStorageSlots={extraStorageSlots}
             />
           </div>
         ) : (
@@ -657,9 +729,9 @@ export default function BuildPage() {
               <div className="flex flex-col gap-4">
                 {myBuilds.map(b => (
                   <div
-                    key={b.id}
-                    onClick={() => loadSavedBuild(b)}
-                    className="bg-white rounded-[24px] border border-[#e8ecf2] p-6 shadow-sm hover:border-[#0058be]/30 hover:shadow-[0_12px_36px_rgba(0,88,190,0.06)] hover:-translate-y-0.5 transition-all duration-300 flex flex-col md:flex-row items-start md:items-center justify-between gap-5 cursor-pointer group/card"
+                     key={b.id}
+                     onClick={() => loadSavedBuild(b)}
+                     className="bg-white rounded-[24px] border border-[#e8ecf2] p-6 shadow-sm hover:border-[#0058be]/30 hover:shadow-[0_12px_36px_rgba(0,88,190,0.06)] hover:-translate-y-0.5 transition-all duration-300 flex flex-col md:flex-row items-start md:items-center justify-between gap-5 cursor-pointer group/card"
                   >
                     <div className="flex items-start gap-4">
                       <div className="p-3.5 bg-[#eff6ff] text-[#0058be] border border-blue-100/30 rounded-[16px] group-hover/card:bg-[#0058be] group-hover/card:text-white transition-colors duration-300">
@@ -719,7 +791,7 @@ export default function BuildPage() {
       {activeSlot && (
         <BuildPickerModal
           slotKey={activeSlot}
-          slotLabel={SLOTS.find(s => s.key === activeSlot)?.label ?? activeSlot}
+          slotLabel={allSlots.find(s => s.key === activeSlot)?.label ?? activeSlot}
           build={build}
           onSelect={p => handleSelect(activeSlot, p)}
           onClose={() => setActiveSlot(null)}

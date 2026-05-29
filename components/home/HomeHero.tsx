@@ -1,17 +1,21 @@
 'use client';
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { adminAPI, Banner } from '@/lib/api';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Autoplay, Pagination, Navigation } from 'swiper/modules';
+
+// Import Swiper styles
+import 'swiper/css';
+import 'swiper/css/pagination';
+import 'swiper/css/navigation';
 
 const imgPC = 'http://localhost:3845/assets/3fc0fbbb64b098f587482e466fbf7df039ea5484.png';
 
 export default function HomeHero() {
   const [banners, setBanners] = useState<Banner[]>([]);
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const [isHovered, setIsHovered] = useState(false);
-  const autoplayTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
     adminAPI.getBanners()
@@ -25,42 +29,10 @@ export default function HomeHero() {
       });
   }, []);
 
-  // Autoplay functionality
-  useEffect(() => {
-    if (banners.length <= 1) return;
-
-    if (!isHovered) {
-      autoplayTimerRef.current = setInterval(() => {
-        setCurrentIndex(prev => (prev + 1) % banners.length);
-      }, 5000);
-    }
-
-    return () => {
-      if (autoplayTimerRef.current) {
-        clearInterval(autoplayTimerRef.current);
-      }
-    };
-  }, [banners.length, isHovered]);
-
-  const handlePrev = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setCurrentIndex(prev => (prev - 1 + banners.length) % banners.length);
-  };
-
-  const handleNext = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setCurrentIndex(prev => (prev + 1) % banners.length);
-  };
-
-  const handleDotClick = (idx: number, e: React.MouseEvent) => {
-    e.stopPropagation();
-    setCurrentIndex(idx);
-  };
-
   // Fallback: If no banners are uploaded, render the original gorgeous hero design
   if (banners.length === 0) {
     return (
-      <section className="bg-[#f2f4f6] rounded-[16px] overflow-hidden relative h-[860px] w-full max-w-[1536px] mx-auto">
+      <section className="bg-[#f2f4f6] rounded-[16px] overflow-hidden relative h-[760px] w-full max-w-[1400px] mx-auto">
         {/* Background image – right half */}
         <div className="absolute right-0 top-0 h-full w-[573px]">
           <div className="absolute inset-0 overflow-hidden">
@@ -69,6 +41,8 @@ export default function HomeHero() {
               alt="High-end custom PC workstation"
               className="absolute h-full max-w-none"
               style={{ left: '-110.83%', width: '270.08%', top: '0.01%' }}
+              fetchPriority="high"
+              decoding="sync"
             />
             <div className="absolute inset-0 bg-[rgba(255,255,255,0.2)] mix-blend-saturation" />
           </div>
@@ -148,30 +122,42 @@ export default function HomeHero() {
   }
 
   return (
-    <section 
-      className="w-full max-w-[1536px] mx-auto rounded-[24px] overflow-hidden relative shadow-lg bg-gray-50 border border-slate-100/60 aspect-[21/9] group"
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
-    >
-      {/* Slides Container */}
-      <div className="w-full h-full relative">
-        {banners.map((banner, idx) => {
-          const isActive = idx === currentIndex;
+    <section className="w-full max-w-[1400px] mx-auto rounded-[24px] overflow-hidden relative shadow-lg bg-gray-50 border border-slate-100/60 aspect-[21/8] group">
+      <Swiper
+        modules={[Autoplay, Pagination, Navigation]}
+        spaceBetween={0}
+        slidesPerView={1}
+        loop={banners.length > 1}
+        autoplay={banners.length > 1 ? {
+          delay: 5000,
+          disableOnInteraction: false,
+          pauseOnMouseEnter: true,
+        } : false}
+        pagination={banners.length > 1 ? {
+          el: '.swiper-pagination-custom',
+          clickable: true,
+          bulletClass: 'swiper-pagination-bullet-custom',
+          bulletActiveClass: 'swiper-pagination-bullet-active-custom',
+        } : false}
+        navigation={banners.length > 1 ? {
+          prevEl: '.swiper-button-prev-custom',
+          nextEl: '.swiper-button-next-custom',
+        } : false}
+        className="w-full h-full"
+      >
+        {banners.map((banner) => {
           const ImageElement = (
             <img
               src={banner.imageUrl}
               alt={`Banner ${banner.displayOrder}`}
               className="w-full h-full object-cover select-none"
+              fetchPriority="high"
+              decoding="sync"
             />
           );
 
           return (
-            <div
-              key={banner.id}
-              className={`absolute inset-0 w-full h-full transition-opacity duration-[800ms] ease-in-out ${
-                isActive ? 'opacity-100 z-10' : 'opacity-0 z-0'
-              }`}
-            >
+            <SwiperSlide key={banner.id} className="w-full h-full overflow-hidden">
               {banner.linkUrl ? (
                 <a
                   href={banner.linkUrl}
@@ -188,24 +174,22 @@ export default function HomeHero() {
                   {ImageElement}
                 </div>
               )}
-            </div>
+            </SwiperSlide>
           );
         })}
-      </div>
+      </Swiper>
 
       {/* Slide Navigation Arrows */}
       {banners.length > 1 && (
         <>
           <button
-            onClick={handlePrev}
-            className="absolute left-6 top-1/2 -translate-y-1/2 z-20 size-12 bg-white/20 hover:bg-white/40 border border-white/30 text-white rounded-full flex items-center justify-center backdrop-blur-md opacity-0 group-hover:opacity-100 hover:scale-105 active:scale-95 transition-all duration-300 shadow-md cursor-pointer"
+            className="swiper-button-prev-custom absolute left-6 top-1/2 -translate-y-1/2 z-20 size-12 bg-white/20 hover:bg-white/40 border border-white/30 text-white rounded-full flex items-center justify-center backdrop-blur-md opacity-0 group-hover:opacity-100 hover:scale-105 active:scale-95 transition-all duration-300 shadow-md cursor-pointer"
             aria-label="Previous slide"
           >
             <ChevronLeft className="size-6 text-slate-800" />
           </button>
           <button
-            onClick={handleNext}
-            className="absolute right-6 top-1/2 -translate-y-1/2 z-20 size-12 bg-white/20 hover:bg-white/40 border border-white/30 text-white rounded-full flex items-center justify-center backdrop-blur-md opacity-0 group-hover:opacity-100 hover:scale-105 active:scale-95 transition-all duration-300 shadow-md cursor-pointer"
+            className="swiper-button-next-custom absolute right-6 top-1/2 -translate-y-1/2 z-20 size-12 bg-white/20 hover:bg-white/40 border border-white/30 text-white rounded-full flex items-center justify-center backdrop-blur-md opacity-0 group-hover:opacity-100 hover:scale-105 active:scale-95 transition-all duration-300 shadow-md cursor-pointer"
             aria-label="Next slide"
           >
             <ChevronRight className="size-6 text-slate-800" />
@@ -215,20 +199,7 @@ export default function HomeHero() {
 
       {/* Visual Dot Indicators */}
       {banners.length > 1 && (
-        <div className="absolute bottom-5 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2.5 px-3.5 py-2 bg-slate-900/10 backdrop-blur-md rounded-full border border-white/10 shadow-xs">
-          {banners.map((_, idx) => (
-            <button
-              key={idx}
-              onClick={(e) => handleDotClick(idx, e)}
-              className={`h-2 rounded-full transition-all duration-300 cursor-pointer ${
-                idx === currentIndex 
-                  ? 'w-6 bg-[#0058be]' 
-                  : 'w-2 bg-slate-700/40 hover:bg-slate-700/60'
-              }`}
-              aria-label={`Go to slide ${idx + 1}`}
-            />
-          ))}
-        </div>
+        <div className="swiper-pagination-custom absolute bottom-5 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2.5 px-3.5 py-2 bg-slate-900/10 backdrop-blur-md rounded-full border border-white/10 shadow-xs" />
       )}
     </section>
   );
