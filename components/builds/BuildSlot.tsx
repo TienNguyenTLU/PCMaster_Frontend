@@ -40,7 +40,7 @@ export default function BuildSlot({ label, description, Icon, product, onPick, o
   if (specs.wattage) highlights.push(`${specs.wattage}W`);
   if (specs.refresh_rate_hz) highlights.push(`${specs.refresh_rate_hz}Hz`);
   if (specs.panel_type) highlights.push(specs.panel_type);
-  if (specs.type && !specs.vram_gb && !specs.cores) highlights.push(specs.type);
+  if (specs.ram_type && !specs.vram_gb && !specs.cores) highlights.push(specs.ram_type);
 
   return (
     <div

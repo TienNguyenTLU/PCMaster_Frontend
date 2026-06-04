@@ -119,7 +119,7 @@ const SPECS_BY_CATEGORY: Record<string, SpecField[]> = {
   ],
   ram: [
     { key: 'kit', label: 'Kit RAM', type: 'select', options: ['1x8GB', '2x8GB', '1x16GB', '2x16GB', '2x32GB', '4x16GB', '2x24GB', '2x48GB', '4x32GB'] },
-    { key: 'type', label: 'Loại RAM', type: 'select', options: ['DDR3', 'DDR4', 'DDR5', 'LPDDR4', 'LPDDR5', 'LPDDR5X'] },
+    { key: 'ram_type', label: 'Loại RAM', type: 'select', options: ['DDR3', 'DDR4', 'DDR5', 'LPDDR4', 'LPDDR5', 'LPDDR5X'] },
     { key: 'has_rgb', label: 'Có RGB', type: 'boolean' },
     { key: 'latency_cl', label: 'CAS Latency (CL)', type: 'number', placeholder: '18' },
     { key: 'capacity_gb', label: 'Dung lượng tổng (GB)', type: 'select', options: ['8', '16', '24', '32', '48', '64', '96', '128', '256'] },
@@ -130,10 +130,16 @@ const SPECS_BY_CATEGORY: Record<string, SpecField[]> = {
   ],
   ssd: [
     { key: 'type', label: 'Loại', type: 'select', options: ['SSD', 'HDD'] },
+    { key: 'ssd_type', label: 'Phân loại SSD', type: 'select', options: ['SSD M.2 NVMe', 'SSD M.2 SATA', 'SSD 2.5" SATA', 'HDD 3.5" SATA'] },
+    { key: 'form_factor', label: 'Kích cỡ (Form factor)', type: 'select', options: ['M.2 2280', 'M.2 2242', '2.5"', '3.5"'] },
     { key: 'interface', label: 'Giao tiếp', type: 'select', options: ['NVMe PCIe Gen3', 'NVMe PCIe Gen4', 'NVMe PCIe Gen5', 'SATA III', 'SATA II', 'SAS'] },
     { key: 'capacity_gb', label: 'Dung lượng (GB)', type: 'select', options: ['120', '240', '250', '256', '480', '500', '512', '1000', '2000', '4000', '8000', '16000'] },
     { key: 'read_speed_mbps', label: 'Tốc độ đọc (MB/s)', type: 'number', placeholder: '3500' },
     { key: 'write_speed_mbps', label: 'Tốc độ ghi (MB/s)', type: 'number', placeholder: '2300' },
+    { key: 'nand_type', label: 'Loại chip nhớ (NAND)', type: 'text', placeholder: '3D NAND, TLC, QLC...' },
+    { key: 'tbw', label: 'Độ bền ghi (TBW)', type: 'number', placeholder: '320' },
+    { key: 'has_heatsink', label: 'Có tản nhiệt', type: 'boolean' },
+    { key: 'cache', label: 'Bộ nhớ đệm (Cache)', type: 'text', placeholder: 'DRAM Cache, Hãng không công bố...' },
     { key: 'accessories', label: 'Phụ kiện đi kèm', type: 'text', placeholder: 'Ốc M.2, tản nhiệt nhôm...' },
     { key: 'intended_use', label: 'Mục đích sử dụng', type: 'multiselect', options: ['Văn phòng', 'Chơi game', 'Đồ họa', 'Workstation / Server', 'Học tập'] },
     { key: 'technologies', label: 'Công nghệ tích hợp', type: 'text', placeholder: 'DRAM Cache, bảo vệ dữ liệu đột ngột mất điện...' },
@@ -446,6 +452,23 @@ export default function ProductFormModal({ isOpen, onClose, onSuccess, editingPr
         // Parse specsJson into state
         try {
           const parsed = editingProduct.specsJson ? JSON.parse(editingProduct.specsJson) : {};
+          
+          // Normalize old PSU keys for editing pre-population
+          const psuMappings: Record<string, string> = {
+            chu_n_ch_ng_nh_n: 'efficiency_rating',
+            hi_u_su_t: 'efficiency_rating',
+            lo_i_modular: 'modularity',
+            chu_n_ngu_n: 'form_factor',
+            c_ng_su_t: 'wattage',
+            c_ng_su_t_t_i_a: 'wattage',
+          };
+          for (const [oldKey, newKey] of Object.entries(psuMappings)) {
+            if (parsed[oldKey] !== undefined) {
+              parsed[newKey] = parsed[oldKey];
+              delete parsed[oldKey];
+            }
+          }
+
           const stringified: Record<string, string> = {};
           for (const [k, v] of Object.entries(parsed)) {
             stringified[k] = Array.isArray(v) ? (v as string[]).join(', ') : String(v);
@@ -519,15 +542,7 @@ export default function ProductFormModal({ isOpen, onClose, onSuccess, editingPr
       newErrors.brandId = 'Vui lòng chọn thương hiệu';
     }
 
-    // Validate that all spec fields are filled (only in manual mode)
-    if (!csvImportMode && specFields.length > 0) {
-      for (const field of specFields) {
-        const val = specs[field.key];
-        if (val === undefined || val === null || String(val).trim() === '') {
-          newErrors[field.key] = `Vui lòng nhập thông số bắt buộc: ${field.label}`;
-        }
-      }
-    }
+    // Validate that all spec fields are filled (removed required constraint)
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -599,6 +614,32 @@ export default function ProductFormModal({ isOpen, onClose, onSuccess, editingPr
     // Auto inject component_type from selected category
     if (selectedCategoryName) {
       specsObj['component_type'] = getComponentTypeFromName(selectedCategoryName);
+    }
+
+    // Normalize PSU specs keys before saving
+    if (specsObj['component_type'] === 'PSU') {
+      const psuMappings: Record<string, string> = {
+        chu_n_ch_ng_nh_n: 'efficiency_rating',
+        hi_u_su_t: 'efficiency_rating',
+        lo_i_modular: 'modularity',
+        chu_n_ngu_n: 'form_factor',
+        c_ng_su_t: 'wattage',
+        c_ng_su_t_t_i_a: 'wattage',
+      };
+
+      for (const [oldKey, newKey] of Object.entries(psuMappings)) {
+        if (specsObj[oldKey] !== undefined) {
+          specsObj[newKey] = specsObj[oldKey];
+          delete specsObj[oldKey];
+        }
+      }
+
+      // Normalize wattage value suffix
+      if (specsObj['wattage'] !== undefined) {
+        const valStr = String(specsObj['wattage']).toLowerCase().replace(/\s*w/g, '');
+        const valNum = Number(valStr);
+        specsObj['wattage'] = isNaN(valNum) ? valStr : valNum;
+      }
     }
 
     const slug = basic.name

@@ -121,9 +121,13 @@ const SPECS_BY_CATEGORY: Record<string, SpecFilterDef[]> = {
   ssd: [
     { key: 'capacity_gb', label: 'Dung lượng (GB)', type: 'select', options: ['120', '240', '250', '256', '480', '500', '512', '1000', '2000', '4000', '8000', '16000'] },
     { key: 'type', label: 'Loại', type: 'select', options: ['SSD', 'HDD'] },
+    { key: 'ssd_type', label: 'Phân loại SSD', type: 'select', options: ['SSD M.2 NVMe', 'SSD M.2 SATA', 'SSD 2.5" SATA', 'HDD 3.5" SATA'] },
+    { key: 'form_factor', label: 'Kích cỡ (Form factor)', type: 'select', options: ['M.2 2280', 'M.2 2242', '2.5"', '3.5"'] },
     { key: 'interface', label: 'Giao tiếp', type: 'select', options: ['NVMe PCIe Gen3', 'NVMe PCIe Gen4', 'NVMe PCIe Gen5', 'SATA III', 'SATA II', 'SAS'] },
     { key: 'read_speed_mbps', label: 'Tốc độ đọc (MB/s)', type: 'range', placeholder: '3500' },
     { key: 'write_speed_mbps', label: 'Tốc độ ghi (MB/s)', type: 'range', placeholder: '2300' },
+    { key: 'tbw', label: 'Độ bền ghi (TBW)', type: 'range', placeholder: '320' },
+    { key: 'has_heatsink', label: 'Có tản nhiệt', type: 'boolean' },
     { key: 'intended_use', label: 'Mục đích sử dụng', type: 'multiselect', options: ['Văn phòng', 'Chơi game', 'Đồ họa', 'Workstation / Server', 'Học tập'] },
   ],
   vga: [
@@ -373,7 +377,7 @@ export function ProductCard({ product }: { product: Product }) {
   if (specs.wattage) highlights.push(`${specs.wattage}W`);
   if (specs.refresh_rate_hz) highlights.push(`${specs.refresh_rate_hz}Hz`);
   if (specs.panel_type) highlights.push(specs.panel_type);
-  if (specs.type && !specs.vram_gb && !specs.cores) highlights.push(specs.type);
+  if (specs.ram_type && !specs.vram_gb && !specs.cores) highlights.push(specs.ram_type);
 
   const imgSrc = product.thumbnailUrl?.startsWith('http')
     ? product.thumbnailUrl

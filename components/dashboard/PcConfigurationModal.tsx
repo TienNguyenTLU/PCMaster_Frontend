@@ -243,7 +243,7 @@ export default function PcConfigurationModal({ isOpen, onClose, onSuccess, editi
   const cpuSocket = cpuSpecs.socket; // e.g. AM5, LGA1700
   const mainboardSocket = mainboardSpecs.socket; // e.g. AM5, LGA1700
   const mainboardRamType = mainboardSpecs.ram_type; // e.g. DDR5, DDR4
-  const ramType = ramSpecs.type; // e.g. DDR5, DDR4
+  const ramType = ramSpecs.ram_type; // e.g. DDR5, DDR4
   const mainboardFormFactor = mainboardSpecs.form_factor; // e.g. ATX, M-ATX
 
   // TDP calculations for power supply filtering
@@ -334,7 +334,7 @@ export default function PcConfigurationModal({ isOpen, onClose, onSuccess, editi
 
     if (cat === 'ram') {
       if (mainboardRamType) {
-        return rawList.filter(p => getProductSpecs(p).type === mainboardRamType);
+        return rawList.filter(p => getProductSpecs(p).ram_type === mainboardRamType);
       }
     }
 

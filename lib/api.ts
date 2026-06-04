@@ -572,6 +572,25 @@ export const adminAPI = {
   deleteCoupon: async (id: number | string): Promise<void> => {
     await axiosInstance.delete(`/api/admin/coupons/${id}`);
   },
+
+  // ─── GearVN API Integration ─────────────────────────────────────────────
+  /** Xem trước dữ liệu sản phẩm từ GearVN API (không lưu vào DB) */
+  previewGearvnProduct: async (url: string, categoryId: number): Promise<GearvnPreviewResponse> => {
+    const { data } = await axiosInstance.post<GearvnPreviewResponse>('/api/admin/products/gearvn/preview', {
+      url,
+      categoryId,
+    });
+    return data;
+  },
+
+  /** Import sản phẩm từ GearVN URL và lưu vào DB */
+  importFromGearvn: async (url: string, categoryId: number): Promise<Product> => {
+    const { data } = await axiosInstance.post<Product>('/api/admin/products/gearvn/import', {
+      url,
+      categoryId,
+    });
+    return data;
+  },
 };
 
 // Cart API Services
@@ -870,3 +889,18 @@ export const bottleneckAPI = {
     return data;
   },
 };
+
+// ─── GearVN API Types ────────────────────────────────────────────────────────
+
+export interface GearvnPreviewResponse {
+  title: string;
+  brand: string;
+  description: string;
+  price: number;
+  thumbnailUrl: string;
+  sku: string;
+  specs: Record<string, string>;
+}
+
+
+

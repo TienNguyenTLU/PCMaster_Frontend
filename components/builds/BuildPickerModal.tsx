@@ -84,7 +84,7 @@ export default function BuildPickerModal({ slotKey, slotLabel, build, onSelect, 
   const cpuSocket = cpuSpecs.socket;
   const mainboardSocket = mainboardSpecs.socket;
   const mainboardRamType = mainboardSpecs.ram_type;
-  const ramType = ramSpecs.type;
+  const ramType = ramSpecs.ram_type;
   const mainboardFormFactor = mainboardSpecs.form_factor;
 
   // TDP calculations for power supply filtering
@@ -165,7 +165,7 @@ export default function BuildPickerModal({ slotKey, slotLabel, build, onSelect, 
     }
   } else if (slotKey === 'ram') {
     if (mainboardRamType) {
-      filtered = filtered.filter(p => getProductSpecs(p).type === mainboardRamType);
+      filtered = filtered.filter(p => getProductSpecs(p).ram_type === mainboardRamType);
     }
   } else if (slotKey === 'case') {
     if (mainboardFormFactor) {

@@ -1,10 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Plus, Search, Edit, Trash2, AlertTriangle, Loader2 } from 'lucide-react';
+import { Plus, Search, Edit, Trash2, AlertTriangle, Loader2, Download } from 'lucide-react';
 import { adminAPI, Product, Brand, Category } from '@/lib/api';
 import { CldImage } from 'next-cloudinary';
 import ProductFormModal from '@/components/dashboard/ProductFormModal';
+import GearvnImportModal from '@/components/dashboard/GearvnImportModal';
 import toast from 'react-hot-toast';
 
 export default function ProductsPage() {
@@ -31,6 +32,11 @@ export default function ProductsPage() {
   // Delete confirm state
   const [deletingProduct, setDeletingProduct] = useState<Product | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
+
+  // Gearvn import modal state
+  const [isGearvnModalOpen, setIsGearvnModalOpen] = useState(false);
+
+
 
   // Debounce search term
   useEffect(() => {
@@ -135,13 +141,22 @@ export default function ProductsPage() {
           <h2 className="text-[#0f172a] text-[24px] font-semibold tracking-[-0.5px]">Sản phẩm</h2>
           <p className="text-[#64748b] text-[14px] mt-1">Quản lý danh mục và kho hàng của cửa hàng.</p>
         </div>
-        <button
-          onClick={handleAddClick}
-          className="bg-[#0058be] text-white px-4 py-2 rounded-[8px] text-[14px] font-medium flex items-center gap-2 hover:bg-[#0047a3] transition-colors cursor-pointer"
-        >
-          <Plus className="size-4" />
-          Thêm sản phẩm
-        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setIsGearvnModalOpen(true)}
+            className="bg-gradient-to-r from-[#e31837] to-[#ff4d6d] text-white px-4 py-2 rounded-[8px] text-[14px] font-medium flex items-center gap-2 hover:from-[#c2102a] hover:to-[#e31837] transition-all cursor-pointer shadow-sm"
+          >
+            <Download className="size-4" />
+            Import từ GearVN
+          </button>
+          <button
+            onClick={handleAddClick}
+            className="bg-[#0058be] text-white px-4 py-2 rounded-[8px] text-[14px] font-medium flex items-center gap-2 hover:bg-[#0047a3] transition-colors cursor-pointer"
+          >
+            <Plus className="size-4" />
+            Thêm sản phẩm
+          </button>
+        </div>
       </div>
 
       {/* Toolbar */}
@@ -326,6 +341,15 @@ export default function ProductsPage() {
         onSuccess={handleModalSuccess}
         editingProduct={editingProduct}
       />
+
+      {/* Gearvn Import Modal */}
+      <GearvnImportModal
+        isOpen={isGearvnModalOpen}
+        onClose={() => setIsGearvnModalOpen(false)}
+        onSuccess={handleModalSuccess}
+      />
+
+
 
       {/* Delete Confirm Dialog */}
       {deletingProduct && (
