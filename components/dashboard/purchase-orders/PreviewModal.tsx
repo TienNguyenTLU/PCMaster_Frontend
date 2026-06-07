@@ -27,9 +27,7 @@ export default function PreviewModal({ po, supplier, products, onClose }: Previe
   };
 
   const viewerUrl = po.documentUrl 
-    ? (po.documentUrl.toLowerCase().includes('.docx') 
-        ? (po.documentUrl.startsWith('http') ? po.documentUrl : `http://localhost:8080${po.documentUrl}`)
-        : `${po.documentUrl.startsWith('http') ? po.documentUrl : `http://localhost:8080${po.documentUrl}`}${po.documentUrl.includes('?') ? '&' : '?'}ext=.docx`)
+    ? (po.documentUrl.startsWith('http') ? po.documentUrl : `http://localhost:8080${po.documentUrl}`)
     : '';
 
   return (
@@ -53,7 +51,7 @@ export default function PreviewModal({ po, supplier, products, onClose }: Previe
                 className="flex items-center gap-2 px-4 py-2 bg-white border border-[#e2e8f0] rounded-xl text-[14px] font-semibold text-[#475569] hover:bg-[#f8fafc] transition-all shadow-sm cursor-pointer"
               >
                 <Save className="size-4" />
-                Tải xuống .docx
+                Tải xuống .xlsx
               </button>
             )}
             <button
@@ -71,22 +69,15 @@ export default function PreviewModal({ po, supplier, products, onClose }: Previe
         {/* Document Content */}
         <div className="flex-1 bg-[#f1f5f9] overflow-hidden flex flex-col">
           {po.documentUrl ? (
-            <div className="flex-1 w-full h-full relative bg-white">
-              <iframe
-                src={`https://view.officeapps.live.com/op/view.aspx?src=${encodeURIComponent(viewerUrl)}`}
-                width="100%"
-                height="100%"
-                frameBorder="0"
-                className="absolute inset-0"
-                title="Document Preview"
-              >
-                Trình duyệt của bạn không hỗ trợ xem tài liệu trực tiếp.
-              </iframe>
-              <div className="absolute bottom-4 right-4 z-20">
-                <a href={viewerUrl} target="_blank" rel="noopener noreferrer" className="bg-[#0058be] text-white px-4 py-2 rounded-lg shadow-lg text-[13px] font-bold hover:bg-[#0047a3] transition-all flex items-center gap-2">
-                  <Save className="size-4" /> Mở trực tiếp
-                </a>
+            <div className="flex-1 w-full h-full relative bg-white flex flex-col items-center justify-center gap-4 p-12">
+              <div className="p-6 bg-green-50 rounded-2xl">
+                <FileText className="size-16 text-green-600" />
               </div>
+              <p className="text-[16px] font-semibold text-[#0f172a]">File Excel đã được tạo thành công</p>
+              <p className="text-[13px] text-[#64748b]">Nhấn nút bên dưới để tải xuống và xem trong Excel/Google Sheets</p>
+              <a href={viewerUrl} target="_blank" rel="noopener noreferrer" className="bg-[#0058be] text-white px-6 py-3 rounded-xl shadow-lg text-[14px] font-bold hover:bg-[#0047a3] transition-all flex items-center gap-2">
+                <Save className="size-4" /> Tải xuống file Excel (.xlsx)
+              </a>
             </div>
           ) : (
             <div className="p-12 overflow-y-auto flex justify-center flex-1">

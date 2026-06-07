@@ -5,7 +5,7 @@ import { X, Package, ChevronDown, ChevronRight, Loader2 } from 'lucide-react';
 import { adminAPI, Product, Supplier, Brand } from '@/lib/api';
 import { CldImage } from 'next-cloudinary';
 import toast from 'react-hot-toast';
-import { Document, Packer, Paragraph, TextRun, Table, TableRow, TableCell, WidthType, AlignmentType } from 'docx';
+import ExcelJS from 'exceljs';
 
 const formatVND = (value: number | string) => {
   if (value === undefined || value === null || value === '') return '';
@@ -85,46 +85,209 @@ export default function CreatePOModal({ suppliers, allProducts, allBrands, onClo
     });
   };
 
-  const generateDOCX = async () => {
+  const generateExcel = async () => {
     if (!selectedSupplier) return null;
-    const doc = new Document({
-      sections: [{
-        children: [
-          new Paragraph({ alignment: AlignmentType.CENTER, children: [new TextRun({ text: "PHIẾU NHẬP HÀNG", bold: true, size: 32 })] }),
-          new Paragraph({ text: "" }),
-          new Paragraph({ children: [new TextRun({ text: `Nhà cung cấp: `, bold: true }), new TextRun({ text: selectedSupplier.name })] }),
-          new Paragraph({ children: [new TextRun({ text: `Địa chỉ: `, bold: true }), new TextRun({ text: selectedSupplier.address || "N/A" })] }),
-          new Paragraph({ text: "" }),
-          new Table({
-            width: { size: 100, type: WidthType.PERCENTAGE },
-            rows: [
-              new TableRow({
-                children: [
-                  new TableCell({ children: [new Paragraph({ text: "STT" })] }),
-                  new TableCell({ children: [new Paragraph({ text: "Sản phẩm" })] }),
-                  new TableCell({ children: [new Paragraph({ text: "Số lượng" })] }),
-                  new TableCell({ children: [new Paragraph({ text: "Giá nhập" })] }),
-                  new TableCell({ children: [new Paragraph({ text: "Thành tiền" })] }),
-                ],
-              }),
-              ...cart.map((item, index) => new TableRow({
-                children: [
-                  new TableCell({ children: [new Paragraph({ text: (index + 1).toString() })] }),
-                  new TableCell({ children: [new Paragraph({ text: item.product.name })] }),
-                  new TableCell({ children: [new Paragraph({ text: item.quantity.toString() })] }),
-                  new TableCell({ children: [new Paragraph({ text: new Intl.NumberFormat('vi-VN').format(item.importPrice) })] }),
-                  new TableCell({ children: [new Paragraph({ text: new Intl.NumberFormat('vi-VN').format(item.importPrice * item.quantity) })] }),
-                ],
-              })),
-            ],
-          }),
-          new Paragraph({ text: "" }),
-          new Paragraph({ alignment: AlignmentType.RIGHT, children: [new TextRun({ text: `Tổng cộng: ${new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(cartTotal)}`, bold: true })] }),
-        ],
-      }],
+
+    const wb = new ExcelJS.Workbook();
+    wb.creator = 'PCMaster System';
+    wb.created = new Date();
+    const ws = wb.addWorksheet('PHIẾU NHẬP HÀNG');
+
+    // Column widths
+    ws.columns = [
+      { width: 6 },   // A: STT
+      { width: 45 },  // B: Sản phẩm
+      { width: 8 },   // C: ĐVT
+      { width: 10 },  // D: Số lượng
+      { width: 18 },  // E: Giá nhập
+      { width: 20 },  // F: Thành tiền
+    ];
+
+    // ── Row 1: Company name (merged A1:F1) ──────────────────────────────
+    ws.mergeCells('A1:F1');
+    const titleCell = ws.getCell('A1');
+    titleCell.value = 'CHUỖI CỬA HÀNG PC MASTER';
+    titleCell.font = { name: 'Times New Roman', size: 18, bold: true };
+    titleCell.alignment = { horizontal: 'center', vertical: 'middle' };
+    ws.getRow(1).height = 32;
+
+    // ── Row 2: Address (merged A2:F2) ───────────────────────────────────
+    ws.mergeCells('A2:F2');
+    const addrCell = ws.getCell('A2');
+    addrCell.value = 'Hệ thống build PC & Linh kiện  |  pcmaster.support@gmail.com';
+    addrCell.font = { name: 'Times New Roman', size: 11, italic: true };
+    addrCell.alignment = { horizontal: 'center' };
+
+    // ── Row 3: blank ─────────────────────────────────────────────────────
+
+    // ── Row 4: Title "PHIẾU NHẬP HÀNG" (merged A4:F4) ───────────────────
+    ws.mergeCells('A4:F4');
+    const docTitle = ws.getCell('A4');
+    docTitle.value = 'PHIẾU NHẬP HÀNG';
+    docTitle.font = { name: 'Times New Roman', size: 18, bold: true };
+    docTitle.alignment = { horizontal: 'center', vertical: 'middle' };
+    ws.getRow(4).height = 32;
+
+    // ── Row 5: Date ─────────────────────────────────────────────────────
+    ws.mergeCells('A5:F5');
+    const dateCell = ws.getCell('A5');
+    dateCell.value = `Ngày lập: ${new Date().toLocaleDateString('vi-VN')}`;
+    dateCell.font = { name: 'Times New Roman', size: 11 };
+    dateCell.alignment = { horizontal: 'center' };
+
+    // ── Row 6: blank ─────────────────────────────────────────────────────
+
+    // ── Row 7-9: Supplier info ───────────────────────────────────────────
+    const infoStartRow = 7;
+    const addInfoRow = (row: number, label: string, value: string) => {
+      const r = ws.getRow(row);
+      r.getCell(1).value = label;
+      r.getCell(1).font = { name: 'Times New Roman', size: 11, bold: true };
+      ws.mergeCells(row, 2, row, 6);
+      r.getCell(2).value = value;
+      r.getCell(2).font = { name: 'Times New Roman', size: 11 };
+    };
+
+    addInfoRow(infoStartRow, 'Nhà cung cấp:', selectedSupplier.name);
+    addInfoRow(infoStartRow + 1, 'Địa chỉ:', selectedSupplier.address || 'N/A');
+    addInfoRow(infoStartRow + 2, 'Điện thoại:', selectedSupplier.phone || 'N/A');
+
+    // ── Row 10: blank ────────────────────────────────────────────────────
+
+    // ── Row 11: Table header ─────────────────────────────────────────────
+    const tableStartRow = 11;
+    const headers = ['STT', 'Sản phẩm', 'ĐVT', 'Số lượng', 'Giá nhập (₫)', 'Thành tiền (₫)'];
+    const headerRow = ws.getRow(tableStartRow);
+    headerRow.height = 24;
+    headers.forEach((h, i) => {
+      const cell = headerRow.getCell(i + 1);
+      cell.value = h;
+      cell.font = { name: 'Times New Roman', size: 11, bold: true, color: { argb: 'FFFFFFFF' } };
+      cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF0058BE' } };
+      cell.alignment = { horizontal: 'center', vertical: 'middle' };
+      cell.border = {
+        top: { style: 'thin' }, bottom: { style: 'thin' },
+        left: { style: 'thin' }, right: { style: 'thin' },
+      };
     });
-    const blob = await Packer.toBlob(doc);
-    return new File([blob], `PO_${selectedSupplier.name}.docx`, { type: "application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
+
+    // ── Data rows ────────────────────────────────────────────────────────
+    const thinBorder: Partial<ExcelJS.Borders> = {
+      top: { style: 'thin' }, bottom: { style: 'thin' },
+      left: { style: 'thin' }, right: { style: 'thin' },
+    };
+    const normalFont: Partial<ExcelJS.Font> = { name: 'Times New Roman', size: 11 };
+
+    cart.forEach((item, index) => {
+      const rowNum = tableStartRow + 1 + index;
+      const row = ws.getRow(rowNum);
+
+      // STT
+      const sttCell = row.getCell(1);
+      sttCell.value = index + 1;
+      sttCell.font = normalFont;
+      sttCell.alignment = { horizontal: 'center', vertical: 'middle' };
+      sttCell.border = thinBorder;
+
+      // Sản phẩm
+      const nameCell = row.getCell(2);
+      nameCell.value = item.product.name;
+      nameCell.font = normalFont;
+      nameCell.alignment = { vertical: 'middle', wrapText: true };
+      nameCell.border = thinBorder;
+
+      // ĐVT
+      const dvtCell = row.getCell(3);
+      dvtCell.value = 'Cái';
+      dvtCell.font = normalFont;
+      dvtCell.alignment = { horizontal: 'center', vertical: 'middle' };
+      dvtCell.border = thinBorder;
+
+      // Số lượng
+      const qtyCell = row.getCell(4);
+      qtyCell.value = item.quantity;
+      qtyCell.font = normalFont;
+      qtyCell.alignment = { horizontal: 'center', vertical: 'middle' };
+      qtyCell.border = thinBorder;
+
+      // Giá nhập
+      const priceCell = row.getCell(5);
+      priceCell.value = item.importPrice;
+      priceCell.font = normalFont;
+      priceCell.numFmt = '#,##0';
+      priceCell.alignment = { horizontal: 'right', vertical: 'middle' };
+      priceCell.border = thinBorder;
+
+      // Thành tiền
+      const totalCell = row.getCell(6);
+      totalCell.value = item.importPrice * item.quantity;
+      totalCell.font = normalFont;
+      totalCell.numFmt = '#,##0';
+      totalCell.alignment = { horizontal: 'right', vertical: 'middle' };
+      totalCell.border = thinBorder;
+    });
+
+    // ── Total row ────────────────────────────────────────────────────────
+    const totalRowNum = tableStartRow + 1 + cart.length;
+    const totalRow = ws.getRow(totalRowNum);
+    ws.mergeCells(totalRowNum, 1, totalRowNum, 5);
+    const totalLabelCell = totalRow.getCell(1);
+    totalLabelCell.value = 'TỔNG CỘNG';
+    totalLabelCell.font = { name: 'Times New Roman', size: 12, bold: true };
+    totalLabelCell.alignment = { horizontal: 'right', vertical: 'middle' };
+    totalLabelCell.border = { top: { style: 'thin' }, bottom: { style: 'double' }, left: { style: 'thin' }, right: { style: 'thin' } };
+    // Apply border to visually merged cells
+    for (let c = 2; c <= 5; c++) {
+      totalRow.getCell(c).border = { top: { style: 'thin' }, bottom: { style: 'double' }, left: { style: 'thin' }, right: { style: 'thin' } };
+    }
+
+    const totalValueCell = totalRow.getCell(6);
+    totalValueCell.value = cartTotal;
+    totalValueCell.font = { name: 'Times New Roman', size: 12, bold: true };
+    totalValueCell.numFmt = '#,##0';
+    totalValueCell.alignment = { horizontal: 'right', vertical: 'middle' };
+    totalValueCell.border = { top: { style: 'thin' }, bottom: { style: 'double' }, left: { style: 'thin' }, right: { style: 'thin' } };
+
+    // ── Signature section ────────────────────────────────────────────────
+    const sigRow = totalRowNum + 3;
+    ws.mergeCells(sigRow, 1, sigRow, 3);
+    const sig1 = ws.getCell(sigRow, 1);
+    sig1.value = 'Nhà cung cấp';
+    sig1.font = { name: 'Times New Roman', size: 11, bold: true };
+    sig1.alignment = { horizontal: 'center' };
+
+    ws.mergeCells(sigRow, 4, sigRow, 6);
+    const sig2 = ws.getCell(sigRow, 4);
+    sig2.value = 'Người lập phiếu';
+    sig2.font = { name: 'Times New Roman', size: 11, bold: true };
+    sig2.alignment = { horizontal: 'center' };
+
+    const sigSubRow = sigRow + 1;
+    ws.mergeCells(sigSubRow, 1, sigSubRow, 3);
+    const sub1 = ws.getCell(sigSubRow, 1);
+    sub1.value = '(Ký, ghi rõ họ tên)';
+    sub1.font = { name: 'Times New Roman', size: 10, italic: true };
+    sub1.alignment = { horizontal: 'center' };
+
+    ws.mergeCells(sigSubRow, 4, sigSubRow, 6);
+    const sub2 = ws.getCell(sigSubRow, 4);
+    sub2.value = '(Ký, ghi rõ họ tên)';
+    sub2.font = { name: 'Times New Roman', size: 10, italic: true };
+    sub2.alignment = { horizontal: 'center' };
+
+    // ── Footer ───────────────────────────────────────────────────────────
+    const footerRow = sigSubRow + 5;
+    ws.mergeCells(footerRow, 1, footerRow, 6);
+    const footer = ws.getCell(footerRow, 1);
+    footer.value = '— Phiếu này được tạo tự động bởi hệ thống PCMaster —';
+    footer.font = { name: 'Times New Roman', size: 9, italic: true, color: { argb: 'FF888888' } };
+    footer.alignment = { horizontal: 'center' };
+
+    // ── Generate blob ────────────────────────────────────────────────────
+    const buffer = await wb.xlsx.writeBuffer();
+    return new File([buffer], `PO_${selectedSupplier.name}.xlsx`, {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+    });
   };
 
   const handleSubmit = async () => {
@@ -135,7 +298,7 @@ export default function CreatePOModal({ suppliers, allProducts, allBrands, onClo
     }
     setLoading(true);
     try {
-      const docFile = await generateDOCX();
+      const docFile = await generateExcel();
       await adminAPI.createPurchaseOrder({
         supplierId: Number(selectedSupplier.id),
         items: cart.map(c => ({ productId: Number(c.product.id), quantity: c.quantity, importPrice: c.importPrice })),

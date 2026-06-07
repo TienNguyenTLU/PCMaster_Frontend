@@ -7,7 +7,7 @@ import {
   ShoppingCart, Loader2, AlertTriangle, RotateCcw, FolderOpen, Calendar, Save, Trash2, Heart, Plus, X
 } from 'lucide-react';
 import { LucideIcon } from 'lucide-react';
-import { Product, buildAPI, adminAPI, PcBuildResponse } from '@/lib/api';
+import { Product, buildAPI, adminAPI, PcBuildResponse, aiBuildAPI } from '@/lib/api';
 import { useCartStore, useAuthStore } from '@/lib/store';
 import BuildSlot from './BuildSlot';
 import BuildPickerModal from './BuildPickerModal';
@@ -40,12 +40,15 @@ type BuildState = Record<string, Product | null>;
 
 // ─── Summary panel ───────────────────────────────────────────────────────────
 
-function SummaryPanel({ build, totalPrice, onAddAllToCart, adding, extraStorageSlots = [] }: {
+function SummaryPanel({ build, totalPrice, onAddAllToCart, adding, extraStorageSlots = [], aiPsuWattage, aiPsuExplanation, loadingPsu }: {
   build: BuildState;
   totalPrice: number;
   onAddAllToCart: () => void;
   adding: boolean;
   extraStorageSlots?: SlotDef[];
+  aiPsuWattage: number | null;
+  aiPsuExplanation: string | null;
+  loadingPsu: boolean;
 }) {
   const allSlots = [...SLOTS, ...extraStorageSlots];
   const selectedCount = allSlots.filter(s => !!build[s.key]).length;
@@ -76,16 +79,27 @@ function SummaryPanel({ build, totalPrice, onAddAllToCart, adding, extraStorageS
             <span className="text-[18px] font-extrabold text-[#0058be] ml-1">₫</span>
           </p>
           <p className="text-[12.5px] text-[#64748b] mt-2 font-medium">{selectedCount}/{allSlots.length} linh kiện đã chọn</p>
-          {totalTdp > 0 && (
-            <div className="mt-2.5 flex flex-col gap-1.5 self-start bg-amber-50/60 border border-amber-100/50 px-3 py-2 rounded-[10px] w-full text-amber-700 font-bold text-[11px] uppercase tracking-[0.5px]">
-              <div className="flex items-center gap-1.5">
-                <Zap className="size-3.5 shrink-0" />
-                Công suất ước tính: {totalTdp}W
-              </div>
-              <div className="flex items-center gap-1.5 border-t border-amber-200/30 pt-1.5 mt-0.5">
-                <span className="size-3.5 text-center leading-none shrink-0">🛡️</span>
-                PSU khuyến nghị: {Math.ceil((totalTdp + 150) / 50) * 50}W
-              </div>
+          {(totalTdp > 0 || aiPsuWattage) && (
+            <div className="mt-2.5 flex flex-col gap-1.5 self-start bg-amber-50/60 border border-amber-100/50 px-3 py-2 rounded-[12px] w-full text-amber-700 font-bold text-[11px] uppercase tracking-[0.5px]">
+              {loadingPsu ? (
+                <div className="flex items-center gap-1.5 animate-pulse">
+                  <Loader2 className="size-3.5 animate-spin shrink-0 text-[#0058be]" />
+                  Đang phân tích nguồn bằng AI...
+                </div>
+              ) : aiPsuWattage ? (
+                <div className="flex flex-col gap-1 text-left normal-case">
+                  <div className="flex items-center gap-1.5 font-extrabold text-[#0058be] text-[11px] uppercase tracking-[0.5px]">
+                    <span className="size-3.5 text-center leading-none shrink-0">🤖</span>
+                    Nguồn khuyên dùng (AI): {aiPsuWattage}W
+                  </div>
+                  <p className="text-[10px] text-[#475569] font-semibold leading-normal mt-0.5">{aiPsuExplanation}</p>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1.5">
+                  <span className="size-3.5 text-center leading-none shrink-0">🛡️</span>
+                  PSU khuyến nghị: {Math.ceil((totalTdp + 150) / 50) * 50}W
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -287,6 +301,20 @@ export default function BuildPage() {
   const [loadingBottleneck, setLoadingBottleneck] = useState(false);
   const [bottleneckError, setBottleneckError] = useState<string | null>(null);
 
+  // AI Advice States
+  const [cpuAdvice, setCpuAdvice] = useState<string | null>(null);
+  const [aiPsuWattage, setAiPsuWattage] = useState<number | null>(null);
+  const [aiPsuExplanation, setAiPsuExplanation] = useState<string | null>(null);
+  const [loadingPsu, setLoadingPsu] = useState(false);
+
+  // Confirmation Modal States
+  const [showConfirmModal, setShowConfirmModal] = useState(false);
+  const [pendingSelection, setPendingSelection] = useState<{ slotKey: string; product: Product; incompatibleSlots: string[] } | null>(null);
+
+  // Delete Confirmation Modal States
+  const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
+  const [pendingDeleteBuildId, setPendingDeleteBuildId] = useState<number | null>(null);
+
   // Sync tab query parameter on load
   useEffect(() => {
     if (tabParam === 'my-builds') {
@@ -352,6 +380,58 @@ export default function BuildPage() {
     };
     
     calculateBottleneck();
+  }, [build.cpu, build.vga, build.ram]);
+
+  // Call AI CPU Advice when CPU changes
+  useEffect(() => {
+    const fetchCpuAdvice = async () => {
+      if (!build.cpu) {
+        setCpuAdvice(null);
+        return;
+      }
+      try {
+        const data = await aiBuildAPI.getCpuAdvice(build.cpu.name);
+        setCpuAdvice(data.advice);
+      } catch (err) {
+        console.error('Error fetching CPU advice:', err);
+        setCpuAdvice(null);
+      }
+    };
+    fetchCpuAdvice();
+  }, [build.cpu]);
+
+  // Call AI PSU Recommendation when CPU, GPU, or RAM changes
+  useEffect(() => {
+    const fetchPsuRecommendation = async () => {
+      const cpu = build.cpu;
+      const vga = build.vga;
+      const ram = build.ram;
+
+      if (!cpu || !vga || !ram) {
+        setAiPsuWattage(null);
+        setAiPsuExplanation(null);
+        return;
+      }
+
+      setLoadingPsu(true);
+      try {
+        const data = await aiBuildAPI.getPsuRecommendation(cpu.name, vga.name, ram.name);
+        setAiPsuWattage(data.recommendedWattage);
+        setAiPsuExplanation(data.explanation);
+      } catch (err) {
+        console.error('Error fetching PSU recommendation:', err);
+        // Fallback calculation on client side as a last resort
+        const cpuSpecs = getProductSpecs(cpu);
+        const vgaSpecs = getProductSpecs(vga);
+        const totalTdp = (Number(cpuSpecs.tdp_w) || 0) + (Number(vgaSpecs.tdp_w) || 0);
+        const wattage = Math.ceil((totalTdp + 150) / 50) * 50;
+        setAiPsuWattage(wattage);
+        setAiPsuExplanation(`Đề xuất nguồn công suất tối thiểu ${wattage}W dựa trên tổng công suất tỏa nhiệt (TDP) của CPU (${cpuSpecs.tdp_w || 100}W) và GPU (${vgaSpecs.tdp_w || 200}W) cộng với biên an toàn 150W.`);
+      } finally {
+        setLoadingPsu(false);
+      }
+    };
+    fetchPsuRecommendation();
   }, [build.cpu, build.vga, build.ram]);
 
   // Save Modal state
@@ -435,7 +515,164 @@ export default function BuildPage() {
   }, [activeTab, user]);
 
   const handleSelect = (slotKey: string, product: Product) => {
-    setBuild(prev => ({ ...prev, [slotKey]: product }));
+    const specs = getProductSpecs(product);
+    const incompatibleSlots: string[] = [];
+
+    const getSpecs = (p: Product | null) => {
+      if (!p || !p.specsJson) return {};
+      try {
+        return JSON.parse(p.specsJson);
+      } catch {
+        return {};
+      }
+    };
+
+    const isCaseCompatible = (caseProd: Product, mbFormFactor: string) => {
+      const caseSpecs = getSpecs(caseProd);
+      const supported = caseSpecs.supported_mainboards || caseSpecs.h_tr_main;
+      if (!supported) return true;
+      if (Array.isArray(supported)) {
+        return supported.map(s => String(s).toLowerCase()).includes(mbFormFactor.toLowerCase());
+      }
+      return String(supported).toLowerCase().includes(mbFormFactor.toLowerCase());
+    };
+
+    const isSsdCompatible = (ssdProd: Product, mbProd: Product) => {
+      const ssdSpecs = getSpecs(ssdProd);
+      const mbSpecs = getSpecs(mbProd);
+      const ssdInt = String(ssdSpecs.interface || '').toLowerCase();
+      const ssdType = String(ssdSpecs.type || '').toLowerCase();
+
+      if (ssdInt.includes('nvme') || ssdInt.includes('m.2') || ssdInt.includes('pcie') || ssdType.includes('m2')) {
+        const m2Slots = Number(mbSpecs.m2_slots) || 0;
+        return m2Slots > 0;
+      }
+      return true;
+    };
+
+    const isCoolerCompatible = (coolerProd: Product, socket: string) => {
+      const coolerSpecs = getSpecs(coolerProd);
+      const supported = coolerSpecs.supported_sockets;
+      if (!supported) return true;
+      if (Array.isArray(supported)) {
+        return supported.map(s => String(s).toLowerCase()).includes(socket.toLowerCase());
+      }
+      const supportedStr = String(supported).toLowerCase();
+      return supportedStr.includes(socket.toLowerCase()) || socket.toLowerCase().includes(supportedStr);
+    };
+
+    const currentCpu = build.cpu;
+    const currentMainboard = build.mainboard;
+    const currentRam = build.ram;
+    const currentCase = build.case;
+    const currentStorage = build.storage;
+    const currentCooler = build.cooler;
+
+    const cpuSocket = getSpecs(currentCpu).socket;
+    const mainboardSocket = getSpecs(currentMainboard).socket;
+    const mainboardRamType = getSpecs(currentMainboard).ram_type;
+    const ramType = getSpecs(currentRam).ram_type;
+    const mainboardFormFactor = getSpecs(currentMainboard).form_factor;
+
+    if (slotKey === 'cpu') {
+      const socket = specs.socket;
+      if (currentMainboard && mainboardSocket && socket && mainboardSocket.toLowerCase() !== socket.toLowerCase()) {
+        incompatibleSlots.push('mainboard');
+      }
+      if (currentCooler && socket && !isCoolerCompatible(currentCooler, socket)) {
+        incompatibleSlots.push('cooler');
+      }
+    }
+
+    if (slotKey === 'mainboard') {
+      const mbSocket = specs.socket;
+      const mbRamType = specs.ram_type;
+      const mbFormFactor = specs.form_factor;
+
+      if (currentCpu && cpuSocket && mbSocket && cpuSocket.toLowerCase() !== mbSocket.toLowerCase()) {
+        incompatibleSlots.push('cpu');
+      }
+      if (currentRam && ramType && mbRamType && ramType.toLowerCase() !== mbRamType.toLowerCase()) {
+        incompatibleSlots.push('ram');
+      }
+      if (currentCase && mbFormFactor && !isCaseCompatible(currentCase, mbFormFactor)) {
+        incompatibleSlots.push('case');
+      }
+      if (currentStorage && !isSsdCompatible(currentStorage, product)) {
+        incompatibleSlots.push('storage');
+      }
+      if (currentCooler && mbSocket && !isCoolerCompatible(currentCooler, mbSocket)) {
+        incompatibleSlots.push('cooler');
+      }
+    }
+
+    if (slotKey === 'ram') {
+      const pRamType = specs.ram_type;
+      if (currentMainboard && mainboardRamType && pRamType && mainboardRamType.toLowerCase() !== pRamType.toLowerCase()) {
+        incompatibleSlots.push('mainboard');
+      }
+    }
+
+    if (slotKey === 'case') {
+      if (currentMainboard && mainboardFormFactor && !isCaseCompatible(product, mainboardFormFactor)) {
+        incompatibleSlots.push('mainboard');
+      }
+    }
+
+    if (slotKey === 'storage' || slotKey.startsWith('storage_extra_')) {
+      if (currentMainboard && !isSsdCompatible(product, currentMainboard)) {
+        incompatibleSlots.push('mainboard');
+      }
+    }
+
+    if (slotKey === 'cooler') {
+      if (currentCpu && cpuSocket && !isCoolerCompatible(product, cpuSocket)) {
+        incompatibleSlots.push('cpu');
+      } else if (!currentCpu && currentMainboard && mainboardSocket && !isCoolerCompatible(product, mainboardSocket)) {
+        incompatibleSlots.push('mainboard');
+      }
+    }
+
+    if (incompatibleSlots.length > 0) {
+      setPendingSelection({ slotKey, product, incompatibleSlots });
+      setShowConfirmModal(true);
+      return;
+    }
+
+    // Set product and remove incompatible ones
+    setBuild(prev => {
+      const nextBuild = { ...prev, [slotKey]: product };
+      incompatibleSlots.forEach(s => {
+        nextBuild[s] = null;
+      });
+      return nextBuild;
+    });
+
+    toast.success(`Đã chọn linh kiện: ${product.name}`);
+    setActiveSlot(null);
+  };
+
+  const confirmPendingSelection = () => {
+    if (!pendingSelection) return;
+    const { slotKey, product, incompatibleSlots } = pendingSelection;
+
+    setBuild(prev => {
+      const nextBuild = { ...prev, [slotKey]: product };
+      incompatibleSlots.forEach(s => {
+        nextBuild[s] = null;
+      });
+      return nextBuild;
+    });
+
+    toast.success(`Đã chọn linh kiện: ${product.name}`);
+    setShowConfirmModal(false);
+    setPendingSelection(null);
+    setActiveSlot(null);
+  };
+
+  const cancelPendingSelection = () => {
+    setShowConfirmModal(false);
+    setPendingSelection(null);
   };
 
   const handleRemove = (slotKey: string) => {
@@ -530,7 +767,7 @@ export default function BuildPage() {
           text: `Bạn cần chọn vỏ máy (Case) hỗ trợ kích thước ${mbFormFactor} cho bo mạch chủ [${mb.name}].`
         });
       } else if (mbFormFactor && caseProd) {
-        const supported = caseSpecs.supported_mainboards;
+        const supported = caseSpecs.supported_mainboards || caseSpecs.h_tr_main;
         let isCompatible = true;
         if (supported) {
           if (Array.isArray(supported)) {
@@ -556,6 +793,14 @@ export default function BuildPage() {
       });
     }
 
+    // AI CPU Motherboard advice
+    if (cpuAdvice) {
+      notes.push({
+        type: 'info',
+        text: `🤖 Gợi ý từ AI: ${cpuAdvice}`
+      });
+    }
+ 
     return notes;
   };
 
@@ -678,21 +923,31 @@ export default function BuildPage() {
     }
   };
 
-  const handleDeleteBuild = async (buildId: number, e: React.MouseEvent) => {
+  const handleDeleteBuildClick = (buildId: number, e: React.MouseEvent) => {
     e.stopPropagation(); // prevent loading saved build
-    if (!window.confirm('Bạn có chắc chắn muốn xóa cấu hình này khỏi tài khoản của mình?')) {
-      return;
-    }
-    
+    setPendingDeleteBuildId(buildId);
+    setShowDeleteConfirmModal(true);
+  };
+
+  const confirmDeleteBuild = async () => {
+    if (pendingDeleteBuildId === null) return;
     const toastId = toast.loading('Đang xóa cấu hình...');
     try {
-      await buildAPI.delete(buildId);
+      await buildAPI.delete(pendingDeleteBuildId);
       toast.success('Đã xóa cấu hình PC thành công!', { id: toastId });
       fetchMyBuilds();
     } catch (err) {
       console.error(err);
       toast.error('Lỗi khi xóa cấu hình. Vui lòng thử lại.', { id: toastId });
+    } finally {
+      setShowDeleteConfirmModal(false);
+      setPendingDeleteBuildId(null);
     }
+  };
+
+  const cancelDeleteBuild = () => {
+    setShowDeleteConfirmModal(false);
+    setPendingDeleteBuildId(null);
   };
 
   const compatNotes = getCompatibilityNotes();
@@ -980,6 +1235,9 @@ export default function BuildPage() {
               onAddAllToCart={handleAddAllToCart}
               adding={addingToCart}
               extraStorageSlots={extraStorageSlots}
+              aiPsuWattage={aiPsuWattage}
+              aiPsuExplanation={aiPsuExplanation}
+              loadingPsu={loadingPsu}
             />
           </div>
         ) : (
@@ -1075,7 +1333,7 @@ export default function BuildPage() {
                           Tải cấu hình
                         </button>
                         <button
-                          onClick={(e) => handleDeleteBuild(b.id, e)}
+                          onClick={(e) => handleDeleteBuildClick(b.id, e)}
                           className="p-2.5 text-slate-400 hover:text-red-500 hover:bg-rose-50 border border-slate-100 hover:border-rose-100 rounded-[12px] hover:-translate-y-0.5 active:translate-y-0 transition-all cursor-pointer shadow-sm shrink-0"
                           title="Xóa cấu hình"
                         >
@@ -1099,6 +1357,7 @@ export default function BuildPage() {
           build={build}
           onSelect={p => handleSelect(activeSlot, p)}
           onClose={() => setActiveSlot(null)}
+          aiPsuWattage={aiPsuWattage}
         />
       )}
 
@@ -1157,6 +1416,103 @@ export default function BuildPage() {
               </button>
             </div>
           </form>
+        </div>
+      )}
+
+      {/* Compatibility Confirmation Modal */}
+      {showConfirmModal && pendingSelection && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-[24px] p-6 shadow-2xl w-full max-w-[420px] flex flex-col gap-5 border border-slate-100 animate-in zoom-in-95 duration-200">
+            <div className="flex items-start gap-4">
+              <div className="p-3 bg-rose-50 text-rose-600 rounded-full shrink-0">
+                <AlertTriangle className="size-6 text-red-500" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h3 className="text-[17px] font-bold text-[#0f172a] mb-1">Xác nhận đổi linh kiện?</h3>
+                <p className="text-[13px] text-[#64748b] leading-relaxed">
+                  Linh kiện <span className="font-semibold text-[#0f172a]">{pendingSelection.product.name}</span> bạn chọn không tương thích với cấu hình hiện tại.
+                </p>
+              </div>
+            </div>
+
+            <div className="bg-rose-50/40 border border-rose-100/50 rounded-[16px] p-4 flex flex-col gap-3">
+              <p className="text-[12px] font-bold text-rose-700 uppercase tracking-wide">
+                Các linh kiện sẽ tự động gỡ bỏ:
+              </p>
+              <div className="flex flex-col gap-2">
+                {pendingSelection.incompatibleSlots.map(slot => {
+                  const slotLabelsMap: Record<string, string> = {
+                    cpu: 'Vi xử lý (CPU)',
+                    mainboard: 'Bo mạch chủ (Mainboard)',
+                    ram: 'Bộ nhớ RAM',
+                    storage: 'Ổ cứng SSD/HDD',
+                    case: 'Vỏ máy (Case)',
+                    cooler: 'Tản nhiệt CPU'
+                  };
+                  const currentCompName = build[slot]?.name || 'Chưa chọn';
+                  return (
+                    <div key={slot} className="flex items-start gap-2.5 text-[13px]">
+                      <span className="w-1.5 h-1.5 rounded-full bg-red-400 mt-2 shrink-0" />
+                      <div className="flex-1 min-w-0">
+                        <span className="font-semibold text-slate-700">{slotLabelsMap[slot] || slot}:</span>{' '}
+                        <span className="text-slate-500 line-clamp-1">{currentCompName}</span>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-3 pt-3 border-t border-[#f1f5f9]">
+              <button
+                type="button"
+                onClick={cancelPendingSelection}
+                className="px-4 py-2.5 rounded-[12px] border border-[#e2e8f0] text-[13px] font-semibold text-[#475569] hover:bg-[#f8fafc] transition-colors cursor-pointer"
+              >
+                Hủy bỏ
+              </button>
+              <button
+                type="button"
+                onClick={confirmPendingSelection}
+                className="px-5 py-2.5 rounded-[12px] bg-red-500 text-white text-[13px] font-bold hover:bg-red-600 transition-colors shadow-sm hover:shadow-md cursor-pointer"
+              >
+                Đồng ý và Gỡ bỏ
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete Saved Build Confirmation Modal */}
+      {showDeleteConfirmModal && pendingDeleteBuildId !== null && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
+          <div className="bg-white rounded-[24px] p-6 shadow-2xl w-full max-w-[380px] flex flex-col gap-4 border border-slate-100 animate-in zoom-in-95 duration-200">
+            <div className="flex items-center gap-3">
+              <div className="p-3 bg-rose-50 text-rose-600 rounded-full shrink-0">
+                <Trash2 className="size-5 text-red-500" />
+              </div>
+              <h3 className="text-[17px] font-bold text-[#0f172a]">Xóa cấu hình PC?</h3>
+            </div>
+            <p className="text-[13px] text-[#64748b] leading-relaxed">
+              Bạn có chắc chắn muốn xóa cấu hình này khỏi tài khoản của mình? Hành động này không thể hoàn tác.
+            </p>
+            <div className="flex justify-end gap-3 pt-3 border-t border-[#f1f5f9]">
+              <button
+                type="button"
+                onClick={cancelDeleteBuild}
+                className="px-4 py-2 rounded-[10px] border border-[#e2e8f0] text-[13px] font-semibold text-[#475569] hover:bg-[#f8fafc] transition-colors cursor-pointer"
+              >
+                Hủy
+              </button>
+              <button
+                type="button"
+                onClick={confirmDeleteBuild}
+                className="px-5 py-2 rounded-[10px] bg-red-500 text-white text-[13px] font-bold hover:bg-red-600 transition-colors cursor-pointer"
+              >
+                Xác nhận xóa
+              </button>
+            </div>
+          </div>
         </div>
       )}
     </div>

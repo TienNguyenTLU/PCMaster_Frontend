@@ -159,7 +159,7 @@ export default function IssueSlipList({
                               className="inline-flex items-center gap-1 px-3 py-1.5 bg-[#f1f5f9] hover:bg-[#e2e8f0] text-[#334155] text-[12px] font-semibold rounded-[8px] transition-colors cursor-pointer"
                             >
                               <ExternalLink className="size-3" />
-                              File DOCX
+                              File Excel
                             </a>
                           ) : null}
                         </div>

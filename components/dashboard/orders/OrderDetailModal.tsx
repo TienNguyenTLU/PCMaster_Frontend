@@ -192,7 +192,7 @@ export default function OrderDetailModal({ order, onClose, onRefresh }: OrderDet
               className="flex items-center gap-2 px-4 py-3 bg-white border border-[#e2e8f0] rounded-[8px] text-[13px] font-semibold text-[#0058be] hover:border-[#0058be] hover:bg-[#eff6ff] transition-all"
             >
               <FileText className="size-4" />
-              Tải phiếu xuất kho (DOCX)
+              Tải phiếu xuất kho (Excel)
               <ExternalLink className="size-3.5 ml-auto" />
             </a>
           )}

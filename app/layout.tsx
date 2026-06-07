@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist_Mono, Inter } from "next/font/google";
 import { Toaster } from "react-hot-toast";
+import Script from "next/script";
 import ChatbotWidget from "@/components/chatbot/ChatbotWidget";
 import "./globals.css";
 
@@ -33,7 +34,9 @@ export default function RootLayout({
         {children}
         <Toaster position="top-right" />
         <ChatbotWidget />
+        <Script src="https://accounts.google.com/gsi/client" strategy="lazyOnload" />
       </body>
     </html>
   );
 }
+

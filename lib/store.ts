@@ -21,6 +21,7 @@ interface AuthStore {
   // Actions
   login: (usernameOrEmail: string, password: string) => Promise<void>;
   signup: (username: string, email: string, password: string) => Promise<void>;
+  loginWithGoogle: (idToken: string) => Promise<void>;
   logout: () => void;
   clearError: () => void;
   /** Call once on client mount to restore session from localStorage */
@@ -145,6 +146,30 @@ export const useAuthStore = create<AuthStore>()((set) => ({
     } catch (err) {
       const errorMessage =
         err instanceof Error ? err.message : 'Đăng ký thất bại';
+      set({ error: errorMessage, isLoading: false });
+      throw err;
+    }
+  },
+
+  // ── Login With Google ────────────────────────────────────────────────────
+  loginWithGoogle: async (idToken: string) => {
+    set({ isLoading: true, error: null });
+    try {
+      const res: AuthResponse = await authAPI.loginWithGoogle(idToken);
+
+      saveSession(res.token, res.email);
+
+      const user: User = {
+        id: String(res.userId),
+        username: res.username,
+        email: res.email,
+        role: res.role,
+      };
+
+      set({ user, token: res.token, isLoading: false, isHydrated: true });
+    } catch (err) {
+      const errorMessage =
+        err instanceof Error ? err.message : 'Đăng nhập Google thất bại';
       set({ error: errorMessage, isLoading: false });
       throw err;
     }

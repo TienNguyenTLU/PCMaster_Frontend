@@ -46,6 +46,12 @@ export const authAPI = {
     return data;
   },
 
+  /** Đăng nhập hoặc đăng ký bằng tài khoản Google */
+  loginWithGoogle: async (idToken: string): Promise<AuthResponse> => {
+    const { data } = await axiosInstance.post<AuthResponse>('/api/auth/google', { idToken });
+    return data;
+  },
+
   /** Đăng xuất tài khoản và xóa token lưu trữ */
   logout: () => {
     if (typeof window !== 'undefined') {
@@ -59,6 +65,7 @@ export const authAPI = {
     return localStorage.getItem('authToken');
   },
 };
+
 
 // Generic Spring Boot Pagination Response
 export interface PageResponse<T> {
@@ -727,6 +734,20 @@ export const buildAPI = {
   /** Xóa cấu hình PC tự ráp khỏi danh mục lưu trữ */
   delete: async (id: number): Promise<void> => {
     await axiosInstance.delete(`/api/builds/${id}`);
+  }
+};
+
+export const aiBuildAPI = {
+  /** Đề xuất công suất nguồn (PSU) bằng AI */
+  getPsuRecommendation: async (cpu: string, gpu: string, ram: string): Promise<{ recommendedWattage: number; explanation: string }> => {
+    const { data } = await axiosInstance.post<{ recommendedWattage: number; explanation: string }>('/api/ai/psu-recommendation', { cpu, gpu, ram });
+    return data;
+  },
+
+  /** Đưa ra gợi ý về chipset bo mạch chủ tối ưu cho CPU */
+  getCpuAdvice: async (cpuName: string): Promise<{ cpuName: string; advice: string }> => {
+    const { data } = await axiosInstance.get<{ cpuName: string; advice: string }>(`/api/ai/cpu-advice?cpuName=${encodeURIComponent(cpuName)}`);
+    return data;
   }
 };
 

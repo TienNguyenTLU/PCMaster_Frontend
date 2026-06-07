@@ -321,7 +321,7 @@ export default function MyOrdersPage() {
                                 className="flex items-center gap-1.5 bg-blue-50 text-[#0058be] border border-blue-100 hover:bg-[#0058be] hover:text-white px-4 py-2.5 rounded-[12px] text-[12px] font-bold transition-all shadow-sm"
                               >
                                 <FileText className="size-4" />
-                                Xem hóa đơn bán hàng (PDF)
+                                Tải phiếu xuất kho (Excel)
                               </a>
                             </div>
                           )}

@@ -20,25 +20,59 @@ interface SpecField {
 const SPECS_BY_CATEGORY: Record<string, SpecField[]> = {
   case: [
     { key: 'size', label: 'Kích thước', type: 'select', options: ['Mini-ITX Desktop', 'Mini Tower', 'Mid Tower', 'Full Tower', 'Super Tower', 'HTPC / Desktop', 'Open Frame'] },
+    { key: 'case_size', label: 'Kích thước vỏ máy', type: 'text', placeholder: 'VD: 659 x 268 x 639 mm' },
+    { key: 'color', label: 'Màu sắc', type: 'text', placeholder: 'VD: Đen, Trắng' },
+    { key: 'fan_count_included', label: 'Số lượng quạt đi kèm', type: 'number', placeholder: 'VD: 4' },
     { key: 'max_gpu_length_mm', label: 'Độ dài GPU tối đa (mm)', type: 'number', placeholder: '365' },
     { key: 'supported_mainboards', label: 'Bo mạch hỗ trợ', type: 'multiselect', options: ['Mini-ITX', 'Micro-ATX', 'ATX', 'E-ATX', 'SSI CEB', 'SSI EEB', 'XL-ATX'] },
     { key: 'max_cpu_cooler_height_mm', label: 'Chiều cao CPU Cooler tối đa (mm)', type: 'number', placeholder: '164' },
+    { key: 'material', label: 'Chất liệu', type: 'text', placeholder: 'VD: Thép, Kính cường lực, Nhôm' },
+    { key: 'usb_3_0_ports', label: 'Số cổng USB 3.0', type: 'number', placeholder: 'VD: 4' },
+    { key: 'usb_2_0_ports', label: 'Số cổng USB 2.0', type: 'number', placeholder: 'VD: 2' },
+    { key: 'usb_type_c_ports', label: 'Số cổng USB Type-C', type: 'number', placeholder: 'VD: 2' },
+    { key: 'audio_ports', label: 'Cổng kết nối Audio', type: 'text', placeholder: 'VD: 1x 3.5mm Headphone/Mic Combo Jack' },
+    { key: 'supported_psu', label: 'Hỗ trợ nguồn (PSU)', type: 'text', placeholder: 'VD: ATX PSU' },
+    { key: 'supported_radiators', label: 'Hỗ trợ tản nhiệt nước (Radiator)', type: 'text', placeholder: 'VD: 120, 140, 240, 280, 360, 420 mm' },
+    { key: 'pci_slots', label: 'Khe cắm mở rộng PCI', type: 'text', placeholder: 'VD: 9 khe' },
+    { key: 'odd_bays', label: 'Khoang ổ đĩa quang (ODD)', type: 'select', options: ['Có', 'Không'] },
+    { key: 'has_rgb', label: 'Đèn LED RGB', type: 'boolean' },
+    { key: 'tempered_glass_side', label: 'Mặt kính cường lực', type: 'boolean' },
+    { key: 'bottom_fan_support', label: 'Hỗ trợ quạt mặt dưới', type: 'text', placeholder: 'VD: 0 mm, 2x120 mm' },
+    { key: 'drive_bays', label: 'Khay gắn ổ cứng (SSD/HDD)', type: 'text', placeholder: 'VD: 5' },
+    { key: 'rear_fan_support', label: 'Hỗ trợ quạt mặt sau', type: 'text', placeholder: 'VD: 1x120, 1x140 mm' },
+    { key: 'top_fan_support', label: 'Hỗ trợ quạt mặt trên', type: 'text', placeholder: 'VD: 3x120, 3x140 mm' },
+    { key: 'front_fan_support', label: 'Hỗ trợ quạt mặt trước', type: 'text', placeholder: 'VD: 3x120, 3x140 mm' },
+    { key: 'psu_position', label: 'Vị trí đặt nguồn', type: 'text', placeholder: 'VD: Dưới, Trên' },
     { key: 'accessories', label: 'Phụ kiện đi kèm', type: 'text', placeholder: 'Bộ ốc vít, dây rút, khay đệm...' },
     { key: 'intended_use', label: 'Mục đích sử dụng', type: 'multiselect', options: ['Văn phòng', 'Chơi game', 'Đồ họa', 'Workstation / Server', 'Học tập'] },
     { key: 'technologies', label: 'Công nghệ tích hợp', type: 'text', placeholder: 'Kính cường lực lực hút nam châm, lọc bụi từ tính...' },
   ],
   cooler: [
-    { key: 'type', label: 'Loại tản nhiệt', type: 'select', options: ['Liquid Cooling', 'Air Cooling'] },
+    { key: 'cooler_type', label: 'Loại tản nhiệt', type: 'select', options: ['Tản nhiệt khí', 'Tản nhiệt nước'] },
     { key: 'has_rgb', label: 'Có RGB', type: 'boolean' },
+    { key: 'led_type', label: 'Loại đèn LED', type: 'text', placeholder: 'VD: ARGB, RGB, Không có' },
+    { key: 'fan_count', label: 'Số quạt', type: 'number', placeholder: 'VD: 1, 2, 3' },
     { key: 'fan_size_mm', label: 'Kích thước quạt (mm)', type: 'select', options: ['80', '92', '120', '140', '200'] },
+    { key: 'fan_speed_rpm', label: 'Tốc độ quạt (RPM)', type: 'text', placeholder: 'VD: 650-1750 RPM ± 10%' },
+    { key: 'airflow_cfm', label: 'Lưu lượng gió (CFM)', type: 'text', placeholder: 'VD: 71.93 CFM (Max)' },
+    { key: 'static_pressure_mmh2o', label: 'Áp suất tĩnh (mmH₂O)', type: 'text', placeholder: 'VD: 1.86 mmH₂O (Max)' },
     { key: 'tdp_rating_w', label: 'TDP hỗ trợ (W)', type: 'number', placeholder: '300' },
-    { key: 'noise_level_db', label: 'Độ ồn (dB)', type: 'number', placeholder: '30' },
-    { key: 'radiator_size_mm', label: 'Radiator (mm)', type: 'select', options: ['120', '140', '240', '280', '360', '420'] },
-    { key: 'supported_sockets', label: 'Socket hỗ trợ', type: 'multiselect', options: [
+    { key: 'noise_level_db', label: 'Độ ồn quạt (dB)', type: 'number', placeholder: '30' },
+    { key: 'pump_noise_db', label: 'Độ ồn Pump (dB)', type: 'text', placeholder: 'VD: ＜30dB' },
+    { key: 'radiator_size_mm', label: 'Kích thước Radiator (mm)', type: 'select', options: ['120', '140', '240', '280', '360', '420'] },
+    { key: 'radiator_dimensions', label: 'Kích thước Radiator chi tiết', type: 'text', placeholder: 'VD: 277 x 120 x 27 mm' },
+    { key: 'pump_dimensions', label: 'Kích thước Pump', type: 'text', placeholder: 'VD: 72 x 85.3 x 57.5 mm' },
+    { key: 'tube_length', label: 'Chiều dài ống dẫn', type: 'text', placeholder: 'VD: 380 mm' },
+    { key: 'cpu_socket_support', label: 'Socket CPU hỗ trợ', type: 'multiselect', options: [
       'AM5', 'AM4', 'AM3+', 'AM3', 'AM2+', 'AM2', 'FM2+', 'FM2', 'FM1', 'sTRX4', 'sTR4', 'sWRX8', 'SP3',
       'LGA1851', 'LGA1700', 'LGA1200', 'LGA1151', 'LGA1150', 'LGA1155', 'LGA1156', 'LGA2066', 'LGA2011', 'LGA1366', 'LGA775'
     ] },
-    { key: 'accessories', label: 'Phụ kiện đi kèm', type: 'text', placeholder: 'Keo tản nhiệt, gông socket, cáp chia...' },
+    { key: 'bearing_type', label: 'Loại vòng bi', type: 'text', placeholder: 'VD: Fluid Dynamic Bearing, Ball Bearing, HYDRO Bearing' },
+    { key: 'fan_lifespan', label: 'Tuổi thọ quạt', type: 'text', placeholder: 'VD: 50000 giờ' },
+    { key: 'heatsink_material', label: 'Vật liệu Heat Sink', type: 'text', placeholder: 'VD: Đồng, Nhôm, Nickel-plated' },
+    { key: 'color', label: 'Màu sắc', type: 'text', placeholder: 'VD: Đen, Trắng' },
+    { key: 'special_features', label: 'Tính năng đặc biệt', type: 'text', placeholder: 'VD: 4 ống đồng' },
+    { key: 'accessories', label: 'Phụ kiện đi kèm', type: 'text', placeholder: 'Tản nhiệt + Quạt + Gông + bộ ốc + keo' },
     { key: 'intended_use', label: 'Mục đích sử dụng', type: 'multiselect', options: ['Văn phòng', 'Chơi game', 'Đồ họa', 'Workstation / Server', 'Học tập'] },
     { key: 'technologies', label: 'Công nghệ tích hợp', type: 'text', placeholder: 'Pump thế hệ mới, ống dẫn chống rò rỉ...' },
   ],
@@ -162,36 +196,45 @@ const SPECS_BY_CATEGORY: Record<string, SpecField[]> = {
 
 // Match category name → component_type string
 function getComponentTypeFromName(catName: string): string {
-  const slug = catName.toLowerCase().replace(/\s+/g, '');
-  if (slug.includes('graphic') || slug.includes('vga') || slug.includes('video')) return 'GPU';
+  const slug = catName.toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[đĐ]/g, 'd')
+    .replace(/\s+/g, '');
+  if (slug.includes('graphic') || slug.includes('vga') || slug.includes('video') || slug.includes('dohoa') || slug.includes('cardmanhinh')) return 'GPU';
   if (slug.includes('memory') || slug.includes('ram')) return 'RAM';
   if (slug.includes('power') || slug.includes('nguon') || slug.includes('psu')) return 'PSU';
-  if (slug.includes('board') || slug.includes('mainboard') || slug.includes('mother')) return 'MAINBOARD';
-  if (slug.includes('processor') || slug.includes('vi xu ly') || slug.includes('cpu')) return 'CPU';
-  if (slug.includes('cool') || slug.includes('tan nhiet')) return 'COOLER';
+  if (slug.includes('board') || slug.includes('mainboard') || slug.includes('mother') || slug.includes('bomach')) return 'MAINBOARD';
+  if (slug.includes('processor') || slug.includes('vixuly') || slug.includes('cpu')) return 'CPU';
+  if (slug.includes('cool') || slug.includes('tannhiet')) return 'COOLER';
   if (slug.includes('fan') || slug.includes('quat')) return 'FAN';
-  if (slug.includes('storage') || slug.includes('ssd') || slug.includes('hdd') || slug.includes('o cung')) return 'STORAGE';
-  if (slug.includes('monitor') || slug.includes('man hinh')) return 'MONITOR';
-  if (slug.includes('case') || slug.includes('vo may')) return 'CASE';
+  if (slug.includes('storage') || slug.includes('ssd') || slug.includes('hdd') || slug.includes('ocung')) return 'STORAGE';
+  if (slug.includes('monitor') || slug.includes('manhinh')) return 'MONITOR';
+  if (slug.includes('case') || slug.includes('vomay') || slug.includes('vomaytinh')) return 'CASE';
   return catName.toUpperCase();
 }
 
 // Match category name → spec key
 function getSpecsForCategory(catName: string): SpecField[] {
-  const slug = catName.toLowerCase().replace(/\s+/g, '');
+  const slug = catName.toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .replace(/[đĐ]/g, 'd')
+    .replace(/\s+/g, '');
   for (const key of Object.keys(SPECS_BY_CATEGORY)) {
     if (slug.includes(key) || key.includes(slug)) return SPECS_BY_CATEGORY[key];
   }
   // Check common variants
-  if (slug.includes('graphic') || slug.includes('vga') || slug.includes('video')) return SPECS_BY_CATEGORY.vga;
+  if (slug.includes('graphic') || slug.includes('vga') || slug.includes('video') || slug.includes('dohoa') || slug.includes('cardmanhinh')) return SPECS_BY_CATEGORY.vga;
   if (slug.includes('memory') || slug.includes('ram')) return SPECS_BY_CATEGORY.ram;
-  if (slug.includes('power') || slug.includes('nguon')) return SPECS_BY_CATEGORY.psu;
-  if (slug.includes('board') || slug.includes('mainboard') || slug.includes('mother')) return SPECS_BY_CATEGORY.mainboard;
-  if (slug.includes('processor') || slug.includes('vi xu ly')) return SPECS_BY_CATEGORY.cpu;
-  if (slug.includes('cool') || slug.includes('tan nhiet')) return SPECS_BY_CATEGORY.cooler;
+  if (slug.includes('power') || slug.includes('nguon') || slug.includes('psu')) return SPECS_BY_CATEGORY.psu;
+  if (slug.includes('board') || slug.includes('mainboard') || slug.includes('mother') || slug.includes('bomach')) return SPECS_BY_CATEGORY.mainboard;
+  if (slug.includes('processor') || slug.includes('vixuly') || slug.includes('cpu')) return SPECS_BY_CATEGORY.cpu;
+  if (slug.includes('cool') || slug.includes('tannhiet')) return SPECS_BY_CATEGORY.cooler;
   if (slug.includes('fan') || slug.includes('quat')) return SPECS_BY_CATEGORY.fan;
-  if (slug.includes('storage') || slug.includes('ssd') || slug.includes('hdd') || slug.includes('o cung')) return SPECS_BY_CATEGORY.ssd;
-  if (slug.includes('monitor') || slug.includes('man hinh')) return SPECS_BY_CATEGORY.monitor;
+  if (slug.includes('storage') || slug.includes('ssd') || slug.includes('hdd') || slug.includes('ocung')) return SPECS_BY_CATEGORY.ssd;
+  if (slug.includes('monitor') || slug.includes('manhinh')) return SPECS_BY_CATEGORY.monitor;
+  if (slug.includes('case') || slug.includes('vomay') || slug.includes('vomaytinh')) return SPECS_BY_CATEGORY.case;
   return [];
 }
 
@@ -469,6 +512,41 @@ export default function ProductFormModal({ isOpen, onClose, onSuccess, editingPr
             }
           }
 
+          // Normalize old Case keys for editing pre-population
+          const caseMappings: Record<string, string> = {
+            h_tr_main: 'supported_mainboards',
+            k_ch_th_c_case: 'case_size',
+            'Màu sắc': 'color',
+            m_u_s_c: 'color',
+            s_l_ng_qu_t_i_k_m: 'fan_count_included',
+            d_i_vga_t_i_a: 'max_gpu_length_mm',
+            chi_u_cao_t_n_nhi_t_cpu_t_i_a: 'max_cpu_cooler_height_mm',
+            ch_t_li_u: 'material',
+            c_ng_usb_3_0: 'usb_3_0_ports',
+            c_ng_usb_2_0: 'usb_2_0_ports',
+            'Cổng USB Type-C': 'usb_type_c_ports',
+            c_ng_usb_type_c: 'usb_type_c_ports',
+            c_ng_audio: 'audio_ports',
+            h_tr_ngu_n_psu: 'supported_psu',
+            h_tr_t_n_nhi_t_n_c_radiator: 'supported_radiators',
+            khe_c_m_m_r_ng_pci: 'pci_slots',
+            khoang_a_quang_odd: 'odd_bays',
+            led_rgb: 'has_rgb',
+            m_t_k_nh_c_ng_l_c: 'tempered_glass_side',
+            qu_t_t_n_nhi_t_m_t_d_i: 'bottom_fan_support',
+            khay_g_n_c_ng: 'drive_bays',
+            qu_t_t_n_nhi_t_m_t_sau: 'rear_fan_support',
+            qu_t_t_n_nhi_t_m_t_tr_n: 'top_fan_support',
+            qu_t_t_n_nhi_t_m_t_tr_c: 'front_fan_support',
+            v_tr_t_ngu_n: 'psu_position',
+          };
+          for (const [oldKey, newKey] of Object.entries(caseMappings)) {
+            if (parsed[oldKey] !== undefined) {
+              parsed[newKey] = parsed[oldKey];
+              delete parsed[oldKey];
+            }
+          }
+
           const stringified: Record<string, string> = {};
           for (const [k, v] of Object.entries(parsed)) {
             stringified[k] = Array.isArray(v) ? (v as string[]).join(', ') : String(v);
@@ -583,6 +661,61 @@ export default function ProductFormModal({ isOpen, onClose, onSuccess, editingPr
         ? JSON.parse(editingProduct.specsJson) 
         : {};
 
+      // Normalize Case specs keys in specsObj before form field values overwrite them
+      if (specsObj['component_type'] === 'CASE' || getComponentTypeFromName(selectedCategoryName) === 'CASE') {
+        const caseMappings: Record<string, string> = {
+          h_tr_main: 'supported_mainboards',
+          k_ch_th_c_case: 'case_size',
+          'Màu sắc': 'color',
+          m_u_s_c: 'color',
+          s_l_ng_qu_t_i_k_m: 'fan_count_included',
+          d_i_vga_t_i_a: 'max_gpu_length_mm',
+          chi_u_cao_t_n_nhi_t_cpu_t_i_a: 'max_cpu_cooler_height_mm',
+          ch_t_li_u: 'material',
+          c_ng_usb_3_0: 'usb_3_0_ports',
+          c_ng_usb_2_0: 'usb_2_0_ports',
+          'Cổng USB Type-C': 'usb_type_c_ports',
+          c_ng_usb_type_c: 'usb_type_c_ports',
+          c_ng_audio: 'audio_ports',
+          h_tr_ngu_n_psu: 'supported_psu',
+          h_tr_t_n_nhi_t_n_c_radiator: 'supported_radiators',
+          khe_c_m_m_r_ng_pci: 'pci_slots',
+          khoang_a_quang_odd: 'odd_bays',
+          led_rgb: 'has_rgb',
+          m_t_k_nh_c_ng_l_c: 'tempered_glass_side',
+          qu_t_t_n_nhi_t_m_t_d_i: 'bottom_fan_support',
+          khay_g_n_c_ng: 'drive_bays',
+          qu_t_t_n_nhi_t_m_t_sau: 'rear_fan_support',
+          qu_t_t_n_nhi_t_m_t_tr_n: 'top_fan_support',
+          qu_t_t_n_nhi_t_m_t_tr_c: 'front_fan_support',
+          v_tr_t_ngu_n: 'psu_position',
+        };
+        for (const [oldKey, newKey] of Object.entries(caseMappings)) {
+          if (specsObj[oldKey] !== undefined) {
+            specsObj[newKey] = specsObj[oldKey];
+            delete specsObj[oldKey];
+          }
+        }
+      }
+
+      // Normalize PSU specs keys in specsObj before form field values overwrite them
+      if (specsObj['component_type'] === 'PSU' || getComponentTypeFromName(selectedCategoryName) === 'PSU') {
+        const psuMappings: Record<string, string> = {
+          chu_n_ch_ng_nh_n: 'efficiency_rating',
+          hi_u_su_t: 'efficiency_rating',
+          lo_i_modular: 'modularity',
+          chu_n_ngu_n: 'form_factor',
+          c_ng_su_t: 'wattage',
+          c_ng_su_t_t_i_a: 'wattage',
+        };
+        for (const [oldKey, newKey] of Object.entries(psuMappings)) {
+          if (specsObj[oldKey] !== undefined) {
+            specsObj[newKey] = specsObj[oldKey];
+            delete specsObj[oldKey];
+          }
+        }
+      }
+
       for (const field of specFields) {
         const val = specs[field.key];
         if (val === undefined || val === '') {
@@ -616,30 +749,11 @@ export default function ProductFormModal({ isOpen, onClose, onSuccess, editingPr
       specsObj['component_type'] = getComponentTypeFromName(selectedCategoryName);
     }
 
-    // Normalize PSU specs keys before saving
-    if (specsObj['component_type'] === 'PSU') {
-      const psuMappings: Record<string, string> = {
-        chu_n_ch_ng_nh_n: 'efficiency_rating',
-        hi_u_su_t: 'efficiency_rating',
-        lo_i_modular: 'modularity',
-        chu_n_ngu_n: 'form_factor',
-        c_ng_su_t: 'wattage',
-        c_ng_su_t_t_i_a: 'wattage',
-      };
-
-      for (const [oldKey, newKey] of Object.entries(psuMappings)) {
-        if (specsObj[oldKey] !== undefined) {
-          specsObj[newKey] = specsObj[oldKey];
-          delete specsObj[oldKey];
-        }
-      }
-
-      // Normalize wattage value suffix
-      if (specsObj['wattage'] !== undefined) {
-        const valStr = String(specsObj['wattage']).toLowerCase().replace(/\s*w/g, '');
-        const valNum = Number(valStr);
-        specsObj['wattage'] = isNaN(valNum) ? valStr : valNum;
-      }
+    // Normalize wattage value suffix for PSU before saving
+    if (specsObj['component_type'] === 'PSU' && specsObj['wattage'] !== undefined) {
+      const valStr = String(specsObj['wattage']).toLowerCase().replace(/\s*w/g, '');
+      const valNum = Number(valStr);
+      specsObj['wattage'] = isNaN(valNum) ? valStr : valNum;
     }
 
     const slug = basic.name
