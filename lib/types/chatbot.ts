@@ -11,6 +11,7 @@ export interface RecommendedProduct {
   discountPercent: number | null;
   thumbnailUrl: string | null;
   stock: number;
+  categorySlug?: string;
 }
 
 export interface ChatMessage {

@@ -17,17 +17,19 @@ import {
   ChevronRight,
   Bot,
   RefreshCw,
+  Plus,
 } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { chatbotAPI } from '@/lib/api';
 import { ChatMessage, RecommendedProduct } from '@/lib/types/chatbot';
 import { useCartStore } from '@/lib/store';
 import toast from 'react-hot-toast';
 
 // ─── Hằng số & dữ liệu tĩnh ──────────────────────────────────────────────────
-const WELCOME_MESSAGE: ChatMessage = {
+const WELCOME_CONSULT_MESSAGE: ChatMessage = {
   role: 'assistant',
-  content: 'Xin chào! Tôi là **Trợ lý AI PCMaster** 🤖\n\nTôi có thể giúp bạn:\n- *Tư vấn cấu hình PC theo ngân sách và nhu cầu*\n- *Tìm linh kiện (VGA, CPU, RAM, SSD...) phù hợp*\n- *So sánh và đề xuất sản phẩm tốt nhất*\n\nHãy đặt câu hỏi bất kỳ!',
+  content: 'Xin chào! Tôi là **Trợ lý AI PCMaster** 🤖\n\nTôi có thể giúp bạn:\n- *Tìm kiếm và so sánh linh kiện phù hợp*\n- *Tư vấn nâng cấp phần cứng*\n- *Giải đáp thông số kỹ thuật sản phẩm*\n\nHãy đặt câu hỏi bất kỳ!',
   timestamp: new Date().toISOString(),
 };
 
@@ -40,11 +42,14 @@ const QUICK_PROMPTS = [
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function ChatbotWidget() {
+  const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [addingId, setAddingId] = useState<number | null>(null);
-  const [messages, setMessages] = useState<ChatMessage[]>([WELCOME_MESSAGE]);
+
+  // Message history
+  const [messages, setMessages] = useState<ChatMessage[]>([WELCOME_CONSULT_MESSAGE]);
 
   const chatEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -82,7 +87,7 @@ export default function ChatbotWidget() {
       .map(msg => ({ role: msg.role, content: msg.content }));
 
     try {
-      const response = await chatbotAPI.chat(textToSend.trim(), historyPayload);
+      const response = await chatbotAPI.chat(textToSend.trim(), historyPayload, 'consult');
 
       const aiMsg: ChatMessage = {
         role: 'assistant',
@@ -103,7 +108,9 @@ export default function ChatbotWidget() {
     } finally {
       setIsLoading(false);
     }
-  }, [isLoading, messages]);
+  }, [isLoading, messages, setMessages]);
+
+
 
   // Thêm sản phẩm vào giỏ hàng từ card đề xuất
   const handleAddToCart = useCallback(async (e: React.MouseEvent, product: RecommendedProduct) => {
@@ -123,7 +130,7 @@ export default function ChatbotWidget() {
 
   // Reset cuộc trò chuyện
   const handleReset = useCallback(() => {
-    setMessages([WELCOME_MESSAGE]);
+    setMessages([WELCOME_CONSULT_MESSAGE]);
     setInput('');
   }, []);
 
@@ -188,6 +195,8 @@ export default function ChatbotWidget() {
               </button>
             </div>
           </div>
+
+
 
           {/* Messages Area */}
           <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 bg-gray-50 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
@@ -269,6 +278,7 @@ export default function ChatbotWidget() {
     </>
   );
 }
+
 
 // ─── MessageBubble Component ─────────────────────────────────────────────────
 interface MessageBubbleProps {
@@ -366,10 +376,12 @@ function ProductSlider({ products, addingId, onAddToCart }: ProductSliderProps) 
 
   return (
     <div className="w-full ml-8">
-      <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 mb-2 flex items-center gap-1.5">
-        <ShoppingCart className="size-3 text-[#0058be]" />
-        <span className="text-[#0058be]">Sản phẩm đề xuất:</span>
-      </p>
+      <div className="flex flex-col gap-1.5 mb-2">
+        <p className="text-[10px] font-semibold uppercase tracking-wider text-gray-400 flex items-center gap-1.5">
+          <ShoppingCart className="size-3 text-[#0058be]" />
+          <span className="text-[#0058be]">Sản phẩm đề xuất:</span>
+        </p>
+      </div>
 
       <div className="relative group/slider">
         {/* Left arrow */}

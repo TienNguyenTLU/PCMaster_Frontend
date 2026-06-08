@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { Plus, Search, Edit, Trash2, AlertTriangle, Loader2, Download } from 'lucide-react';
-import { adminAPI, Product, Brand, Category } from '@/lib/api';
+import { adminAPI, Product, Brand, Category, getCategoryLabel } from '@/lib/api';
 import { CldImage } from 'next-cloudinary';
 import ProductFormModal from '@/components/dashboard/ProductFormModal';
 import GearvnImportModal from '@/components/dashboard/GearvnImportModal';
@@ -182,7 +182,7 @@ export default function ProductsPage() {
             className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[8px] px-3 py-2 text-[14px] focus:outline-none focus:border-[#0058be] transition-all"
           >
             <option value="">Tất cả danh mục</option>
-            {categoriesList.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+            {categoriesList.map(c => <option key={c.id} value={c.id}>{getCategoryLabel(c.name)}</option>)}
           </select>
 
           <select
@@ -230,7 +230,7 @@ export default function ProductsPage() {
               </thead>
               <tbody className="divide-y divide-[#e2e8f0]">
                 {currentProducts.map((product) => {
-                  const categoryName = product.category?.name ?? '';
+                  const categoryName = getCategoryLabel(product.category?.name ?? '');
                   const brandName = product.brand?.name ?? '';
                   const brandLogo = product.brand?.logoUrl ?? null;
 

@@ -29,94 +29,24 @@ export default function HomeHero() {
       });
   }, []);
 
-  // Fallback: If no banners are uploaded, render the original gorgeous hero design
+  // Fallback: If no banners are uploaded, render the default banner from public directory
   if (banners.length === 0) {
     return (
-      <section className="bg-[#f2f4f6] rounded-[16px] overflow-hidden relative h-[760px] w-full max-w-[1400px] mx-auto">
-        {/* Background image – right half */}
-        <div className="absolute right-0 top-0 h-full w-[573px]">
-          <div className="absolute inset-0 overflow-hidden">
+      <section className="w-full max-w-[1400px] mx-auto rounded-[24px] overflow-hidden relative shadow-lg bg-gray-50 border border-slate-100/60 aspect-[21/8] group">
+        <Link
+          href="/explore"
+          className="block w-full h-full cursor-pointer overflow-hidden"
+        >
+          <div className="w-full h-full hover:scale-[1.015] transition-transform duration-700 ease-out">
             <img
-              src={imgPC}
-              alt="High-end custom PC workstation"
-              className="absolute h-full max-w-none"
-              style={{ left: '-110.83%', width: '270.08%', top: '0.01%' }}
+              src="/Default banner.jpg"
+              alt="Default Banner"
+              className="w-full h-full object-cover select-none"
               fetchPriority="high"
               decoding="sync"
             />
-            <div className="absolute inset-0 bg-[rgba(255,255,255,0.2)] mix-blend-saturation" />
           </div>
-          {/* Fade gradient left */}
-          <div className="absolute inset-0 bg-gradient-to-r from-[#f2f4f6] via-[rgba(242,244,246,0)] to-[rgba(242,244,246,0)]" />
-        </div>
-
-        {/* Text content – left half */}
-        <div className="absolute top-1/2 -translate-y-1/2 left-0 right-[446px] p-20 flex flex-col gap-6">
-          {/* Badge */}
-          <div className="inline-flex">
-            <span
-              className="bg-[rgba(0,88,190,0.1)] text-[#0058be] text-[12px] tracking-[1.2px] uppercase px-3 py-1 rounded-[4px] font-semibold"
-              style={{ fontFamily: 'Inter, sans-serif' }}
-            >
-              BỘ SƯU TẬP 2026
-            </span>
-          </div>
-
-          {/* Headline */}
-          <div>
-            <p
-              className="text-[#191c1e] text-[64px] tracking-[-4.8px] leading-[96px] font-normal"
-              style={{ fontFamily: 'Inter, sans-serif' }}
-            >
-              Thiết Kế Cấu Hình
-            </p>
-            <p
-              className="text-[#0b82d2] text-[64px] tracking-[-4.8px] leading-[96px] font-bold"
-              style={{ fontFamily: 'Inter, sans-serif' }}
-            >
-              PC Cực Mạnh
-            </p>
-          </div>
-
-          {/* Description */}
-          <div className="max-w-[512px] pt-2">
-            <p
-              className="text-[#424754] text-[18px] leading-[29.25px] font-normal"
-              style={{ fontFamily: 'Inter, sans-serif' }}
-            >
-              Trải nghiệm kỹ nghệ lắp ráp PC chính xác tuyệt đối với cấu hình workstation chuyên nghiệp.
-              Từng linh kiện được tuyển chọn kỹ lưỡng để đạt độ tương thích tối đa và hiệu năng tản nhiệt tối ưu.
-            </p>
-          </div>
-
-          {/* CTA buttons */}
-          <div className="flex items-center gap-4 pt-4">
-            <Link
-              href="/builds"
-              className="
-                relative bg-gradient-to-r from-[#0058be] to-[#2170e4]
-                text-white text-[16px] leading-[24px] font-normal
-                px-8 py-[17px] rounded-[8px]
-                shadow-[0px_10px_15px_-3px_rgba(0,88,190,0.2),0px_4px_6px_-4px_rgba(0,88,190,0.2)]
-                hover:opacity-90 transition-opacity
-              "
-              style={{ fontFamily: 'Inter, sans-serif' }}
-            >
-              Tự Build PC Ngay
-            </Link>
-            <Link
-              href="/explore"
-              className="
-                border border-[rgba(194,198,214,0.3)] text-[#191c1e] text-[16px] leading-[24px] font-normal
-                px-[33px] py-[17px] rounded-[8px]
-                hover:border-[rgba(194,198,214,0.8)] transition-colors
-              "
-              style={{ fontFamily: 'Inter, sans-serif' }}
-            >
-              Khám Phá
-            </Link>
-          </div>
-        </div>
+        </Link>
       </section>
     );
   }

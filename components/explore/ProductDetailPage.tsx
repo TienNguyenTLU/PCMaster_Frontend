@@ -17,7 +17,7 @@ import {
   X,
   Maximize2
 } from 'lucide-react';
-import { adminAPI, Product, ProductImage } from '@/lib/api';
+import { adminAPI, Product, ProductImage, getCategoryLabel } from '@/lib/api';
 import { useCartStore } from '@/lib/store';
 import toast from 'react-hot-toast';
 
@@ -51,9 +51,27 @@ const SPEC_LABEL_MAP: Record<string, string> = {
   bus_speed_mhz: 'Tốc độ Bus (MHz)',
   latency_cl: 'CAS Latency',
   // SSD/HDD
-  interface: 'giao diện kết nối',
+  interface: 'Giao diện kết nối',
+  giao_di_n_k_t_n_i: 'Giao diện kết nối',
   read_speed_mbps: 'Tốc độ đọc (MB/s)',
+  t_c_c_mb_s: 'Tốc độ đọc (MB/s)',
   write_speed_mbps: 'Tốc độ ghi (MB/s)',
+  t_c_ghi_mb_s: 'Tốc độ ghi (MB/s)',
+  nand_type: 'Loại chip nhớ (NAND)',
+  lo_i_chip_nh: 'Loại chip nhớ (NAND)',
+  mtbf: 'Tuổi thọ thiết bị (MTBF)',
+  operating_temperature: 'Nhiệt độ hoạt động',
+  nhi_t_ho_t_ng: 'Nhiệt độ hoạt động',
+  has_heatsink: 'Tản nhiệt đi kèm',
+  lo_i_ssd: 'Chuẩn SSD',
+  k_ch_c_form_factor: 'Kích thước / Form factor',
+  cache: 'Bộ nhớ đệm (Cache)',
+  b_nh_m: 'Bộ nhớ đệm (Cache)',
+  'bộ nhớ đệm': 'Bộ nhớ đệm (Cache)',
+  tbw: 'Độ bền ghi (TBW)',
+  tbw_b_n_ghi: 'Độ bền ghi (TBW)',
+  tbw_w: 'Độ bền ghi (TBW)',
+  dung_l_ng: 'Dung lượng',
   // VGA
   vram_gb: 'VRAM (GB)',
   vram_type: 'Loại VRAM',
@@ -116,7 +134,7 @@ const SPEC_LABEL_MAP: Record<string, string> = {
   supported_sockets: 'Socket hỗ trợ',
   cpu_socket_support: 'Socket CPU hỗ trợ',
   t_ng_th_ch_cpu: 'Socket CPU hỗ trợ',
-  fan_count: 'Số quạt',
+  // fan_count: 'Số quạt',
   s_qu_t: 'Số quạt',
   fan_speed_rpm: 'Tốc độ quạt (RPM)',
   t_c_qu_t: 'Tốc độ quạt (RPM)',
@@ -140,27 +158,27 @@ const SPEC_LABEL_MAP: Record<string, string> = {
   // Fan
   is_addressable_rgb: 'LED ARGB',
   size_mm: 'Kích thước (mm)',
-  airflow_cfm: 'Lưu lượng gió (CFM)',
-  bearing_type: 'Loại trục quay (Bearing)',
-  fan_speed_rpm: 'Tốc độ quay (RPM)',
+  // airflow_cfm: 'Lưu lượng gió (CFM)',
+  // bearing_type: 'Loại trục quay (Bearing)',
+  // fan_speed_rpm: 'Tốc độ quay (RPM)',
   connection_type: 'Chuẩn cắm',
   voltage: 'Điện áp',
   'Điện áp': 'Điện áp',
   i_n_p: 'Điện áp',
-  fan_lifespan: 'Tuổi thọ quạt',
+  // fan_lifespan: 'Tuổi thọ quạt',
   'Tuổi thọ quạt': 'Tuổi thọ quạt',
-  tu_i_th_qu_t: 'Tuổi thọ quạt',
-  static_pressure_mmh2o: 'Áp suất tĩnh (mmH₂O)',
+  // tu_i_th_qu_t: 'Tuổi thọ quạt',
+  // static_pressure_mmh2o: 'Áp suất tĩnh (mmH₂O)',
   'Áp suất tĩnh (mmH₂O)': 'Áp suất tĩnh (mmH₂O)',
-  p_su_t_t_nh: 'Áp suất tĩnh (mmH₂O)',
+  // p_su_t_t_nh: 'Áp suất tĩnh (mmH₂O)',
   fan_type: 'Loại quạt',
   lo_i_qu_t: 'Loại quạt',
-  led_type: 'Đèn LED',
+  // led_type: 'Đèn LED',
   lo_i_n_led: 'Loại đèn LED',
   lo_i_tr_c: 'Loại trục quay (Bearing)',
   lo_i_k_t_n_i: 'Chuẩn cắm',
   t_c_quay: 'Tốc độ quay (RPM)',
-  noise_level_db: 'Độ ồn (dB)',
+  // noise_level_db: 'Độ ồn (dB)',
   n: 'Độ ồn (dB)',
   'Lưu lượng gió (CFM)': 'Lưu lượng gió (CFM)',
   'Kích thước quạt (mm)': 'Kích thước quạt (mm)',
@@ -169,7 +187,7 @@ const SPEC_LABEL_MAP: Record<string, string> = {
   // Laptop
   cpu: 'Bộ vi xử lý (CPU)',
   ram: 'Bộ nhớ RAM',
-  ram_slots: 'Số khe cắm RAM',
+  // ram_slots: 'Số khe cắm RAM',
   s_khe_ram: 'Số khe cắm RAM',
   ssd: 'Ổ cứng SSD',
   ssd_slots: 'Số khe cắm SSD',
@@ -190,7 +208,7 @@ const SPEC_LABEL_MAP: Record<string, string> = {
   battery: 'Pin & Bộ sạc',
   k_ch_th_c_m_y: 'Kích thước máy',
   ch_t_li_u_v_m_n_h_nh: 'Chất liệu vỏ',
-  brightness_cdm2: 'Độ sáng (cd/m²)',
+  // brightness_cdm2: 'Độ sáng (cd/m²)',
   s_ng_m_n_h_nh: 'Độ sáng (cd/m²)',
   audio_tech: 'Công nghệ âm thanh',
   c_ng_ngh_m_thanh: 'Công nghệ âm thanh',
@@ -283,8 +301,8 @@ const SPEC_LABEL_MAP: Record<string, string> = {
   lo_i_m_y: 'Thiết bị tương thích (Loại máy)',
   s_k_nh: 'Số kênh RAM',
   s_l_ng_thanh: 'Số lượng thanh',
-  t_n_nhi_t: 'Tản nhiệt RAM',
-  i_n_p: 'Điện áp',
+  t_n_nhi_t: 'Tản nhiệt đi kèm',
+  // i_n_p: 'Điện áp',
   intel_xmp: 'Hỗ trợ Intel XMP',
   amd_expo: 'Hỗ trợ AMD EXPO',
   capacity: 'Dung lượng',
@@ -315,19 +333,52 @@ const SPEC_LABEL_MAP: Record<string, string> = {
   ki_u_d_y_ngu_n: 'Kiểu dây nguồn',
   k_ch_th_c_qu_t: 'Kích thước quạt',
   lo_i_modular: 'Dạng modular',
-  m_u_s_c: 'Màu sắc',
+  // m_u_s_c: 'Màu sắc',
   phi_n_b_n_chu_n: 'Phiên bản chuẩn nguồn',
   t_nh_n_ng_b_o_v: 'Tính năng bảo vệ',
   i_n_p_u_v_o: 'Điện áp đầu vào',
   t_c_quay_c_a_fan: 'Tốc độ quay của quạt',
-  t_nh_n_ng_c_bi_t: 'Tính năng đặc biệt',
+  // t_nh_n_ng_c_bi_t: 'Tính năng đặc biệt',
 };
 
 function formatSpecValue(key: string, value: unknown): string {
   if (typeof value === 'boolean') return value ? 'Có' : 'Không';
   if (Array.isArray(value)) return value.join(', ');
   if (value === null || value === undefined) return '—';
-  return String(value);
+
+  const valStr = String(value).trim();
+  const valLower = valStr.toLowerCase();
+
+  // Normalize stringified booleans
+  if (valLower === 'true' || valLower === 'yes' || valLower === 'có') return 'Có';
+  if (valLower === 'false' || valLower === 'no' || valLower === 'không') return 'Không';
+
+  // Format numeric values with appropriate units
+  const numericVal = parseFloat(valStr.replace(/[^0-9.]/g, ''));
+  if (!isNaN(numericVal)) {
+    if (key === 'mtbf') {
+      return numericVal.toLocaleString('vi-VN') + ' giờ';
+    }
+    if (
+      key === 'read_speed_mbps' ||
+      key === 'write_speed_mbps' ||
+      key === 't_c_c_mb_s' ||
+      key === 't_c_ghi_mb_s'
+    ) {
+      return numericVal.toLocaleString('vi-VN') + ' MB/s';
+    }
+    if (key === 'warranty') {
+      return numericVal.toLocaleString('vi-VN') + ' tháng';
+    }
+    if (key === 'capacity_gb' || key === 'capacity' || key === 'dung_l_ng') {
+      return numericVal.toLocaleString('vi-VN') + ' GB';
+    }
+    if (key === 'tbw' || key === 'tbw_b_n_ghi' || key === 'tbw_w') {
+      return numericVal.toLocaleString('vi-VN') + ' TBW';
+    }
+  }
+
+  return valStr;
 }
 
 // ─── Skeleton ─────────────────────────────────────────────────────────────────
@@ -506,7 +557,7 @@ export default function ProductDetailPage() {
           {product.category && (
             <>
               <span className="text-[#cbd5e1] font-normal">/</span>
-              <span className="text-[#64748b]">{product.category.name}</span>
+              <span className="text-[#64748b]">{getCategoryLabel(product.category.name)}</span>
             </>
           )}
           <span className="text-[#cbd5e1] font-normal">/</span>
@@ -617,7 +668,7 @@ export default function ProductDetailPage() {
               )}
               {product.category && (
                 <span className="text-[11px] font-semibold text-[#475569] bg-[#f1f5f9] px-3 py-1 rounded-full">
-                  {product.category.name}
+                  {getCategoryLabel(product.category.name)}
                 </span>
               )}
             </div>
@@ -773,6 +824,26 @@ export default function ProductDetailPage() {
                     const formatted = formatSpecValue(key, value);
                     const isEven = idx % 2 === 0;
 
+                    const isBool =
+                      typeof value === 'boolean' ||
+                      (typeof value === 'string' &&
+                        (value.toLowerCase() === 'true' ||
+                          value.toLowerCase() === 'false' ||
+                          value.toLowerCase() === 'có' ||
+                          value.toLowerCase() === 'không')) ||
+                      key.startsWith('has_') ||
+                      key.startsWith('is_') ||
+                      key === 't_n_nhi_t' ||
+                      key === 'water_cooled';
+
+                    const boolVal =
+                      typeof value === 'boolean'
+                        ? value
+                        : typeof value === 'string' &&
+                          (value.toLowerCase() === 'true' ||
+                            value.toLowerCase() === 'có' ||
+                            value.toLowerCase() === 'yes');
+
                     return (
                       <tr
                         key={key}
@@ -782,8 +853,8 @@ export default function ProductDetailPage() {
                           {label}
                         </td>
                         <td className="px-6 py-3.5 text-[13px] text-[#0f172a] font-medium">
-                          {typeof value === 'boolean' ? (
-                            value ? (
+                          {isBool ? (
+                            boolVal ? (
                               <span className="inline-flex items-center gap-1.5 text-emerald-600">
                                 <CheckCircle2 className="size-3.5" />
                                 Có

@@ -855,10 +855,15 @@ export const chatbotAPI = {
   /**
    * Gửi tin nhắn và nhận câu trả lời AI kèm sản phẩm đề xuất.
    */
-  chat: async (message: string, history: ChatHistoryItem[] = []): Promise<ChatbotResponse> => {
+  chat: async (
+    message: string,
+    history: ChatHistoryItem[] = [],
+    mode: 'consult' | 'build' = 'consult'
+  ): Promise<ChatbotResponse> => {
     const { data } = await axiosInstance.post<ChatbotResponse>('/api/chat', {
       message,
       history,
+      mode,
     });
     return data;
   },
@@ -922,6 +927,73 @@ export interface GearvnPreviewResponse {
   sku: string;
   specs: Record<string, string>;
 }
+
+export function getCategoryLabel(name: string): string {
+  if (!name) return '';
+  const cleanName = name.trim().toUpperCase().replace(/\s+/g, '_');
+  switch (cleanName) {
+    case 'LAPTOP':
+      return 'Laptop';
+    case 'PC_SYSTEM':
+      return 'PC Nguyên Bộ';
+    case 'PC_GEAR':
+      return 'Gaming Gear';
+    case 'CPU':
+      return 'CPU - Vi xử lý';
+    case 'CASE':
+      return 'Vỏ máy tính (Case)';
+    case 'COOLER':
+      return 'Tản nhiệt';
+    case 'FAN':
+      return 'Quạt tản nhiệt (Fan)';
+    case 'MAINBOARD':
+      return 'Bo mạch chủ (Mainboard)';
+    case 'MONITOR':
+      return 'Màn hình máy tính';
+    case 'PSU':
+      return 'Nguồn máy tính (PSU)';
+    case 'RAM':
+      return 'Bộ nhớ RAM';
+    case 'SSD':
+      return 'Ổ cứng SSD';
+    case 'VGA':
+      return 'Card màn hình (VGA)';
+    default:
+      return name;
+  }
+}
+
+// ─── User Profile API ────────────────────────────────────────────────────────
+
+export interface UserProfile {
+  id: number;
+  username: string;
+  email: string;
+  phone: string | null;
+  address: string | null;
+  role: string;
+}
+
+export interface UserProfileUpdateRequest {
+  username: string;
+  phone: string | null;
+  address: string | null;
+}
+
+export const profileAPI = {
+  /** Lấy thông tin hồ sơ cá nhân của người dùng */
+  getProfile: async (): Promise<UserProfile> => {
+    const { data } = await axiosInstance.get<UserProfile>('/api/profile');
+    return data;
+  },
+  /** Cập nhật thông tin hồ sơ cá nhân */
+  updateProfile: async (payload: UserProfileUpdateRequest): Promise<UserProfile> => {
+    const { data } = await axiosInstance.put<UserProfile>('/api/profile', payload);
+    return data;
+  }
+};
+
+
 
 
 

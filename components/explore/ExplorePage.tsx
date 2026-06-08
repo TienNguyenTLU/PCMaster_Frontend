@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { Search, SlidersHorizontal, ChevronDown, X, ShoppingCart, Package, ChevronRight, ChevronLeft } from 'lucide-react';
 import Link from 'next/link';
-import { adminAPI, Product, Category, Brand } from '@/lib/api';
+import { adminAPI, Product, Category, Brand, getCategoryLabel } from '@/lib/api';
 import { useCartStore } from '@/lib/store';
 import { CldImage } from 'next-cloudinary';
 import toast from 'react-hot-toast';
@@ -22,136 +22,105 @@ interface SpecFilterDef {
 // ─── Full SPECS_BY_CATEGORY (mirrors ProductFormModal exactly) ────────────────
 const SPECS_BY_CATEGORY: Record<string, SpecFilterDef[]> = {
   case: [
-    { key: 'size', label: 'Kích thước', type: 'select', options: ['Mini-ITX Desktop', 'Mini Tower', 'Mid Tower', 'Full Tower', 'Super Tower', 'HTPC / Desktop', 'Open Frame'] },
-    { key: 'supported_mainboards', label: 'Bo mạch hỗ trợ', type: 'multiselect', options: ['Mini-ITX', 'Micro-ATX', 'ATX', 'E-ATX', 'SSI CEB', 'SSI EEB', 'XL-ATX'] },
+    { key: 'color', label: 'Màu sắc', type: 'select', options: ['Đen', 'Trắng'] },
+    { key: 'supported_mainboards', label: 'Bo mạch hỗ trợ', type: 'multiselect', options: ['Mini-ITX', 'Micro-ATX', 'ATX', 'E-ATX'] },
     { key: 'max_gpu_length_mm', label: 'Độ dài GPU tối đa (mm)', type: 'range', placeholder: '365' },
     { key: 'max_cpu_cooler_height_mm', label: 'Chiều cao CPU Cooler tối đa (mm)', type: 'range', placeholder: '164' },
     { key: 'intended_use', label: 'Mục đích sử dụng', type: 'multiselect', options: ['Văn phòng', 'Chơi game', 'Đồ họa', 'Workstation / Server', 'Học tập'] },
   ],
   cooler: [
-    { key: 'type', label: 'Loại tản nhiệt', type: 'select', options: ['Liquid Cooling', 'Air Cooling'] },
-    { key: 'supported_sockets', label: 'Socket hỗ trợ', type: 'multiselect', options: [
-      'AM5', 'AM4', 'AM3+', 'AM3', 'AM2+', 'AM2', 'FM2+', 'FM2', 'FM1', 'sTRX4', 'sTR4', 'sWRX8', 'SP3',
-      'LGA1851', 'LGA1700', 'LGA1200', 'LGA1151', 'LGA1150', 'LGA1155', 'LGA1156', 'LGA2066', 'LGA2011', 'LGA1366', 'LGA775'
+    { key: 'cooler_type', label: 'Loại tản nhiệt', type: 'select', options: ['Tản nhiệt nước', 'Tản nhiệt khí'] },
+    { key: 'cpu_socket_support', label: 'Socket hỗ trợ', type: 'multiselect', options: [
+      'AM5', 'AM4', 'LGA1700', 'LGA1851', 'LGA1200', 'LGA1151', 'LGA2011'
     ] },
-    { key: 'tdp_rating_w', label: 'TDP hỗ trợ (W)', type: 'range', placeholder: '300' },
-    { key: 'radiator_size_mm', label: 'Radiator (mm)', type: 'select', options: ['120', '140', '240', '280', '360', '420'] },
-    { key: 'fan_size_mm', label: 'Kích thước quạt (mm)', type: 'select', options: ['80', '92', '120', '140', '200'] },
-    { key: 'noise_level_db', label: 'Độ ồn (dB)', type: 'range', placeholder: '30' },
-    { key: 'has_rgb', label: 'Có RGB', type: 'boolean' },
-    { key: 'intended_use', label: 'Mục đích sử dụng', type: 'multiselect', options: ['Văn phòng', 'Chơi game', 'Đồ họa', 'Workstation / Server', 'Học tập'] },
+    { key: 'radiator_dimensions', label: 'Kích thước Radiator', type: 'select', options: ['120mm', '240mm', '280mm', '360mm'] },
+    { key: 'fan_size_mm', label: 'Kích thước quạt (mm)', type: 'select', options: ['120', '140'] },
+    { key: 'pump_noise_db', label: 'Độ ồn pump (dB)', type: 'range', placeholder: '30' },
+    { key: 'led_type', label: 'Đèn LED', type: 'select', options: ['ARGB', 'RGB', 'false'] },
   ],
   cpu: [
     { key: 'series', label: 'Series', type: 'select', options: [
       'Core i3', 'Core i5', 'Core i7', 'Core i9', 'Core Ultra 5', 'Core Ultra 7', 'Core Ultra 9', 
-      'Ryzen 3', 'Ryzen 5', 'Ryzen 7', 'Ryzen 9', 'Ryzen Threadripper', 'Pentium', 'Celeron', 'Xeon'
+      'Ryzen 3', 'Ryzen 5', 'Ryzen 7', 'Ryzen 9'
     ] },
     { key: 'socket', label: 'Socket', type: 'select', options: [
-      'AM5', 'AM4', 'AM3+', 'AM3', 'AM2+', 'AM2', 'FM2+', 'FM2', 'FM1', 'sTRX4', 'sTR4', 'sWRX8', 'SP3',
-      'LGA1851', 'LGA1700', 'LGA1200', 'LGA1151', 'LGA1150', 'LGA1155', 'LGA1156', 'LGA2066', 'LGA2011', 'LGA1366', 'LGA775'
+      'AM5', 'AM4', 'LGA1851', 'LGA1700', 'LGA1200'
     ] },
-    { key: 'cores', label: 'Số nhân', type: 'select', options: ['2', '4', '6', '8', '10', '12', '14', '16', '20', '24', '32', '64'] },
-    { key: 'threads', label: 'Số luồng', type: 'select', options: ['2', '4', '8', '12', '16', '20', '24', '28', '32', '48', '64', '128'] },
-    { key: 'performance_score', label: 'Điểm hiệu năng', type: 'range', placeholder: '21000' },
+    { key: 'cores', label: 'Số nhân', type: 'select', options: ['2', '4', '6', '8', '10', '12', '14', '16', '20', '24', '32'] },
+    { key: 'threads', label: 'Số luồng', type: 'select', options: ['2', '4', '8', '12', '16', '20', '24', '28', '32', '48', '64'] },
     { key: 'base_clock_ghz', label: 'Xung cơ bản (GHz)', type: 'range', placeholder: '3.5' },
     { key: 'boost_clock_ghz', label: 'Xung tối đa (GHz)', type: 'range', placeholder: '5.0' },
-    { key: 'cache_mb', label: 'Bộ nhớ đệm (MB)', type: 'range', placeholder: '16' },
+    { key: 'l3_cache', label: 'Bộ nhớ đệm L3 (MB)', type: 'range', placeholder: '32' },
     { key: 'tdp_w', label: 'TDP (W)', type: 'range', placeholder: '65' },
     { key: 'integrated_gpu', label: 'GPU tích hợp', type: 'boolean' },
-    { key: 'intended_use', label: 'Mục đích sử dụng', type: 'multiselect', options: ['Văn phòng', 'Chơi game', 'Đồ họa', 'Workstation / Server', 'Học tập'] },
   ],
   fan: [
-    { key: 'size_mm', label: 'Kích thước (mm)', type: 'select', options: ['80', '92', '120', '140', '200'] },
+    { key: 'size_mm', label: 'Kích thước (mm)', type: 'select', options: ['120', '140'] },
     { key: 'fan_speed_rpm', label: 'Tốc độ quay (RPM)', type: 'range', placeholder: '2100' },
     { key: 'airflow_cfm', label: 'Lưu lượng gió (CFM)', type: 'range', placeholder: '72.8' },
     { key: 'noise_level_db', label: 'Độ ồn (dB)', type: 'range', placeholder: '36' },
-    { key: 'connection_type', label: 'Chuẩn cắm', type: 'text', placeholder: '4-pin PWM' },
-    { key: 'bearing_type', label: 'Loại trục', type: 'text', placeholder: 'Magnetic Dome' },
+    { key: 'connection_type', label: 'Chuẩn cắm', type: 'select', options: ['PWM (4-pin)', 'ARGB', 'PWM (4-pin) ARGB'] },
+    { key: 'bearing_type', label: 'Loại trục', type: 'select', options: ['Fluid Dynamic Bearing (FDB)', 'Hydraulic Bearing', 'Rifle Bearing', 'Magnetic Dome Bearing'] },
     { key: 'has_rgb', label: 'Có RGB', type: 'boolean' },
-    { key: 'is_addressable_rgb', label: 'LED ARGB', type: 'boolean' },
-    { key: 'intended_use', label: 'Mục đích sử dụng', type: 'multiselect', options: ['Văn phòng', 'Chơi game', 'Đồ họa', 'Workstation / Server', 'Học tập'] },
   ],
   mainboard: [
     { key: 'chipset', label: 'Chipset', type: 'select', options: [
-      'Z890', 'Z790', 'Z690', 'Z590', 'Z490', 'B860', 'B760', 'B660', 'B560', 'B460', 'H610', 'H510', 'H410', 
-      'X870E', 'X870', 'X670E', 'X670', 'X570', 'X470', 'B850', 'B650E', 'B650', 'B550', 'B450', 'A620', 'A520', 'A320'
+      'Z890', 'Z790', 'B760', 'H610', 'X870', 'X670', 'B650', 'B550', 'A620'
     ] },
     { key: 'socket', label: 'Socket', type: 'select', options: [
-      'AM5', 'AM4', 'AM3+', 'AM3', 'AM2+', 'AM2', 'FM2+', 'FM2', 'FM1', 'sTRX4', 'sTR4', 'sWRX8', 'SP3',
-      'LGA1851', 'LGA1700', 'LGA1200', 'LGA1151', 'LGA1150', 'LGA1155', 'LGA1156', 'LGA2066', 'LGA2011', 'LGA1366', 'LGA775'
+      'AM5', 'AM4', 'LGA1851', 'LGA1700', 'LGA1200'
     ] },
-    { key: 'form_factor', label: 'Form factor', type: 'select', options: ['Mini-ITX', 'Micro-ATX', 'ATX', 'E-ATX', 'Flex-ATX', 'SSI CEB', 'SSI EEB'] },
-    { key: 'ram_type', label: 'Loại RAM', type: 'select', options: ['DDR3', 'DDR4', 'DDR5', 'LPDDR4', 'LPDDR5', 'LPDDR5X'] },
+    { key: 'form_factor', label: 'Form factor', type: 'select', options: ['Mini-ITX', 'Micro-ATX', 'ATX', 'E-ATX'] },
+    { key: 'ram_type', label: 'Loại RAM hỗ trợ', type: 'select', options: ['DDR4', 'DDR5'] },
     { key: 'ram_slots', label: 'Số khe RAM', type: 'select', options: ['2', '4', '8'] },
-    { key: 'max_ram_gb', label: 'RAM tối đa (GB)', type: 'select', options: ['16', '32', '64', '128', '192', '256', '512'] },
+    { key: 'max_ram_gb', label: 'RAM tối đa (GB)', type: 'select', options: ['32', '64', '128', '192', '256'] },
     { key: 'm2_slots', label: 'Số khe M.2', type: 'range', placeholder: '4' },
     { key: 'has_wifi', label: 'Có Wifi', type: 'boolean' },
-    { key: 'mainboard_type', label: 'Phân khúc bo mạch', type: 'select', options: ['Workstation', 'Gaming', 'Phổ thông'] },
-    { key: 'intended_use', label: 'Mục đích sử dụng', type: 'multiselect', options: ['Văn phòng', 'Chơi game', 'Đồ họa', 'Workstation / Server', 'Học tập'] },
   ],
   monitor: [
-    { key: 'size_inch', label: 'Kích thước (inch)', type: 'range', placeholder: '27' },
-    { key: 'resolution', label: 'Độ phân giải', type: 'select', options: ['1920x1080', '2560x1440', '3440x1440', '3840x2160', '5120x2880'] },
-    { key: 'refresh_rate_hz', label: 'Tần số quét (Hz)', type: 'range', placeholder: '240' },
-    { key: 'panel_type', label: 'Loại tấm nền', type: 'select', options: ['IPS', 'VA', 'TN', 'OLED', 'QD-OLED', 'Mini-LED'] },
-    { key: 'aspect_ratio', label: 'Tỉ lệ màn hình', type: 'select', options: ['16:9', '16:10', '21:9', '32:9', '4:3'] },
-    { key: 'response_time_ms', label: 'Thời gian phản hồi (ms)', type: 'range', placeholder: '1' },
-    { key: 'brightness_cdm2', label: 'Độ sáng (cd/m2)', type: 'range', placeholder: '1000' },
-    { key: 'ports', label: 'Cổng kết nối', type: 'multiselect', options: ['HDMI 2.0', 'HDMI 2.1', 'DisplayPort 1.4', 'DisplayPort 2.1', 'Type-C', 'VGA', 'DVI'] },
-    { key: 'color_accuracy', label: 'Độ chuẩn màu', type: 'text', placeholder: '99% DCI-P3' },
-    { key: 'has_hdr', label: 'Hỗ trợ HDR', type: 'boolean' },
-    { key: 'intended_use', label: 'Mục đích sử dụng', type: 'multiselect', options: ['Văn phòng', 'Chơi game', 'Đồ họa', 'Workstation / Server', 'Học tập'] },
+    { key: 'screen_size', label: 'Kích thước màn hình', type: 'select', options: ['24 inch', '27 inch', '32 inch', '34 inch'] },
+    { key: 'resolution', label: 'Độ phân giải', type: 'select', options: ['1920x1080', '2560x1440', '3840x2160'] },
+    { key: 'refresh_rate', label: 'Tần số quét', type: 'select', options: ['120 Hz', '144 Hz', '165 Hz', '180 Hz', '240 Hz'] },
+    { key: 'panel_type', label: 'Loại tấm nền', type: 'select', options: ['IPS', 'VA', 'TN', 'OLED'] },
   ],
   psu: [
-    { key: 'wattage', label: 'Công suất (W)', type: 'select', options: ['450', '500', '550', '600', '650', '700', '750', '800', '850', '1000', '1200', '1300', '1500', '1600'] },
-    { key: 'efficiency_rating', label: 'Hiệu suất', type: 'select', options: ['80 Plus', '80 Plus Bronze', '80 Plus Silver', '80 Plus Gold', '80 Plus Platinum', '80 Plus Titanium'] },
-    { key: 'modularity', label: 'Dạng dây (Modularity)', type: 'select', options: ['Full Modular', 'Semi Modular', 'Non Modular'] },
-    { key: 'form_factor', label: 'Form factor', type: 'select', options: ['ATX', 'SFX', 'SFX-L', 'TFX', 'Flex-ATX', 'EPS12V'] },
-    { key: 'intended_use', label: 'Mục đích sử dụng', type: 'multiselect', options: ['Văn phòng', 'Chơi game', 'Đồ họa', 'Workstation / Server', 'Học tập'] },
+    { key: 'wattage', label: 'Công suất (W)', type: 'select', options: ['500', '650', '750', '850', '1000', '1200', '1600'] },
+    { key: 'efficiency_rating', label: 'Hiệu suất', type: 'select', options: ['80 Plus Gold', '80 Plus Bronze', '80 Plus Titanium', '80 Plus Platinum'] },
+    { key: 'modularity', label: 'Dạng dây (Modularity)', type: 'select', options: ['Full Modular', 'Semi-Modular', 'Non-Modular'] },
+    { key: 'form_factor', label: 'Form factor', type: 'select', options: ['ATX', 'SFX'] },
   ],
   ram: [
-    { key: 'type', label: 'Loại RAM', type: 'select', options: ['DDR3', 'DDR4', 'DDR5', 'LPDDR4', 'LPDDR5', 'LPDDR5X'] },
-    { key: 'capacity_gb', label: 'Dung lượng tổng (GB)', type: 'select', options: ['8', '16', '24', '32', '48', '64', '96', '128', '256'] },
-    { key: 'kit', label: 'Kit RAM', type: 'select', options: ['1x8GB', '2x8GB', '1x16GB', '2x16GB', '2x32GB', '4x16GB', '2x24GB', '2x48GB', '4x32GB'] },
-    { key: 'bus_speed_mhz', label: 'Tốc độ Bus (MHz)', type: 'range', placeholder: '4000' },
-    { key: 'latency_cl', label: 'CAS Latency (CL)', type: 'range', placeholder: '18' },
+    { key: 'ram_type', label: 'Loại RAM', type: 'select', options: ['DDR4', 'DDR5'] },
+    { key: 'capacity_gb', label: 'Dung lượng tổng (GB)', type: 'select', options: ['8', '16', '32', '64', '96'] },
+    { key: 'bus_speed_mhz', label: 'Tốc độ Bus (MHz)', type: 'select', options: ['3200', '3600', '5600', '6000', '6600'] },
+    { key: 'latency_cl', label: 'CAS Latency (CL)', type: 'select', options: ['16', '18', '30', '32', '36', '40'] },
     { key: 'has_rgb', label: 'Có RGB', type: 'boolean' },
-    { key: 'intended_use', label: 'Mục đích sử dụng', type: 'multiselect', options: ['Văn phòng', 'Chơi game', 'Đồ họa', 'Workstation / Server', 'Học tập'] },
   ],
   ssd: [
-    { key: 'capacity_gb', label: 'Dung lượng (GB)', type: 'select', options: ['120', '240', '250', '256', '480', '500', '512', '1000', '2000', '4000', '8000', '16000'] },
-    { key: 'type', label: 'Loại', type: 'select', options: ['SSD', 'HDD'] },
-    { key: 'ssd_type', label: 'Phân loại SSD', type: 'select', options: ['SSD M.2 NVMe', 'SSD M.2 SATA', 'SSD 2.5" SATA', 'HDD 3.5" SATA'] },
-    { key: 'form_factor', label: 'Kích cỡ (Form factor)', type: 'select', options: ['M.2 2280', 'M.2 2242', '2.5"', '3.5"'] },
-    { key: 'interface', label: 'Giao tiếp', type: 'select', options: ['NVMe PCIe Gen3', 'NVMe PCIe Gen4', 'NVMe PCIe Gen5', 'SATA III', 'SATA II', 'SAS'] },
+    { key: 'capacity_gb', label: 'Dung lượng (GB)', type: 'select', options: ['240', '250', '256', '500', '512', '1000', '2000'] },
+    { key: 'ssd_type', label: 'Phân loại', type: 'select', options: ['SSD M.2 NVMe', 'SSD M.2 SATA', 'SSD 2.5" SATA', 'HDD 3.5" SATA'] },
     { key: 'read_speed_mbps', label: 'Tốc độ đọc (MB/s)', type: 'range', placeholder: '3500' },
     { key: 'write_speed_mbps', label: 'Tốc độ ghi (MB/s)', type: 'range', placeholder: '2300' },
-    { key: 'tbw', label: 'Độ bền ghi (TBW)', type: 'range', placeholder: '320' },
     { key: 'has_heatsink', label: 'Có tản nhiệt', type: 'boolean' },
-    { key: 'intended_use', label: 'Mục đích sử dụng', type: 'multiselect', options: ['Văn phòng', 'Chơi game', 'Đồ họa', 'Workstation / Server', 'Học tập'] },
   ],
   vga: [
-    { key: 'chipset', label: 'Chipset', type: 'select', options: [
-      'GeForce RTX 5090', 'GeForce RTX 5080', 'GeForce RTX 5070', 'GeForce RTX 4090', 'GeForce RTX 4080 Super', 
-      'GeForce RTX 4080', 'GeForce RTX 4070 Ti Super', 'GeForce RTX 4070 Ti', 'GeForce RTX 4070 Super', 
-      'GeForce RTX 4070', 'GeForce RTX 4060 Ti', 'GeForce RTX 4060', 'GeForce RTX 3090 Ti', 'GeForce RTX 3090', 
-      'GeForce RTX 3080 Ti', 'GeForce RTX 3080', 'GeForce RTX 3070 Ti', 'GeForce RTX 3070', 'GeForce RTX 3060 Ti', 
-      'GeForce RTX 3060', 'GeForce RTX 3050', 'GeForce GTX 1660 Super', 'GeForce GTX 1660 Ti', 'GeForce GTX 1660', 
-      'GeForce GTX 1650 Super', 'GeForce GTX 1650', 'Radeon RX 7900 XTX', 'Radeon RX 7900 XT', 'Radeon RX 7800 XT', 
-      'Radeon RX 7700 XT', 'Radeon RX 7600 XT', 'Radeon RX 7600', 'Radeon RX 6950 XT', 'Radeon RX 6900 XT', 
-      'Radeon RX 6800 XT', 'Radeon RX 6800', 'Radeon RX 6750 XT', 'Radeon RX 6700 XT', 'Radeon RX 6600 XT', 
-      'Radeon RX 6600', 'Intel Arc A770', 'Intel Arc A750', 'Intel Arc A580', 'Intel Arc A380'
+    { key: 'vga_series', label: 'Dòng sản phẩm (VGA Series)', type: 'select', options: [
+      'RTX 50 Series', 'RTX 40 Series', 'RTX 30 Series', 'NVIDIA GTX 1660 Series', 'Radeon RX 9000 Series', 'AMD RX 9000 Series', 'AMD RX 6000 Series'
     ] },
-    { key: 'vram_gb', label: 'VRAM (GB)', type: 'select', options: ['2', '4', '6', '8', '10', '12', '16', '20', '24', '32', '48'] },
-    { key: 'vram_type', label: 'Loại VRAM', type: 'select', options: ['DDR3', 'GDDR5', 'GDDR5X', 'GDDR6', 'GDDR6X', 'GDDR7', 'HBM', 'HBM2', 'HBM2e', 'HBM3'] },
-    { key: 'performance_score', label: 'Điểm hiệu năng', type: 'range', placeholder: '9000' },
+    { key: 'graphics_processor', label: 'Thương hiệu GPU', type: 'select', options: ['NVIDIA', 'AMD'] },
+    { key: 'vram_gb', label: 'VRAM (GB)', type: 'select', options: ['4', '6', '8', '12', '16', '24', '32'] },
     { key: 'length_mm', label: 'Chiều dài (mm)', type: 'range', placeholder: '248' },
     { key: 'min_psu_w', label: 'Nguồn tối thiểu (W)', type: 'range', placeholder: '350' },
     { key: 'tdp_w', label: 'TDP (W)', type: 'range', placeholder: '100' },
-    { key: 'base_clock_mhz', label: 'Xung cơ bản (MHz)', type: 'range', placeholder: '1530' },
-    { key: 'boost_clock_mhz', label: 'Xung boost (MHz)', type: 'range', placeholder: '1755' },
-    { key: 'intended_use', label: 'Mục đích sử dụng', type: 'multiselect', options: ['Văn phòng', 'Chơi game', 'Đồ họa', 'Workstation / Server', 'Học tập'] },
   ],
+  laptop: [
+    { key: 'screen_size', label: 'Kích thước màn hình', type: 'select', options: ['13.3 inch', '14 inch', '15.6 inch', '16 inch'] },
+    { key: 'refresh_rate', label: 'Tần số quét', type: 'select', options: ['120 Hz', '144 Hz', '165 Hz', '180 Hz', '240 Hz'] },
+    { key: 'cpu', label: 'Vi xử lý (CPU)', type: 'select', options: [] },
+    { key: 'ram', label: 'Bộ nhớ RAM', type: 'select', options: [] },
+    { key: 'vga', label: 'Card đồ họa', type: 'select', options: [] },
+    { key: 'resolution', label: 'Độ phân giải', type: 'select', options: [] },
+  ]
 };
 
 function getSpecFiltersForCategory(catName: string): SpecFilterDef[] {
@@ -166,6 +135,7 @@ function getSpecFiltersForCategory(catName: string): SpecFilterDef[] {
   if (slug.includes('storage') || slug.includes('ssd') || slug.includes('hdd') || slug.includes('o cung')) return SPECS_BY_CATEGORY.ssd;
   if (slug.includes('monitor') || slug.includes('man hinh')) return SPECS_BY_CATEGORY.monitor;
   if (slug.includes('case') || slug.includes('vo may')) return SPECS_BY_CATEGORY.case;
+  if (slug.includes('laptop')) return SPECS_BY_CATEGORY.laptop;
   for (const key of Object.keys(SPECS_BY_CATEGORY)) {
     if (slug.includes(key)) return SPECS_BY_CATEGORY[key];
   }
@@ -938,21 +908,37 @@ export default function ExplorePage() {
       if (activeKeys.length === 0) return true;
 
       try {
-        const specs = p.specsJson ? JSON.parse(p.specsJson) : {};
+        const specs = p.specsJson ? (typeof p.specsJson === 'string' ? JSON.parse(p.specsJson) : p.specsJson) : {};
+        
+        // Match helper for robust text and structure normalization
+        const matchValue = (specVal: any, wantedVal: string): boolean => {
+          const cleanSpec = String(specVal).toLowerCase().replace(/[\s\-_]/g, '');
+          const cleanWanted = wantedVal.toLowerCase().replace(/[\s\-_]/g, '');
+          
+          if (cleanSpec === cleanWanted) return true;
+          if (cleanSpec.includes(cleanWanted) || cleanWanted.includes(cleanSpec)) return true;
+          
+          const specTokens = String(specVal).toLowerCase().split(/[\s,\/;]+/).map(t => t.trim().replace(/[\-_]/g, ''));
+          const wantedTokens = wantedVal.toLowerCase().split(/[\s,\/;]+/).map(t => t.trim().replace(/[\-_]/g, ''));
+          
+          return wantedTokens.some(w => specTokens.includes(w));
+        };
+
         for (const [key, val] of activeKeys) {
           const def = activeSpecFilters.find(f => f.key === key);
           const specVal = specs[key];
           if (specVal === undefined || specVal === null) return false;
 
           if (def?.type === 'boolean') {
-            if (String(specVal) !== val) return false;
+            const boolVal = String(specVal).toLowerCase();
+            if (boolVal !== val) return false;
           } else if (def?.type === 'select') {
-            if (String(specVal) !== val) return false;
+            if (!matchValue(specVal, val)) return false;
           } else if (def?.type === 'range') {
             const [minStr, maxStr] = val.split(',');
             const minVal = parseFloat(minStr);
             const maxVal = parseFloat(maxStr);
-            const num = parseFloat(String(specVal));
+            const num = parseFloat(String(specVal).replace(/[^0-9.]/g, ''));
             if (!isNaN(num)) {
               if (!isNaN(minVal) && num < minVal) return false;
               if (!isNaN(maxVal) && num > maxVal) return false;
@@ -960,8 +946,8 @@ export default function ExplorePage() {
           } else {
             // multiselect / text / number treated as sets of selected values
             const wanted = val.split(',').map(v => v.trim()).filter(Boolean);
-            const has = Array.isArray(specVal) ? specVal : [String(specVal)];
-            if (!wanted.some(w => has.some((h: string) => String(h) === w))) return false;
+            const hasRaw = Array.isArray(specVal) ? specVal : [String(specVal)];
+            if (!wanted.some(w => hasRaw.some(h => matchValue(h, w)))) return false;
           }
         }
       } catch { return true; }
@@ -1031,7 +1017,7 @@ export default function ExplorePage() {
                 selectedCategory === String(cat.id) ? 'bg-[#eff6ff] text-[#0058be] font-semibold' : 'text-[#475569] hover:bg-[#f8fafc]'
               }`}
             >
-              {cat.name}
+              {getCategoryLabel(cat.name)}
             </button>
           ))}
         </div>
@@ -1177,7 +1163,7 @@ export default function ExplorePage() {
             <div className="flex items-center gap-2 flex-wrap ml-2">
               {activeCategoryName && selectedCategory && (
                 <span className="inline-flex items-center gap-1.5 bg-[#eff6ff] text-[#0058be] text-[11px] font-medium px-2 py-0.5 rounded-full">
-                  {activeCategoryName}
+                  {getCategoryLabel(activeCategoryName)}
                   <button onClick={() => { setSelectedCategory(''); setSpecFilters({}); }} className="cursor-pointer"><X className="size-3" /></button>
                 </span>
               )}

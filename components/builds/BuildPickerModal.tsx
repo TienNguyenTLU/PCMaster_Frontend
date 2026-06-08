@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Search, X, Package, Check, Loader2, AlertTriangle } from 'lucide-react';
 import { adminAPI, Product } from '@/lib/api';
+import { isCaseCompatibleWithMb } from './BuildPage';
 
 interface BuildPickerModalProps {
   slotKey: string;
@@ -91,13 +92,7 @@ export default function BuildPickerModal({ slotKey, slotLabel, build, onSelect, 
   const totalTdp = (Number(cpuSpecs.tdp_w) || 0) + (Number(vgaSpecs.tdp_w) || 0);
 
   const isCaseCompatible = (caseProd: Product, mbFormFactor: string) => {
-    const specs = getProductSpecs(caseProd);
-    const supported = specs.supported_mainboards;
-    if (!supported) return true;
-    if (Array.isArray(supported)) {
-      return supported.map(s => String(s).toLowerCase()).includes(mbFormFactor.toLowerCase());
-    }
-    return String(supported).toLowerCase().includes(mbFormFactor.toLowerCase());
+    return isCaseCompatibleWithMb(caseProd, mbFormFactor);
   };
 
   const isSsdCompatible = (ssdProd: Product, mbProd: Product) => {

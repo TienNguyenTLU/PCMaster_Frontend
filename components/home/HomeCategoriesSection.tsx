@@ -6,15 +6,19 @@ import { adminAPI, Category } from '@/lib/api';
 import HomeCategoryCard from './HomeCategoryCard';
 import { 
   Cpu, 
-  Tv, 
+  Gamepad2, 
   HardDrive, 
   Layers, 
   Zap, 
-  Wind, 
-  Box, 
+  Fan, 
+  Server, 
   Monitor, 
-  Folder, 
-  HelpCircle 
+  CircuitBoard, 
+  HelpCircle,
+  Laptop,
+  Keyboard,
+  Mouse,
+  Headphones
 } from 'lucide-react';
 
 const imgArrowSmall = 'http://localhost:3845/assets/61dd0d1d6928fb3ddfc20fcb1cfc8aee254066a1.svg';
@@ -25,13 +29,13 @@ function getCategoryIcon(name: string) {
     return Cpu;
   }
   if (slug.includes('vga') || slug.includes('graphics') || slug.includes('do hoa') || slug.includes('card man hinh')) {
-    return Tv;
+    return Gamepad2;
   }
   if (slug.includes('ram') || slug.includes('bo nho') || slug.includes('memory')) {
     return Layers;
   }
   if (slug.includes('main') || slug.includes('board') || slug.includes('bo mach')) {
-    return Folder;
+    return CircuitBoard;
   }
   if (slug.includes('storage') || slug.includes('ssd') || slug.includes('hdd') || slug.includes('o cung')) {
     return HardDrive;
@@ -40,13 +44,25 @@ function getCategoryIcon(name: string) {
     return Zap;
   }
   if (slug.includes('case') || slug.includes('vo may')) {
-    return Box;
+    return Server;
   }
   if (slug.includes('cool') || slug.includes('tan nhiet') || slug.includes('fan') || slug.includes('quat')) {
-    return Wind;
+    return Fan;
   }
   if (slug.includes('monitor') || slug.includes('man hinh')) {
     return Monitor;
+  }
+  if (slug.includes('laptop')) {
+    return Laptop;
+  }
+  if (slug.includes('ban phim') || slug.includes('keyboard')) {
+    return Keyboard;
+  }
+  if (slug.includes('chuot') || slug.includes('mouse')) {
+    return Mouse;
+  }
+  if (slug.includes('tai nghe') || slug.includes('headphone') || slug.includes('audio')) {
+    return Headphones;
   }
   return HelpCircle;
 }

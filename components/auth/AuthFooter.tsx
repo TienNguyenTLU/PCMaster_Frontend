@@ -72,7 +72,7 @@ export default function AuthFooter() {
           </h4>
           <ul className="flex flex-col gap-3">
             {[
-              { label: 'Xây dựng cấu hình PC', href: '/build' },
+              { label: 'Xây dựng cấu hình PC', href: '/builds' },
               { label: 'Bộ vi xử lý (CPU)', href: '/explore?category=cpu' },
               { label: 'Card đồ họa (VGA)', href: '/explore?category=vga' },
               { label: 'Bo mạch chủ (Mainboard)', href: '/explore?category=mainboard' },

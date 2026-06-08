@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { X, Save, Loader2, AlertCircle, Upload, ImageIcon, Check, Trash2, FileSpreadsheet, Download, Info, RotateCcw } from 'lucide-react';
-import { adminAPI, Product, Brand, Category, ProductImage } from '@/lib/api';
+import { adminAPI, Product, Brand, Category, ProductImage, getCategoryLabel } from '@/lib/api';
 import toast from 'react-hot-toast';
 import { CldImage } from 'next-cloudinary';
 import axiosInstance from '@/lib/axiosInstance';
@@ -543,6 +543,30 @@ export default function ProductFormModal({ isOpen, onClose, onSuccess, editingPr
             }
           }
 
+          // Normalize old SSD/STORAGE keys for editing pre-population
+          const ssdMappings: Record<string, string> = {
+            k_ch_c_form_factor: 'form_factor',
+            'Kích thước form factor': 'form_factor',
+            giao_di_n_k_t_n_i: 'interface',
+            'giao diện kết nối': 'interface',
+            lo_i_chip_nh: 'nand_type',
+            'loại chip nhớ': 'nand_type',
+            nhi_t_ho_t_ng: 'operating_temperature',
+            'nhiệt độ hoạt động': 'operating_temperature',
+            lo_i_ssd: 'ssd_type',
+            'Chuẩn SSD': 'ssd_type',
+            t_c_c_mb_s: 'read_speed_mbps',
+            t_c_ghi_mb_s: 'write_speed_mbps',
+            t_n_nhi_t: 'has_heatsink',
+            'tản nhiệt': 'has_heatsink'
+          };
+          for (const [oldKey, newKey] of Object.entries(ssdMappings)) {
+            if (parsed[oldKey] !== undefined) {
+              parsed[newKey] = parsed[oldKey];
+              delete parsed[oldKey];
+            }
+          }
+
           // Normalize old Case keys for editing pre-population
           const caseMappings: Record<string, string> = {
             h_tr_main: 'supported_mainboards',
@@ -740,6 +764,32 @@ export default function ProductFormModal({ isOpen, onClose, onSuccess, editingPr
           c_ng_su_t_t_i_a: 'wattage',
         };
         for (const [oldKey, newKey] of Object.entries(psuMappings)) {
+          if (specsObj[oldKey] !== undefined) {
+            specsObj[newKey] = specsObj[oldKey];
+            delete specsObj[oldKey];
+          }
+        }
+      }
+
+      // Normalize SSD specs keys in specsObj before form field values overwrite them
+      if (specsObj['component_type'] === 'STORAGE' || getComponentTypeFromName(selectedCategoryName) === 'STORAGE') {
+        const ssdMappings: Record<string, string> = {
+          k_ch_c_form_factor: 'form_factor',
+          'Kích thước form factor': 'form_factor',
+          giao_di_n_k_t_n_i: 'interface',
+          'giao diện kết nối': 'interface',
+          lo_i_chip_nh: 'nand_type',
+          'loại chip nhớ': 'nand_type',
+          nhi_t_ho_t_ng: 'operating_temperature',
+          'nhiệt độ hoạt động': 'operating_temperature',
+          lo_i_ssd: 'ssd_type',
+          'Chuẩn SSD': 'ssd_type',
+          t_c_c_mb_s: 'read_speed_mbps',
+          t_c_ghi_mb_s: 'write_speed_mbps',
+          t_n_nhi_t: 'has_heatsink',
+          'tản nhiệt': 'has_heatsink'
+        };
+        for (const [oldKey, newKey] of Object.entries(ssdMappings)) {
           if (specsObj[oldKey] !== undefined) {
             specsObj[newKey] = specsObj[oldKey];
             delete specsObj[oldKey];
@@ -1032,7 +1082,7 @@ export default function ProductFormModal({ isOpen, onClose, onSuccess, editingPr
                     }`}
                   >
                     <option value="">-- Chọn danh mục --</option>
-                    {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                    {categories.map(c => <option key={c.id} value={c.id}>{getCategoryLabel(c.name)}</option>)}
                   </select>
                 </div>
                 <div className="flex flex-col gap-1.5">

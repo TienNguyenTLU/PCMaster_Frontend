@@ -182,7 +182,7 @@ export default function HomeNavBar() {
                     {/* Menu items */}
                     <div className="p-1">
                       <Link
-                        href="#"
+                        href="/settings"
                         onClick={() => setIsDropdownOpen(false)}
                         className="flex items-center gap-3 px-3 py-2 text-[14px] text-[#475569] hover:bg-[#f1f5f9] hover:text-[#0058be] transition-all rounded-[6px]"
                       >

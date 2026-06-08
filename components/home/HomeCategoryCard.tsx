@@ -1,5 +1,6 @@
 import { LucideIcon, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
+import { getCategoryLabel } from '@/lib/api';
 
 interface CategoryCardProps {
   id: string | number;
@@ -24,7 +25,7 @@ export default function HomeCategoryCard({ id, name, Icon }: CategoryCardProps) 
           className="text-[#191c1e] text-[15px] sm:text-[16px] font-semibold tracking-[-0.3px] leading-tight group-hover:text-[#0058be] transition-colors"
           style={{ fontFamily: 'Inter, sans-serif' }}
         >
-          {name}
+          {getCategoryLabel(name)}
         </h3>
         
         {/* Subtle hover reveal element */}

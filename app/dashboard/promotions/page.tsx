@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { Plus, Search, Filter, Edit, Trash2, X, Loader2, Check, Calendar, Sparkles, Image } from 'lucide-react';
-import { adminAPI, Product, Promotion, PromotionRequest, Category } from '@/lib/api';
+import { adminAPI, Product, Promotion, PromotionRequest, Category, getCategoryLabel } from '@/lib/api';
 import toast from 'react-hot-toast';
 import axiosInstance from '@/lib/axiosInstance';
 
@@ -506,7 +506,7 @@ function PromotionFormModal({
                   <option value="">Tất cả danh mục</option>
                   {categories.map(cat => (
                     <option key={cat.id} value={cat.id}>
-                      {cat.name}
+                      {getCategoryLabel(cat.name)}
                     </option>
                   ))}
                 </select>

@@ -5,7 +5,7 @@ import {
   X, Search, Download, Loader2, AlertCircle, Check,
   Eye, PackagePlus, ChevronDown, ChevronUp, Info
 } from 'lucide-react';
-import { adminAPI, Category, GearvnPreviewResponse } from '@/lib/api';
+import { adminAPI, Category, GearvnPreviewResponse, getCategoryLabel } from '@/lib/api';
 import toast from 'react-hot-toast';
 
 interface GearvnImportModalProps {
@@ -134,7 +134,26 @@ const SPEC_LABEL_MAP: Record<string, string> = {
   tdp: 'Điện năng tiêu thụ (TDP)',
   dimensions: 'Kích thước card',
   weight: 'Trọng lượng',
-  interface: 'giao diện kết nối',
+  interface: 'Giao diện kết nối',
+  giao_di_n_k_t_n_i: 'Giao diện kết nối',
+  read_speed_mbps: 'Tốc độ đọc (MB/s)',
+  t_c_c_mb_s: 'Tốc độ đọc (MB/s)',
+  write_speed_mbps: 'Tốc độ ghi (MB/s)',
+  t_c_ghi_mb_s: 'Tốc độ ghi (MB/s)',
+  nand_type: 'Loại chip nhớ (NAND)',
+  lo_i_chip_nh: 'Loại chip nhớ (NAND)',
+  mtbf: 'Tuổi thọ thiết bị (MTBF)',
+  operating_temperature: 'Nhiệt độ hoạt động',
+  nhi_t_ho_t_ng: 'Nhiệt độ hoạt động',
+  has_heatsink: 'Tản nhiệt đi kèm',
+  lo_i_ssd: 'Chuẩn SSD',
+  k_ch_c_form_factor: 'Kích thước / Form factor',
+  cache: 'Bộ nhớ đệm (Cache)',
+  b_nh_m: 'Bộ nhớ đệm (Cache)',
+  tbw: 'Độ bền ghi (TBW)',
+  tbw_b_n_ghi: 'Độ bền ghi (TBW)',
+  tbw_w: 'Độ bền ghi (TBW)',
+  dung_l_ng: 'Dung lượng',
   cuda_cores: 'số nhân Cuda',
 
   // RAM specifications
@@ -145,7 +164,7 @@ const SPEC_LABEL_MAP: Record<string, string> = {
   lo_i_m_y: 'Thiết bị tương thích (Loại máy)',
   s_k_nh: 'Số kênh RAM',
   s_l_ng_thanh: 'Số lượng thanh',
-  t_n_nhi_t: 'Tản nhiệt RAM',
+  t_n_nhi_t: 'Tản nhiệt đi kèm',
   i_n_p: 'Điện áp',
   intel_xmp: 'Hỗ trợ Intel XMP',
   amd_expo: 'Hỗ trợ AMD EXPO',
@@ -174,7 +193,7 @@ const SPEC_LABEL_MAP: Record<string, string> = {
   // Cooler specifications
   cooler_type: 'Loại tản nhiệt',
   lo_i_s_n_ph_m: 'Loại tản nhiệt',
-  fan_count: 'Số quạt',
+  // fan_count: 'Số quạt',
   s_qu_t: 'Số quạt',
   cpu_socket_support: 'Socket CPU hỗ trợ',
   t_ng_th_ch_cpu: 'Socket CPU hỗ trợ',
@@ -205,19 +224,19 @@ const SPEC_LABEL_MAP: Record<string, string> = {
   // Fan specifications
   is_addressable_rgb: 'LED ARGB',
   size_mm: 'Kích thước (mm)',
-  airflow_cfm: 'Lưu lượng gió (CFM)',
-  bearing_type: 'Loại trục quay (Bearing)',
-  fan_speed_rpm: 'Tốc độ quay (RPM)',
+  // airflow_cfm: 'Lưu lượng gió (CFM)',
+  // bearing_type: 'Loại trục quay (Bearing)',
+  // fan_speed_rpm: 'Tốc độ quay (RPM)',
   connection_type: 'Chuẩn cắm',
   voltage: 'Điện áp',
   'Điện áp': 'Điện áp',
-  i_n_p: 'Điện áp',
-  fan_lifespan: 'Tuổi thọ quạt',
+  // i_n_p: 'Điện áp',
+  // fan_lifespan: 'Tuổi thọ quạt',
   'Tuổi thọ quạt': 'Tuổi thọ quạt',
-  tu_i_th_qu_t: 'Tuổi thọ quạt',
-  static_pressure_mmh2o: 'Áp suất tĩnh (mmH₂O)',
+  // tu_i_th_qu_t: 'Tuổi thọ quạt',
+  // static_pressure_mmh2o: 'Áp suất tĩnh (mmH₂O)',
   'Áp suất tĩnh (mmH₂O)': 'Áp suất tĩnh (mmH₂O)',
-  p_su_t_t_nh: 'Áp suất tĩnh (mmH₂O)',
+  // p_su_t_t_nh: 'Áp suất tĩnh (mmH₂O)',
   fan_type: 'Loại quạt',
   lo_i_qu_t: 'Loại quạt',
   lo_i_n_led: 'Loại đèn LED',
@@ -227,12 +246,12 @@ const SPEC_LABEL_MAP: Record<string, string> = {
   noise_level_db: 'Độ ồn (dB)',
   n: 'Độ ồn (dB)',
   'Kích thước quạt (mm)': 'Kích thước quạt (mm)',
-  m_u_s_c: 'Màu sắc',
+  // m_u_s_c: 'Màu sắc',
 
   // Laptop
   cpu: 'Bộ vi xử lý (CPU)',
   ram: 'Bộ nhớ RAM',
-  ram_slots: 'Số khe cắm RAM',
+  // ram_slots: 'Số khe cắm RAM',
   s_khe_ram: 'Số khe cắm RAM',
   ssd: 'Ổ cứng SSD',
   ssd_slots: 'Số khe cắm SSD',
@@ -456,7 +475,7 @@ export default function GearvnImportModal({ isOpen, onClose, onSuccess }: Gearvn
                 }`}
               >
                 <option value="">-- Chọn danh mục sản phẩm --</option>
-                {categories.map(c => <option key={c.id} value={c.id}>{c.name}</option>)}
+                {categories.map(c => <option key={c.id} value={c.id}>{getCategoryLabel(c.name)}</option>)}
               </select>
               {categoryError && (
                 <span className="text-red-500 text-[12px] font-medium flex items-center gap-1">
