@@ -1,35 +1,35 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { 
-  LayoutDashboard, 
-  Package, 
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import {
+  LayoutDashboard,
+  Package,
   Tag,
-  Factory, 
-  ShoppingCart, 
+  Factory,
+  ShoppingCart,
   Settings,
   Image,
   Warehouse,
   Cpu,
   Sparkles,
   Ticket,
-  Users
-} from 'lucide-react';
-import { useAuthStore } from '@/lib/store';
+  Users,
+} from "lucide-react";
+import { useAuthStore } from "@/lib/store";
 
 const navItems = [
-  { label: 'Tổng quan', href: '/dashboard', icon: LayoutDashboard },
-  { label: 'Sản phẩm', href: '/dashboard/products', icon: Package },
-  { label: 'Cấu hình PC', href: '/dashboard/pc-configurations', icon: Cpu },
-  { label: 'Khuyến mãi', href: '/dashboard/promotions', icon: Sparkles },
-  { label: 'Mã giảm giá (Coupon)', href: '/dashboard/coupons', icon: Ticket },
-  { label: 'Thương hiệu', href: '/dashboard/brands', icon: Tag },
-  { label: 'Banner quảng cáo', href: '/dashboard/banners', icon: Image },
-  { label: 'Nhà cung cấp', href: '/dashboard/suppliers', icon: Factory },
-  { label: 'Quản lý kho', href: '/dashboard/inventory', icon: Warehouse },
-  { label: 'Đơn bán hàng', href: '/dashboard/orders', icon: ShoppingCart },
-  { label: 'Quản lý người dùng', href: '/dashboard/users', icon: Users },
+  { label: "Tổng quan", href: "/dashboard", icon: LayoutDashboard },
+  { label: "Sản phẩm", href: "/dashboard/products", icon: Package },
+  { label: "Cấu hình PC", href: "/dashboard/pc-configurations", icon: Cpu },
+  { label: "Khuyến mãi", href: "/dashboard/promotions", icon: Sparkles },
+  { label: "Mã giảm giá (Coupon)", href: "/dashboard/coupons", icon: Ticket },
+  { label: "Thương hiệu", href: "/dashboard/brands", icon: Tag },
+  { label: "Banner quảng cáo", href: "/dashboard/banners", icon: Image },
+  { label: "Nhà cung cấp", href: "/dashboard/suppliers", icon: Factory },
+  { label: "Quản lý kho", href: "/dashboard/inventory", icon: Warehouse },
+  { label: "Đơn bán hàng", href: "/dashboard/orders", icon: ShoppingCart },
+  { label: "Quản lý người dùng", href: "/dashboard/users", icon: Users },
 ];
 
 export default function Sidebar() {
@@ -37,8 +37,13 @@ export default function Sidebar() {
   const { user } = useAuthStore();
 
   const filteredNavItems = navItems.filter((item) => {
-    if (user?.role === 'STAFF') {
-      const allowedPaths = ['/dashboard', '/dashboard/inventory', '/dashboard/orders', '/dashboard/suppliers'];
+    if (user?.role === "STAFF") {
+      const allowedPaths = [
+        "/dashboard",
+        "/dashboard/inventory",
+        "/dashboard/orders",
+        "/dashboard/suppliers",
+      ];
       return allowedPaths.includes(item.href);
     }
     return true;
@@ -51,31 +56,40 @@ export default function Sidebar() {
         <Link
           href="/dashboard"
           className="text-white text-[24px] tracking-[-1px] font-semibold"
-          style={{ fontFamily: 'Inter, sans-serif' }}
+          style={{ fontFamily: "Inter, sans-serif" }}
         >
-          PCMaster <span className="text-[#0b82d2] text-[14px] uppercase tracking-[1px] ml-1 font-normal">{user?.role === 'STAFF' ? 'Staff' : 'Admin'}</span>
+          PCMaster{" "}
+          <span className="text-[#0b82d2] text-[14px] uppercase tracking-[1px] ml-1 font-normal">
+            {user?.role === "STAFF" ? "Staff" : "Admin"}
+          </span>
         </Link>
       </div>
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto py-6 px-3 flex flex-col gap-2">
         {filteredNavItems.map((item) => {
-          const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href));
-          
+          const isActive =
+            pathname === item.href ||
+            (item.href !== "/dashboard" && pathname.startsWith(item.href));
+
           return (
             <Link
               key={item.label}
               href={item.href}
               className={`
                 flex items-center gap-3 px-3 py-2.5 rounded-[8px] transition-colors
-                ${isActive 
-                  ? 'bg-[#0058be] text-white' 
-                  : 'text-[#94a3b8] hover:bg-[rgba(255,255,255,0.05)] hover:text-white'}
+                ${
+                  isActive
+                    ? "bg-[#0058be] text-white"
+                    : "text-[#94a3b8] hover:bg-[rgba(255,255,255,0.05)] hover:text-white"
+                }
               `}
-              style={{ fontFamily: 'Inter, sans-serif' }}
+              style={{ fontFamily: "Inter, sans-serif" }}
             >
               <item.icon className="size-5" />
-              <span className="text-[14px] font-medium leading-none mt-0.5">{item.label}</span>
+              <span className="text-[14px] font-medium leading-none mt-0.5">
+                {item.label}
+              </span>
             </Link>
           );
         })}
@@ -86,10 +100,12 @@ export default function Sidebar() {
         <Link
           href="/dashboard/settings"
           className="flex items-center gap-3 px-3 py-2.5 rounded-[8px] text-[#94a3b8] hover:bg-[rgba(255,255,255,0.05)] hover:text-white transition-colors"
-          style={{ fontFamily: 'Inter, sans-serif' }}
+          style={{ fontFamily: "Inter, sans-serif" }}
         >
           <Settings className="size-5" />
-          <span className="text-[14px] font-medium leading-none mt-0.5">Cấu hình</span>
+          <span className="text-[14px] font-medium leading-none mt-0.5">
+            Cấu hình
+          </span>
         </Link>
       </div>
     </aside>

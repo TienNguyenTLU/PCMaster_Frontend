@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuthStore } from '@/lib/store';
-import toast from 'react-hot-toast';
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuthStore } from "@/lib/store";
+import toast from "react-hot-toast";
 
 export default function AuthSocialButtons() {
   const router = useRouter();
@@ -19,16 +19,16 @@ export default function AuthSocialButtons() {
     const handleCredentialResponse = async (response: any) => {
       try {
         await loginWithGoogle(response.credential);
-        toast.success('Đăng nhập bằng Google thành công!');
-        
+        toast.success("Đăng nhập bằng Google thành công!");
+
         const { user } = useAuthStore.getState();
-        if (user?.role === 'ADMIN' || user?.role === 'STAFF') {
-          router.push('/dashboard');
+        if (user?.role === "ADMIN" || user?.role === "STAFF") {
+          router.push("/dashboard");
         } else {
-          router.push('/home');
+          router.push("/home");
         }
       } catch (err: any) {
-        toast.error(err?.message || 'Đăng nhập bằng Google thất bại');
+        toast.error(err?.message || "Đăng nhập bằng Google thất bại");
       }
     };
 
@@ -41,13 +41,13 @@ export default function AuthSocialButtons() {
         callback: handleCredentialResponse,
       });
 
-      const btnContainer = document.getElementById('google-signin-button');
+      const btnContainer = document.getElementById("google-signin-button");
       if (btnContainer) {
         g.accounts.id.renderButton(btnContainer, {
-          theme: 'outline',
-          size: 'large',
-          text: 'signin_with',
-          shape: 'rectangular',
+          theme: "outline",
+          size: "large",
+          text: "signin_with",
+          shape: "rectangular",
           width: 280,
         });
       }
@@ -76,7 +76,7 @@ export default function AuthSocialButtons() {
         <div className="absolute inset-x-0 top-1/2 border-t border-[rgba(194,198,214,0.3)]" />
         <span
           className="relative bg-white px-4 text-[#424754] text-[12px] tracking-[1.2px] uppercase font-semibold"
-          style={{ fontFamily: 'Inter, sans-serif' }}
+          style={{ fontFamily: "Inter, sans-serif" }}
         >
           HOẶC ĐĂNG NHẬP QUA
         </span>
@@ -105,14 +105,17 @@ export default function AuthSocialButtons() {
                 d="M5.266 12.145A7.054 7.054 0 0 1 5 12c0-.527.09-1.036.266-1.527L1.455 7.327A11.969 11.969 0 0 0 0 12c0 1.69.355 3.3 1.455 4.673l3.811-2.528z"
               />
             </svg>
-            <span className="text-[14px] font-semibold text-[#334155]" style={{ fontFamily: 'Inter, sans-serif' }}>
+            <span
+              className="text-[14px] font-semibold text-[#334155]"
+              style={{ fontFamily: "Inter, sans-serif" }}
+            >
               Tiếp tục với Google
             </span>
           </div>
 
           {/* Invisible Google official button overlay */}
-          <div 
-            id="google-signin-button" 
+          <div
+            id="google-signin-button"
             className="absolute inset-0 opacity-0 cursor-pointer [&_iframe]:w-full [&_iframe]:h-full [&_iframe]:absolute [&_iframe]:inset-0 [&_iframe]:cursor-pointer [&_div]:w-full [&_div]:h-full"
           ></div>
         </div>
@@ -120,4 +123,3 @@ export default function AuthSocialButtons() {
     </div>
   );
 }
-

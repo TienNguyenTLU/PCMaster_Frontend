@@ -17,7 +17,8 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: "PCMaster – Hệ thống lắp ráp PC & Linh kiện chính hãng",
-  description: "Công cụ thiết kế cấu hình PC chuyên nghiệp, tối ưu hiệu năng và quản lý linh kiện phần cứng hàng đầu.",
+  description:
+    "Công cụ thiết kế cấu hình PC chuyên nghiệp, tối ưu hiệu năng và quản lý linh kiện phần cứng hàng đầu.",
 };
 
 export default function RootLayout({
@@ -34,9 +35,11 @@ export default function RootLayout({
         {children}
         <Toaster position="top-right" />
         <ChatbotWidget />
-        <Script src="https://accounts.google.com/gsi/client" strategy="lazyOnload" />
+        <Script
+          src="https://accounts.google.com/gsi/client"
+          strategy="lazyOnload"
+        />
       </body>
     </html>
   );
 }
-

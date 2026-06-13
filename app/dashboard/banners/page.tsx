@@ -1,14 +1,22 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { Plus, Edit, Trash2, X, Upload, Loader2, ExternalLink } from 'lucide-react';
-import toast from 'react-hot-toast';
-import { adminAPI, Banner } from '@/lib/api';
+import { useState, useEffect } from "react";
+import {
+  Plus,
+  Edit,
+  Trash2,
+  X,
+  Upload,
+  Loader2,
+  ExternalLink,
+} from "lucide-react";
+import toast from "react-hot-toast";
+import { adminAPI, Banner } from "@/lib/api";
 
 export default function BannersPage() {
   const [banners, setBanners] = useState<Banner[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingBanner, setEditingBanner] = useState<Banner | null>(null);
@@ -16,13 +24,13 @@ export default function BannersPage() {
   const fetchBanners = async () => {
     try {
       setLoading(true);
-      setError('');
+      setError("");
       const data = await adminAPI.getBanners();
       // Sort by displayOrder ascending
       const sorted = [...data].sort((a, b) => a.displayOrder - b.displayOrder);
       setBanners(sorted);
     } catch {
-      setError('Lỗi khi tải danh sách banner. Vui lòng thử lại sau.');
+      setError("Lỗi khi tải danh sách banner. Vui lòng thử lại sau.");
     } finally {
       setLoading(false);
     }
@@ -46,13 +54,13 @@ export default function BannersPage() {
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm('Bạn có chắc chắn muốn xóa banner này?')) return;
+    if (!confirm("Bạn có chắc chắn muốn xóa banner này?")) return;
     try {
       await adminAPI.deleteBanner(id);
-      toast.success('Xóa banner thành công!');
+      toast.success("Xóa banner thành công!");
       fetchBanners();
     } catch {
-      toast.error('Xóa banner thất bại.');
+      toast.error("Xóa banner thất bại.");
     }
   };
 
@@ -61,8 +69,12 @@ export default function BannersPage() {
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-[#0f172a] text-[24px] font-semibold tracking-[-0.5px]">Banner quảng cáo</h2>
-          <p className="text-[#64748b] text-[14px] mt-1">Quản lý các banner hiển thị trên carousel của trang chủ.</p>
+          <h2 className="text-[#0f172a] text-[24px] font-semibold tracking-[-0.5px]">
+            Banner quảng cáo
+          </h2>
+          <p className="text-[#64748b] text-[14px] mt-1">
+            Quản lý các banner hiển thị trên carousel của trang chủ.
+          </p>
         </div>
         <button
           onClick={handleCreate}
@@ -87,12 +99,18 @@ export default function BannersPage() {
         <div className="bg-white border border-[#e2e8f0] rounded-[12px] h-[350px] flex flex-col items-center justify-center text-[#64748b] gap-2">
           <Upload className="size-12 text-[#94a3b8]" />
           <span className="font-medium text-[16px]">Chưa có banner nào</span>
-          <p className="text-[13px] text-[#94a3b8] max-w-[300px] text-center">Hãy nhấn nút &quot;Thêm Banner&quot; để tải lên những hình ảnh quảng bá đầu tiên cho trang chủ.</p>
+          <p className="text-[13px] text-[#94a3b8] max-w-[300px] text-center">
+            Hãy nhấn nút &quot;Thêm Banner&quot; để tải lên những hình ảnh quảng
+            bá đầu tiên cho trang chủ.
+          </p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {banners.map((banner) => (
-            <div key={banner.id} className="bg-white border border-[#e2e8f0] rounded-[16px] overflow-hidden shadow-sm hover:shadow-md transition-shadow flex flex-col group relative">
+            <div
+              key={banner.id}
+              className="bg-white border border-[#e2e8f0] rounded-[16px] overflow-hidden shadow-sm hover:shadow-md transition-shadow flex flex-col group relative"
+            >
               {/* Banner image wrapper */}
               <div className="aspect-[21/9] bg-gray-50 border-b border-[#e2e8f0] relative overflow-hidden flex items-center justify-center">
                 <img
@@ -108,7 +126,9 @@ export default function BannersPage() {
               {/* Info & Actions */}
               <div className="p-4 flex flex-col flex-1 gap-3">
                 <div className="flex-1 min-w-0">
-                  <span className="text-[11px] font-bold text-[#64748b] uppercase tracking-wider">Liên kết chuyển hướng</span>
+                  <span className="text-[11px] font-bold text-[#64748b] uppercase tracking-wider">
+                    Liên kết chuyển hướng
+                  </span>
                   {banner.linkUrl ? (
                     <a
                       href={banner.linkUrl}
@@ -120,12 +140,16 @@ export default function BannersPage() {
                       <ExternalLink className="size-3 flex-shrink-0" />
                     </a>
                   ) : (
-                    <p className="text-[13px] text-[#94a3b8] italic mt-0.5">Không có liên kết</p>
+                    <p className="text-[13px] text-[#94a3b8] italic mt-0.5">
+                      Không có liên kết
+                    </p>
                   )}
                 </div>
 
                 <div className="flex items-center justify-between border-t border-[#f1f5f9] pt-3 mt-1">
-                  <span className="text-[12px] text-[#94a3b8] font-mono">ID: {banner.id}</span>
+                  <span className="text-[12px] text-[#94a3b8] font-mono">
+                    ID: {banner.id}
+                  </span>
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => handleEdit(banner)}
@@ -153,7 +177,11 @@ export default function BannersPage() {
       {isModalOpen && (
         <BannerFormModal
           banner={editingBanner}
-          nextOrder={banners.length > 0 ? Math.max(...banners.map(b => b.displayOrder)) + 1 : 1}
+          nextOrder={
+            banners.length > 0
+              ? Math.max(...banners.map((b) => b.displayOrder)) + 1
+              : 1
+          }
           onClose={() => setIsModalOpen(false)}
           onSuccess={() => {
             setIsModalOpen(false);
@@ -172,11 +200,18 @@ interface BannerFormModalProps {
   onSuccess: () => void;
 }
 
-function BannerFormModal({ banner, nextOrder, onClose, onSuccess }: BannerFormModalProps) {
-  const [linkUrl, setLinkUrl] = useState(banner?.linkUrl || '');
-  const [displayOrder, setDisplayOrder] = useState<number>(banner?.displayOrder ?? nextOrder);
+function BannerFormModal({
+  banner,
+  nextOrder,
+  onClose,
+  onSuccess,
+}: BannerFormModalProps) {
+  const [linkUrl, setLinkUrl] = useState(banner?.linkUrl || "");
+  const [displayOrder, setDisplayOrder] = useState<number>(
+    banner?.displayOrder ?? nextOrder,
+  );
   const [bannerFile, setBannerFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState(banner?.imageUrl || '');
+  const [previewUrl, setPreviewUrl] = useState(banner?.imageUrl || "");
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
@@ -185,7 +220,7 @@ function BannerFormModal({ banner, nextOrder, onClose, onSuccess }: BannerFormMo
     if (file) {
       setBannerFile(file);
       setPreviewUrl(URL.createObjectURL(file));
-      setErrors(prev => ({ ...prev, image: '' }));
+      setErrors((prev) => ({ ...prev, image: "" }));
     }
   };
 
@@ -194,15 +229,15 @@ function BannerFormModal({ banner, nextOrder, onClose, onSuccess }: BannerFormMo
     const newErrors: Record<string, string> = {};
 
     if (!previewUrl) {
-      newErrors.image = 'Vui lòng chọn hình ảnh banner.';
+      newErrors.image = "Vui lòng chọn hình ảnh banner.";
     }
 
     if (isNaN(displayOrder) || displayOrder < 0) {
-      newErrors.displayOrder = 'Thứ tự hiển thị không hợp lệ.';
+      newErrors.displayOrder = "Thứ tự hiển thị không hợp lệ.";
     }
 
     if (!banner && !bannerFile) {
-      newErrors.image = 'Vui lòng chọn file hình ảnh cho banner mới.';
+      newErrors.image = "Vui lòng chọn file hình ảnh cho banner mới.";
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -213,22 +248,22 @@ function BannerFormModal({ banner, nextOrder, onClose, onSuccess }: BannerFormMo
     setLoading(true);
     try {
       const formData = new FormData();
-      formData.append('linkUrl', linkUrl);
-      formData.append('displayOrder', displayOrder.toString());
+      formData.append("linkUrl", linkUrl);
+      formData.append("displayOrder", displayOrder.toString());
       if (bannerFile) {
-        formData.append('file', bannerFile);
+        formData.append("file", bannerFile);
       }
 
       if (banner) {
         await adminAPI.updateBanner(banner.id, formData);
-        toast.success('Cập nhật banner thành công!');
+        toast.success("Cập nhật banner thành công!");
       } else {
         await adminAPI.createBanner(formData);
-        toast.success('Thêm banner thành công!');
+        toast.success("Thêm banner thành công!");
       }
       onSuccess();
     } catch {
-      toast.error('Có lỗi xảy ra khi lưu banner. Vui lòng thử lại.');
+      toast.error("Có lỗi xảy ra khi lưu banner. Vui lòng thử lại.");
     } finally {
       setLoading(false);
     }
@@ -240,18 +275,26 @@ function BannerFormModal({ banner, nextOrder, onClose, onSuccess }: BannerFormMo
         {/* Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-[#e2e8f0]">
           <h3 className="font-semibold text-[18px] text-[#0f172a]">
-            {banner ? 'Cập nhật Banner' : 'Tạo Banner Mới'}
+            {banner ? "Cập nhật Banner" : "Tạo Banner Mới"}
           </h3>
-          <button onClick={onClose} className="p-2 hover:bg-[#f8fafc] rounded-[8px] cursor-pointer">
+          <button
+            onClick={onClose}
+            className="p-2 hover:bg-[#f8fafc] rounded-[8px] cursor-pointer"
+          >
             <X className="size-5 text-[#64748b]" />
           </button>
         </div>
 
         {/* Form */}
-        <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-5 overflow-y-auto">
+        <form
+          onSubmit={handleSubmit}
+          className="p-6 flex flex-col gap-5 overflow-y-auto"
+        >
           {/* File Upload Section */}
           <div className="flex flex-col gap-2">
-            <label className="text-[13px] font-bold text-[#475569] uppercase tracking-wider">Hình Ảnh Banner *</label>
+            <label className="text-[13px] font-bold text-[#475569] uppercase tracking-wider">
+              Hình Ảnh Banner *
+            </label>
             {errors.image && (
               <span className="text-red-500 text-[11px] font-semibold flex items-center gap-1 animate-in fade-in slide-in-from-top-1 duration-150">
                 ⚠️ {errors.image}
@@ -268,10 +311,10 @@ function BannerFormModal({ banner, nextOrder, onClose, onSuccess }: BannerFormMo
               <label
                 htmlFor="banner-file-input"
                 className={`flex flex-col items-center justify-center w-full aspect-[21/9] border-2 border-dashed rounded-[12px] cursor-pointer transition-all bg-gray-50 hover:bg-gray-100/50 ${
-                  errors.image ? 'border-red-500 hover:border-red-500 bg-red-50/10' : 'border-[#cbd5e1]'
-                } ${
-                  previewUrl ? 'border-solid border-[#e2e8f0] p-0' : 'p-6'
-                }`}
+                  errors.image
+                    ? "border-red-500 hover:border-red-500 bg-red-50/10"
+                    : "border-[#cbd5e1]"
+                } ${previewUrl ? "border-solid border-[#e2e8f0] p-0" : "p-6"}`}
               >
                 {previewUrl ? (
                   <div className="w-full h-full relative group">
@@ -287,8 +330,12 @@ function BannerFormModal({ banner, nextOrder, onClose, onSuccess }: BannerFormMo
                 ) : (
                   <>
                     <Upload className="size-8 text-[#94a3b8] mb-2 group-hover:text-[#0058be] transition-colors" />
-                    <span className="text-[14px] font-medium text-[#475569]">Chọn hình ảnh banner</span>
-                    <span className="text-[11px] text-[#94a3b8] mt-1">Hỗ trợ JPG, PNG, WEBP (tỉ lệ khuyên dùng 21:9)</span>
+                    <span className="text-[14px] font-medium text-[#475569]">
+                      Chọn hình ảnh banner
+                    </span>
+                    <span className="text-[11px] text-[#94a3b8] mt-1">
+                      Hỗ trợ JPG, PNG, WEBP (tỉ lệ khuyên dùng 21:9)
+                    </span>
                   </>
                 )}
               </label>
@@ -297,7 +344,9 @@ function BannerFormModal({ banner, nextOrder, onClose, onSuccess }: BannerFormMo
 
           {/* displayOrder Input */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-[13px] font-bold text-[#475569] uppercase tracking-wider">Thứ Tự Hiển Thị *</label>
+            <label className="text-[13px] font-bold text-[#475569] uppercase tracking-wider">
+              Thứ Tự Hiển Thị *
+            </label>
             {errors.displayOrder && (
               <span className="text-red-500 text-[11px] font-semibold flex items-center gap-1 animate-in fade-in slide-in-from-top-1 duration-150">
                 ⚠️ {errors.displayOrder}
@@ -310,18 +359,22 @@ function BannerFormModal({ banner, nextOrder, onClose, onSuccess }: BannerFormMo
               value={displayOrder}
               onChange={(e) => {
                 setDisplayOrder(parseInt(e.target.value) || 0);
-                setErrors(prev => ({ ...prev, displayOrder: '' }));
+                setErrors((prev) => ({ ...prev, displayOrder: "" }));
               }}
               placeholder="e.g. 1, 2, 3"
               className={`bg-[#f8fafc] border rounded-[8px] px-4 py-2 text-[14px] focus:outline-none transition-all ${
-                errors.displayOrder ? 'border-red-500 focus:border-red-500' : 'border-[#e2e8f0] focus:border-[#0058be]'
+                errors.displayOrder
+                  ? "border-red-500 focus:border-red-500"
+                  : "border-[#e2e8f0] focus:border-[#0058be]"
               }`}
             />
           </div>
 
           {/* linkUrl Input */}
           <div className="flex flex-col gap-1.5">
-            <label className="text-[13px] font-bold text-[#475569] uppercase tracking-wider">Liên Kết Chuyển Hướng</label>
+            <label className="text-[13px] font-bold text-[#475569] uppercase tracking-wider">
+              Liên Kết Chuyển Hướng
+            </label>
             <input
               type="url"
               value={linkUrl}
@@ -329,7 +382,9 @@ function BannerFormModal({ banner, nextOrder, onClose, onSuccess }: BannerFormMo
               placeholder="e.g. https://pcmaster.com/explore?category=gpu"
               className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[8px] px-4 py-2 text-[14px] focus:outline-none focus:border-[#0058be]"
             />
-            <p className="text-[11px] text-[#94a3b8]">Banner sẽ chuyển hướng người dùng đến link này khi click vào.</p>
+            <p className="text-[11px] text-[#94a3b8]">
+              Banner sẽ chuyển hướng người dùng đến link này khi click vào.
+            </p>
           </div>
 
           {/* Buttons */}
@@ -347,7 +402,7 @@ function BannerFormModal({ banner, nextOrder, onClose, onSuccess }: BannerFormMo
               className="px-6 py-2 bg-[#0058be] text-white rounded-[8px] text-[14px] font-medium hover:bg-[#0047a3] disabled:opacity-60 flex items-center gap-2 transition-colors cursor-pointer"
             >
               {loading && <Loader2 className="size-4 animate-spin" />}
-              {banner ? 'Lưu Thay Đổi' : 'Tạo Banner'}
+              {banner ? "Lưu Thay Đổi" : "Tạo Banner"}
             </button>
           </div>
         </form>

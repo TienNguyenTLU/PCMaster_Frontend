@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { Sparkles, Loader2 } from 'lucide-react';
+import React from "react";
+import { Sparkles, Loader2 } from "lucide-react";
 
 interface SmartBuildDropdownProps {
   smartBuildNeed: string;
@@ -26,7 +26,7 @@ export default function SmartBuildDropdown({
   handleSmartBuildSubmit,
   showSmartBuildDropdown,
   setShowSmartBuildDropdown,
-  dropdownRef
+  dropdownRef,
 }: SmartBuildDropdownProps) {
   return (
     <div className="relative" ref={dropdownRef}>
@@ -46,29 +46,35 @@ export default function SmartBuildDropdown({
               <Sparkles className="size-4.5 text-violet-600 animate-pulse" />
             </div>
             <div>
-              <h3 className="text-[14px] font-black text-[#0f172a] tracking-tight text-left">Cấu hình thông minh AI</h3>
-              <p className="text-[10px] text-slate-500 font-semibold mt-0.5 text-left">Lựa chọn nhu cầu & khoảng giá dự kiến để xây dựng</p>
+              <h3 className="text-[14px] font-black text-[#0f172a] tracking-tight text-left">
+                Cấu hình thông minh AI
+              </h3>
+              <p className="text-[10px] text-slate-500 font-semibold mt-0.5 text-left">
+                Lựa chọn nhu cầu & khoảng giá dự kiến để xây dựng
+              </p>
             </div>
           </div>
 
           {/* Need Selection */}
           <div className="flex flex-col gap-1.5 text-left">
-            <label className="text-[11px] font-bold text-slate-700">1. Lựa chọn nhu cầu sử dụng:</label>
+            <label className="text-[11px] font-bold text-slate-700">
+              1. Lựa chọn nhu cầu sử dụng:
+            </label>
             <div className="grid grid-cols-2 gap-2">
               {[
-                { id: 'gaming', label: '🎮 Chơi game' },
-                { id: 'graphics', label: '🎨 Thiết kế & 3D' },
-                { id: 'study', label: '✏️ Học tập' },
-                { id: 'office', label: '💼 Văn phòng' }
-              ].map(need => (
+                { id: "gaming", label: "🎮 Chơi game" },
+                { id: "graphics", label: "🎨 Thiết kế & 3D" },
+                { id: "study", label: "✏️ Học tập" },
+                { id: "office", label: "💼 Văn phòng" },
+              ].map((need) => (
                 <button
                   key={need.id}
                   type="button"
                   onClick={() => setSmartBuildNeed(need.id)}
                   className={`px-3 py-2 rounded-[10px] text-[12px] font-bold border text-center transition-all cursor-pointer ${
                     smartBuildNeed === need.id
-                      ? 'border-violet-600 bg-violet-50/40 text-violet-700 shadow-sm'
-                      : 'border-slate-200 bg-[#f8fafc] text-slate-600 hover:bg-slate-50'
+                      ? "border-violet-600 bg-violet-50/40 text-violet-700 shadow-sm"
+                      : "border-slate-200 bg-[#f8fafc] text-slate-600 hover:bg-slate-50"
                   }`}
                 >
                   {need.label}
@@ -79,24 +85,26 @@ export default function SmartBuildDropdown({
 
           {/* Budget Selection */}
           <div className="flex flex-col gap-1.5 text-left">
-            <label className="text-[11px] font-bold text-slate-700">2. Lựa chọn khoảng giá dự kiến:</label>
+            <label className="text-[11px] font-bold text-slate-700">
+              2. Lựa chọn khoảng giá dự kiến:
+            </label>
             <div className="grid grid-cols-2 gap-2">
               {[
-                { id: 'under-10', label: 'Dưới 10 triệu' },
-                { id: '10-15', label: '10 - 15 triệu' },
-                { id: '15-20', label: '15 - 20 triệu' },
-                { id: '20-30', label: '20 - 30 triệu' },
-                { id: '30-50', label: '30 - 50 triệu' },
-                { id: 'over-50', label: 'Trên 50 triệu' }
-              ].map(budget => (
+                { id: "under-10", label: "Dưới 10 triệu" },
+                { id: "10-15", label: "10 - 15 triệu" },
+                { id: "15-20", label: "15 - 20 triệu" },
+                { id: "20-30", label: "20 - 30 triệu" },
+                { id: "30-50", label: "30 - 50 triệu" },
+                { id: "over-50", label: "Trên 50 triệu" },
+              ].map((budget) => (
                 <button
                   key={budget.id}
                   type="button"
                   onClick={() => setSmartBuildBudget(budget.id)}
                   className={`px-3 py-2 rounded-[10px] text-[12px] font-bold border text-center transition-all cursor-pointer ${
                     smartBuildBudget === budget.id
-                      ? 'border-violet-600 bg-violet-50/40 text-violet-700 shadow-sm'
-                      : 'border-slate-200 bg-[#f8fafc] text-slate-600 hover:bg-slate-50'
+                      ? "border-violet-600 bg-violet-50/40 text-violet-700 shadow-sm"
+                      : "border-slate-200 bg-[#f8fafc] text-slate-600 hover:bg-slate-50"
                   }`}
                 >
                   {budget.label}

@@ -1,25 +1,32 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { Plus, Search, Edit, Trash2, AlertTriangle, Loader2, Cpu } from 'lucide-react';
-import { adminAPI, Product } from '@/lib/api';
-import { CldImage } from 'next-cloudinary';
-import PcConfigurationModal from '@/components/dashboard/PcConfigurationModal';
-import toast from 'react-hot-toast';
+import { useState, useEffect } from "react";
+import {
+  Plus,
+  Search,
+  Edit,
+  Trash2,
+  AlertTriangle,
+  Loader2,
+  Cpu,
+} from "lucide-react";
+import { adminAPI, Product } from "@/lib/api";
+import { CldImage } from "next-cloudinary";
+import PcConfigurationModal from "@/components/dashboard/PcConfigurationModal";
+import toast from "react-hot-toast";
 
 export default function PcConfigurationsPage() {
   const [allProducts, setAllProducts] = useState<Product[]>([]);
 
-
   // Pagination & Loading state
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [page, setPage] = useState(0);
   const PAGE_SIZE = 7;
 
   // Filter state
-  const [searchTerm, setSearchTerm] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
 
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -38,32 +45,30 @@ export default function PcConfigurationsPage() {
     return () => clearTimeout(handler);
   }, [searchTerm]);
 
-
-
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      setError('');
-      
+      setError("");
+
       let all: Product[] = [];
       let currentPage = 0;
       let totalPages = 1;
-      
+
       // Fetch all products so we can filter and detail components locally
       while (currentPage < totalPages) {
         const response = await adminAPI.getProducts(currentPage, 1000);
         const content = response.content || [];
         all = [...all, ...content];
         totalPages = response.totalPages || 1;
-        
+
         if (currentPage >= 100 || content.length === 0) break;
         currentPage++;
       }
-      
+
       // Filter only for PC_SYSTEM category products
       // We look at the category slug "pc-system"
-      const pcSystems = all.filter(p => p.category?.slug === 'pc-system');
-      
+      const pcSystems = all.filter((p) => p.category?.slug === "pc-system");
+
       // For each PC System, fetch its detailed components if not loaded fully
       // The getProductById endpoint returns the pcComponents list
       const detailedPcSystems = await Promise.all(
@@ -73,12 +78,12 @@ export default function PcConfigurationsPage() {
           } catch {
             return pc;
           }
-        })
+        }),
       );
-      
+
       setAllProducts(detailedPcSystems);
     } catch {
-      setError('Lỗi khi tải danh sách cấu hình PC. Vui lòng thử lại sau.');
+      setError("Lỗi khi tải danh sách cấu hình PC. Vui lòng thử lại sau.");
     } finally {
       setLoading(false);
     }
@@ -89,14 +94,19 @@ export default function PcConfigurationsPage() {
   }, []);
 
   // Compute filtered and paginated products
-  const filteredProducts = allProducts.filter(p => {
-    const matchSearch = debouncedSearch ? p.name.toLowerCase().includes(debouncedSearch.toLowerCase()) : true;
+  const filteredProducts = allProducts.filter((p) => {
+    const matchSearch = debouncedSearch
+      ? p.name.toLowerCase().includes(debouncedSearch.toLowerCase())
+      : true;
     return matchSearch;
   });
 
   const totalElements = filteredProducts.length;
   const totalPages = Math.ceil(totalElements / PAGE_SIZE) || 1;
-  const currentProducts = filteredProducts.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+  const currentProducts = filteredProducts.slice(
+    page * PAGE_SIZE,
+    (page + 1) * PAGE_SIZE,
+  );
 
   const handleAddClick = () => {
     setEditingProduct(null);
@@ -118,10 +128,10 @@ export default function PcConfigurationsPage() {
     try {
       await adminAPI.deleteProduct(deletingProduct.id);
       setDeletingProduct(null);
-      toast.success('Xóa cấu hình PC thành công!');
+      toast.success("Xóa cấu hình PC thành công!");
       fetchProducts();
     } catch {
-      toast.error('Xóa cấu hình PC thất bại. Vui lòng thử lại.');
+      toast.error("Xóa cấu hình PC thất bại. Vui lòng thử lại.");
     } finally {
       setDeleteLoading(false);
     }
@@ -132,8 +142,13 @@ export default function PcConfigurationsPage() {
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-[#0f172a] text-[24px] font-semibold tracking-[-0.5px]">Cấu hình PC lắp sẵn</h2>
-          <p className="text-[#64748b] text-[14px] mt-1">Quản lý cấu hình, lắp ráp sản phẩm PC nguyên bộ từ linh kiện tồn kho.</p>
+          <h2 className="text-[#0f172a] text-[24px] font-semibold tracking-[-0.5px]">
+            Cấu hình PC lắp sẵn
+          </h2>
+          <p className="text-[#64748b] text-[14px] mt-1">
+            Quản lý cấu hình, lắp ráp sản phẩm PC nguyên bộ từ linh kiện tồn
+            kho.
+          </p>
         </div>
         <button
           onClick={handleAddClick}
@@ -190,11 +205,13 @@ export default function PcConfigurationsPage() {
               </thead>
               <tbody className="divide-y divide-[#e2e8f0]">
                 {currentProducts.map((product) => {
-
                   const components = product.pcComponents || [];
 
                   return (
-                    <tr key={product.id} className="hover:bg-[#f8fafc] transition-colors">
+                    <tr
+                      key={product.id}
+                      className="hover:bg-[#f8fafc] transition-colors"
+                    >
                       <td className="px-6 py-4">
                         {product.thumbnailUrl ? (
                           <div className="h-12 w-12 relative bg-white border border-[#e2e8f0] rounded-[8px] overflow-hidden flex items-center justify-center">
@@ -213,13 +230,20 @@ export default function PcConfigurationsPage() {
                           </div>
                         )}
                       </td>
-                      <td className="px-6 py-4 font-semibold text-[#0f172a]">{product.id}</td>
-                      <td className="px-6 py-4 font-medium text-[#0f172a] max-w-[180px] truncate" title={product.name}>
+                      <td className="px-6 py-4 font-semibold text-[#0f172a]">
+                        {product.id}
+                      </td>
+                      <td
+                        className="px-6 py-4 font-medium text-[#0f172a] max-w-[180px] truncate"
+                        title={product.name}
+                      >
                         {product.name}
                       </td>
                       <td className="px-6 py-4">
                         {components.length === 0 ? (
-                          <span className="text-gray-400 text-[12px]">Chưa cấu hình</span>
+                          <span className="text-gray-400 text-[12px]">
+                            Chưa cấu hình
+                          </span>
                         ) : (
                           <div className="flex flex-col gap-1 max-w-[280px]">
                             <span className="text-[12px] font-semibold text-[#0058be]">
@@ -227,7 +251,11 @@ export default function PcConfigurationsPage() {
                             </span>
                             <div className="flex flex-wrap gap-1">
                               {components.slice(0, 3).map((c, i) => (
-                                <span key={i} className="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-[4px] truncate max-w-[120px]" title={c.componentProductName}>
+                                <span
+                                  key={i}
+                                  className="text-[10px] bg-slate-100 text-slate-600 px-2 py-0.5 rounded-[4px] truncate max-w-[120px]"
+                                  title={c.componentProductName}
+                                >
                                   {c.componentProductName}
                                 </span>
                               ))}
@@ -241,12 +269,19 @@ export default function PcConfigurationsPage() {
                         )}
                       </td>
                       <td className="px-6 py-4 text-[#0f172a] font-semibold">
-                        {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(product.price)}
+                        {new Intl.NumberFormat("vi-VN", {
+                          style: "currency",
+                          currency: "VND",
+                        }).format(product.price)}
                       </td>
                       <td className="px-6 py-4 text-[#475569]">
-                        <span className={`px-2.5 py-1 rounded-full text-[12px] font-semibold ${
-                          product.stock > 0 ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'
-                        }`}>
+                        <span
+                          className={`px-2.5 py-1 rounded-full text-[12px] font-semibold ${
+                            product.stock > 0
+                              ? "bg-green-50 text-green-700"
+                              : "bg-red-50 text-red-700"
+                          }`}
+                        >
                           {product.stock} bộ
                         </span>
                       </td>
@@ -279,10 +314,13 @@ export default function PcConfigurationsPage() {
         {/* Pagination */}
         {!loading && !error && currentProducts.length > 0 && (
           <div className="px-6 py-4 border-t border-[#e2e8f0] flex items-center justify-between text-[13px] text-[#64748b]">
-            <span>Hiển thị trang {page + 1} / {totalPages} (Tổng số: {totalElements} cấu hình)</span>
+            <span>
+              Hiển thị trang {page + 1} / {totalPages} (Tổng số: {totalElements}{" "}
+              cấu hình)
+            </span>
             <div className="flex gap-1">
               <button
-                onClick={() => setPage(p => Math.max(0, p - 1))}
+                onClick={() => setPage((p) => Math.max(0, p - 1))}
                 disabled={page === 0}
                 className="px-3 py-1 border border-[#e2e8f0] rounded-[6px] hover:bg-[#f8fafc] disabled:opacity-50 cursor-pointer"
               >
@@ -292,7 +330,7 @@ export default function PcConfigurationsPage() {
                 {page + 1}
               </button>
               <button
-                onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
+                onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
                 disabled={page >= totalPages - 1}
                 className="px-3 py-1 border border-[#e2e8f0] rounded-[6px] hover:bg-[#f8fafc] disabled:opacity-50 cursor-pointer"
               >
@@ -315,7 +353,9 @@ export default function PcConfigurationsPage() {
       {deletingProduct && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
-          onClick={(e) => e.target === e.currentTarget && setDeletingProduct(null)}
+          onClick={(e) =>
+            e.target === e.currentTarget && setDeletingProduct(null)
+          }
         >
           <div className="bg-white rounded-[16px] shadow-2xl w-full max-w-sm mx-4 p-6 flex flex-col gap-4">
             <div className="flex items-start gap-3">
@@ -323,9 +363,15 @@ export default function PcConfigurationsPage() {
                 <AlertTriangle className="size-5 text-red-600" />
               </div>
               <div>
-                <h4 className="text-[#0f172a] font-semibold text-[16px]">Xóa sản phẩm PC</h4>
+                <h4 className="text-[#0f172a] font-semibold text-[16px]">
+                  Xóa sản phẩm PC
+                </h4>
                 <p className="text-[#64748b] text-[14px] mt-1">
-                  Bạn có chắc muốn xóa cấu hình PC <span className="font-semibold text-[#0f172a]">&ldquo;{deletingProduct.name}&rdquo;</span>? Việc này sẽ không hoàn trả linh kiện đã lắp ráp.
+                  Bạn có chắc muốn xóa cấu hình PC{" "}
+                  <span className="font-semibold text-[#0f172a]">
+                    &ldquo;{deletingProduct.name}&rdquo;
+                  </span>
+                  ? Việc này sẽ không hoàn trả linh kiện đã lắp ráp.
                 </p>
               </div>
             </div>

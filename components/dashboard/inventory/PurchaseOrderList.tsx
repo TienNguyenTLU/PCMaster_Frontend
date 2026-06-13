@@ -1,12 +1,12 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { CheckCircle, FileText, Loader2 } from 'lucide-react';
-import { adminAPI, Product, Supplier, PurchaseOrder, Brand } from '@/lib/api';
+import { useState, useEffect } from "react";
+import { CheckCircle, FileText, Loader2 } from "lucide-react";
+import { adminAPI, Product, Supplier, PurchaseOrder, Brand } from "@/lib/api";
 
-import CreatePOModal from '@/components/dashboard/purchase-orders/CreatePOModal';
-import PreviewModal from '@/components/dashboard/purchase-orders/PreviewModal';
-import ReceiveItemsModal from '@/components/dashboard/purchase-orders/ReceiveItemsModal';
+import CreatePOModal from "@/components/dashboard/purchase-orders/CreatePOModal";
+import PreviewModal from "@/components/dashboard/purchase-orders/PreviewModal";
+import ReceiveItemsModal from "@/components/dashboard/purchase-orders/ReceiveItemsModal";
 
 interface PurchaseOrderListProps {
   searchQuery: string;
@@ -43,37 +43,59 @@ export default function PurchaseOrderList({
   useEffect(() => {
     const timer = setTimeout(() => {
       fetchOrders();
-      adminAPI.getSuppliers(0, 200).then(r => setSuppliers(r.content || []));
-      adminAPI.getBrands(0, 200).then(r => setAllBrands(r.content || []));
-      adminAPI.getProducts(0, 1000).then(r => setAllProducts(r.content || []));
+      adminAPI.getSuppliers(0, 200).then((r) => setSuppliers(r.content || []));
+      adminAPI.getBrands(0, 200).then((r) => setAllBrands(r.content || []));
+      adminAPI
+        .getProducts(0, 1000)
+        .then((r) => setAllProducts(r.content || []));
     }, 0);
     return () => clearTimeout(timer);
   }, [reloadTrigger]);
 
-  const getSupplier = (id: number) => suppliers.find(s => Number(s.id) === id);
+  const getSupplier = (id: number) =>
+    suppliers.find((s) => Number(s.id) === id);
 
-  const filteredOrders = orders.filter(order => {
+  const filteredOrders = orders.filter((order) => {
     const supplier = getSupplier(order.supplierId);
     const searchLower = searchQuery.toLowerCase();
-    const poCode = `po-${String(order.id).padStart(4, '0')}`;
+    const poCode = `po-${String(order.id).padStart(4, "0")}`;
     return (
       poCode.includes(searchLower) ||
-      (supplier?.name || '').toLowerCase().includes(searchLower)
+      (supplier?.name || "").toLowerCase().includes(searchLower)
     );
   });
 
   return (
-    <div className="flex flex-col gap-6" style={{ fontFamily: 'Inter, sans-serif' }}>
+    <div
+      className="flex flex-col gap-6"
+      style={{ fontFamily: "Inter, sans-serif" }}
+    >
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4">
         {[
-          { label: 'Tổng phiếu', value: orders.length, color: '#0058be' },
-          { label: 'Chờ nhận hàng', value: orders.filter(o => o.status === 'DRAFT').length, color: '#f59e0b' },
-          { label: 'Đã nhận hàng', value: orders.filter(o => o.status === 'RECEIVED').length, color: '#10b981' },
-        ].map(stat => (
-          <div key={stat.label} className="bg-white border border-[#e2e8f0] rounded-[12px] p-5 shadow-sm">
+          { label: "Tổng phiếu", value: orders.length, color: "#0058be" },
+          {
+            label: "Chờ nhận hàng",
+            value: orders.filter((o) => o.status === "DRAFT").length,
+            color: "#f59e0b",
+          },
+          {
+            label: "Đã nhận hàng",
+            value: orders.filter((o) => o.status === "RECEIVED").length,
+            color: "#10b981",
+          },
+        ].map((stat) => (
+          <div
+            key={stat.label}
+            className="bg-white border border-[#e2e8f0] rounded-[12px] p-5 shadow-sm"
+          >
             <p className="text-[#64748b] text-[13px]">{stat.label}</p>
-            <p className="text-[28px] font-bold mt-1" style={{ color: stat.color }}>{stat.value}</p>
+            <p
+              className="text-[28px] font-bold mt-1"
+              style={{ color: stat.color }}
+            >
+              {stat.value}
+            </p>
           </div>
         ))}
       </div>
@@ -97,23 +119,45 @@ export default function PurchaseOrderList({
                   <th className="px-6 py-4 font-medium">Mã phiếu</th>
                   <th className="px-6 py-4 font-medium">Nhà phân phối</th>
                   <th className="px-6 py-4 font-medium">Ngày tạo</th>
-                  <th className="px-6 py-4 font-medium text-right">Tổng tiền</th>
-                  <th className="px-6 py-4 font-medium text-center">Trạng thái</th>
+                  <th className="px-6 py-4 font-medium text-right">
+                    Tổng tiền
+                  </th>
+                  <th className="px-6 py-4 font-medium text-center">
+                    Trạng thái
+                  </th>
                   <th className="px-6 py-4 font-medium text-right">Thao tác</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#e2e8f0] text-[#475569]">
-                {filteredOrders.map(order => {
+                {filteredOrders.map((order) => {
                   const supplier = getSupplier(order.supplierId);
                   return (
-                    <tr key={order.id} className="hover:bg-[#f8fafc]/50 transition-colors">
-                      <td className="px-6 py-4 font-mono font-medium text-[#0f172a]">PO-{String(order.id).padStart(4, '0')}</td>
-                      <td className="px-6 py-4 text-[#475569]">{supplier?.name ?? `Supplier #${order.supplierId}`}</td>
-                      <td className="px-6 py-4 text-[#475569]">{new Date(order.createdAt).toLocaleDateString('vi-VN')}</td>
-                      <td className="px-6 py-4 text-right font-medium text-[#0f172a]">{new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(order.totalAmount)}</td>
+                    <tr
+                      key={order.id}
+                      className="hover:bg-[#f8fafc]/50 transition-colors"
+                    >
+                      <td className="px-6 py-4 font-mono font-medium text-[#0f172a]">
+                        PO-{String(order.id).padStart(4, "0")}
+                      </td>
+                      <td className="px-6 py-4 text-[#475569]">
+                        {supplier?.name ?? `Supplier #${order.supplierId}`}
+                      </td>
+                      <td className="px-6 py-4 text-[#475569]">
+                        {new Date(order.createdAt).toLocaleDateString("vi-VN")}
+                      </td>
+                      <td className="px-6 py-4 text-right font-medium text-[#0f172a]">
+                        {new Intl.NumberFormat("vi-VN", {
+                          style: "currency",
+                          currency: "VND",
+                        }).format(order.totalAmount)}
+                      </td>
                       <td className="px-6 py-4 text-center">
-                        <span className={`px-2.5 py-1 rounded-full text-[12px] font-medium ${order.status === 'RECEIVED' ? 'bg-green-100 text-green-700' : 'bg-amber-100 text-amber-700'}`}>
-                          {order.status === 'RECEIVED' ? '✓ Đã nhận hàng' : '⏳ Chờ nhận hàng'}
+                        <span
+                          className={`px-2.5 py-1 rounded-full text-[12px] font-medium ${order.status === "RECEIVED" ? "bg-green-100 text-green-700" : "bg-amber-100 text-amber-700"}`}
+                        >
+                          {order.status === "RECEIVED"
+                            ? "✓ Đã nhận hàng"
+                            : "⏳ Chờ nhận hàng"}
                         </span>
                       </td>
                       <td className="px-6 py-4">
@@ -125,7 +169,7 @@ export default function PurchaseOrderList({
                           >
                             <FileText className="size-4" />
                           </button>
-                          {order.status === 'DRAFT' && (
+                          {order.status === "DRAFT" && (
                             <button
                               onClick={() => setReceivingPO(order)}
                               className="p-1.5 hover:text-green-600 hover:bg-green-50 rounded-[6px] transition-colors text-[#94a3b8] cursor-pointer"

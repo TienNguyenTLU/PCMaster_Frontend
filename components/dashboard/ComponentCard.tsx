@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { X } from 'lucide-react';
-import { Product } from '@/lib/api';
+import React from "react";
+import { X } from "lucide-react";
+import { Product } from "@/lib/api";
 
 interface ComponentCardProps {
   label: string;
@@ -30,14 +30,21 @@ export default function ComponentCard({
   return (
     <div
       className={`flex flex-col gap-2 p-3 rounded-[12px] border transition-all ${
-        selectedId > 0 ? 'bg-blue-50/20 border-blue-200' : 'bg-[#f8fafc] border-[#e2e8f0]'
+        selectedId > 0
+          ? "bg-blue-50/20 border-blue-200"
+          : "bg-[#f8fafc] border-[#e2e8f0]"
       }`}
     >
       {/* Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5">
-          <Icon className={`size-4 ${selectedId > 0 ? 'text-[#0058be]' : 'text-slate-400'}`} />
-          <span className="text-[12px] font-bold text-[#475569] truncate max-w-[170px]" title={label}>
+          <Icon
+            className={`size-4 ${selectedId > 0 ? "text-[#0058be]" : "text-slate-400"}`}
+          />
+          <span
+            className="text-[12px] font-bold text-[#475569] truncate max-w-[170px]"
+            title={label}
+          >
             {label}
           </span>
         </div>
@@ -52,15 +59,27 @@ export default function ComponentCard({
       <div className="flex items-center gap-1.5 w-full min-w-0">
         <select
           value={selectedId}
-          onChange={e => onComponentChange(Number(e.target.value))}
+          onChange={(e) => onComponentChange(Number(e.target.value))}
           className="flex-1 w-full max-w-full min-w-0 bg-white border border-[#e2e8f0] rounded-[8px] px-2 py-1.5 text-[12px] focus:outline-none focus:border-[#0058be] transition-all"
         >
           <option value={0}>
-            -- Chọn {label.replace(/(\(|\))/g, '').replace('Bộ vi xử lý', '').replace('Bo mạch chủ', '').replace('Card màn hình', '').trim()} --
+            -- Chọn{" "}
+            {label
+              .replace(/(\(|\))/g, "")
+              .replace("Bộ vi xử lý", "")
+              .replace("Bo mạch chủ", "")
+              .replace("Card màn hình", "")
+              .trim()}{" "}
+            --
           </option>
-          {options.map(p => (
+          {options.map((p) => (
             <option key={p.id} value={p.id}>
-              {p.name} (Tồn: {p.stock} | Giá: {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(p.price)})
+              {p.name} (Tồn: {p.stock} | Giá:{" "}
+              {new Intl.NumberFormat("vi-VN", {
+                style: "currency",
+                currency: "VND",
+              }).format(p.price)}
+              )
             </option>
           ))}
         </select>
@@ -82,16 +101,28 @@ export default function ComponentCard({
         <div className="flex flex-col gap-1.5 mt-1 border-t border-slate-100 pt-1.5 animate-fade-in">
           <div className="flex items-center justify-between text-[11px]">
             <span className="text-[#64748b] truncate max-w-[120px]">
-              Kho: <strong className={selectedProd.stock === 0 ? 'text-red-500' : 'text-[#374151]'}>{selectedProd.stock} cái</strong>
+              Kho:{" "}
+              <strong
+                className={
+                  selectedProd.stock === 0 ? "text-red-500" : "text-[#374151]"
+                }
+              >
+                {selectedProd.stock} cái
+              </strong>
             </span>
             <span className="font-semibold text-[#0f172a]">
-              {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(selectedProd.price)}
+              {new Intl.NumberFormat("vi-VN", {
+                style: "currency",
+                currency: "VND",
+              }).format(selectedProd.price)}
             </span>
           </div>
 
           {/* Quantity controls */}
           <div className="flex items-center justify-between mt-1 bg-white p-1 rounded-[6px] border border-[#e2e8f0]">
-            <span className="text-[10px] text-[#64748b] pl-1">Số lượng / PC:</span>
+            <span className="text-[10px] text-[#64748b] pl-1">
+              Số lượng / PC:
+            </span>
             <div className="flex items-center">
               <button
                 type="button"
@@ -104,7 +135,7 @@ export default function ComponentCard({
                 type="number"
                 min={1}
                 value={qty}
-                onChange={e => onQuantityChange(Number(e.target.value))}
+                onChange={(e) => onQuantityChange(Number(e.target.value))}
                 className="w-10 text-center text-[11px] focus:outline-none font-bold text-[#0f172a]"
               />
               <button

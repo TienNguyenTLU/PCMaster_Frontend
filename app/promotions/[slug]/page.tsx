@@ -1,20 +1,30 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useParams, useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { Calendar, ChevronRight, Loader2, Sparkles, Image as ImageIcon, ArrowLeft, Clock, ShoppingBag } from 'lucide-react';
-import { promotionAPI, PromotionResponseWithProducts } from '@/lib/api';
-import HomeNavBar from '@/components/home/HomeNavBar';
-import AuthFooter from '@/components/auth/AuthFooter';
-import { ProductCard } from '@/components/explore/ExplorePage';
+import { useState, useEffect } from "react";
+import { useParams, useRouter } from "next/navigation";
+import Link from "next/link";
+import {
+  Calendar,
+  ChevronRight,
+  Loader2,
+  Sparkles,
+  Image as ImageIcon,
+  ArrowLeft,
+  Clock,
+  ShoppingBag,
+} from "lucide-react";
+import { promotionAPI, PromotionResponseWithProducts } from "@/lib/api";
+import HomeNavBar from "@/components/home/HomeNavBar";
+import AuthFooter from "@/components/auth/AuthFooter";
+import { ProductCard } from "@/components/explore/ExplorePage";
 
 export default function PromotionDetailPage() {
   const params = useParams();
   const router = useRouter();
   const slug = params?.slug as string;
 
-  const [promotion, setPromotion] = useState<PromotionResponseWithProducts | null>(null);
+  const [promotion, setPromotion] =
+    useState<PromotionResponseWithProducts | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -24,8 +34,8 @@ export default function PromotionDetailPage() {
     hours: number;
     minutes: number;
     seconds: number;
-    status: 'UPCOMING' | 'ACTIVE' | 'ENDED';
-  }>({ days: 0, hours: 0, minutes: 0, seconds: 0, status: 'ENDED' });
+    status: "UPCOMING" | "ACTIVE" | "ENDED";
+  }>({ days: 0, hours: 0, minutes: 0, seconds: 0, status: "ENDED" });
 
   useEffect(() => {
     if (!slug) return;
@@ -35,11 +45,13 @@ export default function PromotionDetailPage() {
         if (data) {
           setPromotion(data);
         } else {
-          setError('Không tìm thấy chương trình khuyến mãi');
+          setError("Không tìm thấy chương trình khuyến mãi");
         }
       } catch (err) {
-        console.error('Lỗi khi tải chi tiết khuyến mãi:', err);
-        setError('Không thể tải thông tin chương trình khuyến mãi. Vui lòng thử lại sau.');
+        console.error("Lỗi khi tải chi tiết khuyến mãi:", err);
+        setError(
+          "Không thể tải thông tin chương trình khuyến mãi. Vui lòng thử lại sau.",
+        );
       } finally {
         setLoading(false);
       }
@@ -57,23 +69,33 @@ export default function PromotionDetailPage() {
       const end = new Date(promotion.endDate).getTime();
 
       let targetTime = end;
-      let status: 'UPCOMING' | 'ACTIVE' | 'ENDED' = 'ACTIVE';
+      let status: "UPCOMING" | "ACTIVE" | "ENDED" = "ACTIVE";
 
       if (now < start) {
         targetTime = start;
-        status = 'UPCOMING';
+        status = "UPCOMING";
       } else if (now > end) {
-        status = 'ENDED';
+        status = "ENDED";
       }
 
       const difference = targetTime - now;
 
-      if (difference <= 0 || status === 'ENDED') {
-        setTimeLeft({ days: 0, hours: 0, minutes: 0, seconds: 0, status: 'ENDED' });
+      if (difference <= 0 || status === "ENDED") {
+        setTimeLeft({
+          days: 0,
+          hours: 0,
+          minutes: 0,
+          seconds: 0,
+          status: "ENDED",
+        });
       } else {
         const days = Math.floor(difference / (1000 * 60 * 60 * 24));
-        const hours = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
+        const hours = Math.floor(
+          (difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60),
+        );
+        const minutes = Math.floor(
+          (difference % (1000 * 60 * 60)) / (1000 * 60),
+        );
         const seconds = Math.floor((difference % (1000 * 60)) / 1000);
 
         setTimeLeft({ days, hours, minutes, seconds, status });
@@ -86,7 +108,7 @@ export default function PromotionDetailPage() {
     return () => clearInterval(timer);
   }, [promotion]);
 
-  const bannerSrc = promotion?.bannerUrl?.startsWith('http')
+  const bannerSrc = promotion?.bannerUrl?.startsWith("http")
     ? promotion.bannerUrl
     : promotion?.bannerUrl
       ? `http://localhost:8080${promotion.bannerUrl}`
@@ -95,18 +117,32 @@ export default function PromotionDetailPage() {
   return (
     <div className="flex flex-col min-h-screen">
       <HomeNavBar />
-      
-      <main className="flex-1 pt-[72px]" style={{ background: 'linear-gradient(180deg, #f7f9fb 0%, #f0f4fa 100%)' }}>
-        
+
+      <main
+        className="flex-1 pt-[72px]"
+        style={{
+          background: "linear-gradient(180deg, #f7f9fb 0%, #f0f4fa 100%)",
+        }}
+      >
         {/* Navigation Breadcrumb */}
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-2">
           <div className="flex items-center gap-2 text-[12px] text-[#64748b] font-medium">
-            <Link href="/home" className="hover:text-[#0058be] transition-colors">Trang chủ</Link>
+            <Link
+              href="/home"
+              className="hover:text-[#0058be] transition-colors"
+            >
+              Trang chủ
+            </Link>
             <ChevronRight className="size-3" />
-            <Link href="/promotions" className="hover:text-[#0058be] transition-colors">Khuyến mãi</Link>
+            <Link
+              href="/promotions"
+              className="hover:text-[#0058be] transition-colors"
+            >
+              Khuyến mãi
+            </Link>
             <ChevronRight className="size-3" />
             <span className="text-[#0f172a] font-bold truncate max-w-[200px] md:max-w-[400px]">
-              {loading ? 'Đang tải...' : promotion?.name || 'Chi tiết'}
+              {loading ? "Đang tải..." : promotion?.name || "Chi tiết"}
             </span>
           </div>
         </div>
@@ -122,7 +158,10 @@ export default function PromotionDetailPage() {
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
               {[1, 2, 3, 4].map((i) => (
-                <div key={i} className="bg-white rounded-[16px] border border-[#e8ecf2] h-[340px] animate-pulse p-4 flex flex-col justify-between">
+                <div
+                  key={i}
+                  className="bg-white rounded-[16px] border border-[#e8ecf2] h-[340px] animate-pulse p-4 flex flex-col justify-between"
+                >
                   <div className="bg-[#f1f5f9] rounded-[12px] h-[160px] w-full" />
                   <div className="space-y-2 mt-4">
                     <div className="bg-[#f1f5f9] h-4 rounded w-1/3" />
@@ -145,9 +184,11 @@ export default function PromotionDetailPage() {
                 <ImageIcon className="size-8 text-red-500" />
               </div>
               <div>
-                <h3 className="text-[20px] font-black text-[#0f172a] mb-2">Đã xảy ra lỗi</h3>
+                <h3 className="text-[20px] font-black text-[#0f172a] mb-2">
+                  Đã xảy ra lỗi
+                </h3>
                 <p className="text-[14px] text-[#64748b] leading-relaxed">
-                  {error || 'Không thể tìm thấy chiến dịch khuyến mãi yêu cầu.'}
+                  {error || "Không thể tìm thấy chiến dịch khuyến mãi yêu cầu."}
                 </p>
               </div>
               <div className="flex gap-4">
@@ -169,10 +210,8 @@ export default function PromotionDetailPage() {
         ) : (
           /* Main content detail */
           <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-10">
-            
             {/* Promotion Hero Board */}
             <div className="relative bg-white rounded-[24px] border border-[#e8ecf2] overflow-hidden shadow-sm flex flex-col md:flex-row min-h-[300px]">
-              
               {/* Left Side: Campaign Cover Banner */}
               <div className="md:w-1/2 min-h-[220px] md:min-h-auto bg-[#f8fafc] relative overflow-hidden flex items-center justify-center border-b md:border-b-0 md:border-r border-[#f1f5f9]">
                 {bannerSrc ? (
@@ -184,7 +223,9 @@ export default function PromotionDetailPage() {
                 ) : (
                   <div className="flex flex-col items-center gap-2 text-[#cbd5e1] p-10">
                     <ImageIcon className="size-16 stroke-[1]" />
-                    <span className="text-[13px] font-bold tracking-wide uppercase">Chiến dịch ưu đãi PCMaster</span>
+                    <span className="text-[13px] font-bold tracking-wide uppercase">
+                      Chiến dịch ưu đãi PCMaster
+                    </span>
                   </div>
                 )}
                 {/* Discount Tag */}
@@ -199,12 +240,12 @@ export default function PromotionDetailPage() {
                 <div className="space-y-4">
                   <div className="flex flex-wrap items-center gap-3">
                     {/* Status Badge */}
-                    {timeLeft.status === 'ACTIVE' ? (
+                    {timeLeft.status === "ACTIVE" ? (
                       <span className="bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider shadow-sm flex items-center gap-1.5 animate-pulse">
                         <span className="size-2 rounded-full bg-emerald-500" />
                         Đang diễn ra
                       </span>
-                    ) : timeLeft.status === 'UPCOMING' ? (
+                    ) : timeLeft.status === "UPCOMING" ? (
                       <span className="bg-amber-500/10 text-amber-600 border border-amber-500/20 text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider shadow-sm flex items-center gap-1.5">
                         <span className="size-2 rounded-full bg-amber-500" />
                         Sắp bắt đầu
@@ -218,7 +259,13 @@ export default function PromotionDetailPage() {
                     <div className="flex items-center gap-1.5 text-[12px] text-[#64748b] font-semibold bg-[#f1f5f9] px-3 py-1 rounded-full border border-[#e2e8f0]">
                       <Calendar className="size-3.5 text-[#0058be]" />
                       <span>
-                        {new Date(promotion.startDate).toLocaleDateString('vi-VN')} - {new Date(promotion.endDate).toLocaleDateString('vi-VN')}
+                        {new Date(promotion.startDate).toLocaleDateString(
+                          "vi-VN",
+                        )}{" "}
+                        -{" "}
+                        {new Date(promotion.endDate).toLocaleDateString(
+                          "vi-VN",
+                        )}
                       </span>
                     </div>
                   </div>
@@ -228,44 +275,57 @@ export default function PromotionDetailPage() {
                   </h1>
 
                   <p className="text-[14px] text-[#475569] leading-relaxed">
-                    {promotion.description || 'Chương trình ưu đãi giảm giá sốc dành riêng cho khách hàng mua sắm linh kiện PC trực tuyến tại hệ thống PCMaster.'}
+                    {promotion.description ||
+                      "Chương trình ưu đãi giảm giá sốc dành riêng cho khách hàng mua sắm linh kiện PC trực tuyến tại hệ thống PCMaster."}
                   </p>
                 </div>
 
                 {/* Countdown Timer Block */}
                 <div className="bg-[#0f172a] rounded-[20px] p-5 text-white flex flex-col gap-3.5 shadow-[0_8px_30px_rgb(0,0,0,0.15)] relative overflow-hidden">
                   <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/10 rounded-full blur-xl pointer-events-none" />
-                  
+
                   <div className="flex items-center gap-2 text-[11px] font-bold tracking-wider uppercase text-blue-400">
                     <Clock className="size-4 text-blue-400 shrink-0" />
-                    {timeLeft.status === 'UPCOMING' ? 'Thời gian đếm ngược bắt đầu:' : timeLeft.status === 'ENDED' ? 'Chiến dịch đã khép lại' : 'Ưu đãi kết thúc sau:'}
+                    {timeLeft.status === "UPCOMING"
+                      ? "Thời gian đếm ngược bắt đầu:"
+                      : timeLeft.status === "ENDED"
+                        ? "Chiến dịch đã khép lại"
+                        : "Ưu đãi kết thúc sau:"}
                   </div>
 
-                  {timeLeft.status !== 'ENDED' ? (
+                  {timeLeft.status !== "ENDED" ? (
                     <div className="grid grid-cols-4 gap-3 text-center">
                       <div className="bg-white/5 border border-white/10 rounded-[12px] p-2.5 flex flex-col">
                         <span className="text-[20px] md:text-[24px] font-black font-mono leading-none tracking-tight">
-                          {String(timeLeft.days).padStart(2, '0')}
+                          {String(timeLeft.days).padStart(2, "0")}
                         </span>
-                        <span className="text-[9px] text-[#94a3b8] font-bold mt-1 uppercase">Ngày</span>
+                        <span className="text-[9px] text-[#94a3b8] font-bold mt-1 uppercase">
+                          Ngày
+                        </span>
                       </div>
                       <div className="bg-white/5 border border-white/10 rounded-[12px] p-2.5 flex flex-col">
                         <span className="text-[20px] md:text-[24px] font-black font-mono leading-none tracking-tight">
-                          {String(timeLeft.hours).padStart(2, '0')}
+                          {String(timeLeft.hours).padStart(2, "0")}
                         </span>
-                        <span className="text-[9px] text-[#94a3b8] font-bold mt-1 uppercase">Giờ</span>
+                        <span className="text-[9px] text-[#94a3b8] font-bold mt-1 uppercase">
+                          Giờ
+                        </span>
                       </div>
                       <div className="bg-white/5 border border-white/10 rounded-[12px] p-2.5 flex flex-col">
                         <span className="text-[20px] md:text-[24px] font-black font-mono leading-none tracking-tight">
-                          {String(timeLeft.minutes).padStart(2, '0')}
+                          {String(timeLeft.minutes).padStart(2, "0")}
                         </span>
-                        <span className="text-[9px] text-[#94a3b8] font-bold mt-1 uppercase">Phút</span>
+                        <span className="text-[9px] text-[#94a3b8] font-bold mt-1 uppercase">
+                          Phút
+                        </span>
                       </div>
                       <div className="bg-white/5 border border-white/10 rounded-[12px] p-2.5 flex flex-col">
                         <span className="text-[20px] md:text-[24px] font-black font-mono leading-none tracking-tight text-red-400 animate-pulse">
-                          {String(timeLeft.seconds).padStart(2, '0')}
+                          {String(timeLeft.seconds).padStart(2, "0")}
                         </span>
-                        <span className="text-[9px] text-[#94a3b8] font-bold mt-1 uppercase">Giây</span>
+                        <span className="text-[9px] text-[#94a3b8] font-bold mt-1 uppercase">
+                          Giây
+                        </span>
                       </div>
                     </div>
                   ) : (
@@ -289,7 +349,8 @@ export default function PromotionDetailPage() {
                       Sản Phẩm Khuyến Mãi
                     </h2>
                     <p className="text-[12px] text-[#64748b]">
-                      Tổng số: {promotion.products?.length || 0} sản phẩm đang có giá cực ưu đãi
+                      Tổng số: {promotion.products?.length || 0} sản phẩm đang
+                      có giá cực ưu đãi
                     </p>
                   </div>
                 </div>
@@ -302,9 +363,12 @@ export default function PromotionDetailPage() {
                     <Sparkles className="size-8 text-[#cbd5e1]" />
                   </div>
                   <div>
-                    <h3 className="text-[18px] font-bold text-[#0f172a] mb-1">Chưa có sản phẩm tham gia khuyến mãi</h3>
+                    <h3 className="text-[18px] font-bold text-[#0f172a] mb-1">
+                      Chưa có sản phẩm tham gia khuyến mãi
+                    </h3>
                     <p className="text-[13px] text-[#94a3b8] max-w-[360px] mx-auto">
-                      Sản phẩm được áp dụng trong chiến dịch này đang được chuẩn bị. Hãy khám phá các chương trình sale khác nhé!
+                      Sản phẩm được áp dụng trong chiến dịch này đang được chuẩn
+                      bị. Hãy khám phá các chương trình sale khác nhé!
                     </p>
                   </div>
                   <Link
@@ -323,7 +387,6 @@ export default function PromotionDetailPage() {
                 </div>
               )}
             </div>
-
           </div>
         )}
       </main>

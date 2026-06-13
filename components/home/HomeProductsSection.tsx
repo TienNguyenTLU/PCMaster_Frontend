@@ -1,13 +1,13 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { adminAPI, Product } from '@/lib/api';
-import HomeProductCard from './HomeProductCard';
+import { useState, useEffect } from "react";
+import { adminAPI, Product } from "@/lib/api";
+import HomeProductCard from "./HomeProductCard";
 
 interface HomeProductsSectionProps {
   title: string;
   subtitle: string;
-  type: 'new' | 'sale';
+  type: "new" | "sale";
 }
 
 function ProductSkeleton() {
@@ -27,35 +27,49 @@ function ProductSkeleton() {
   );
 }
 
-export default function HomeProductsSection({ title, subtitle, type }: HomeProductsSectionProps) {
+export default function HomeProductsSection({
+  title,
+  subtitle,
+  type,
+}: HomeProductsSectionProps) {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    adminAPI.getProducts(0, 100)
-      .then(res => {
+    adminAPI
+      .getProducts(0, 100)
+      .then((res) => {
         let list = res.content || [];
-        
-        // Filter out of stock products
-        list = list.filter(p => p.stock > 0);
 
-        if (type === 'new') {
+        // Filter out of stock products
+        list = list.filter((p) => p.stock > 0);
+
+        if (type === "new") {
           // Sort by creation date desc (recently imported)
-          list = [...list].sort((a, b) => {
-            const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
-            const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
-            return dateB - dateA;
-          }).slice(0, 4);
-        } else if (type === 'sale') {
+          list = [...list]
+            .sort((a, b) => {
+              const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+              const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+              return dateB - dateA;
+            })
+            .slice(0, 4);
+        } else if (type === "sale") {
           // Only show products that have active discounts from promotions
-          list = list.filter(p => p.discountPercent !== null && p.discountPercent !== undefined && p.discountPercent > 0);
-          
+          list = list.filter(
+            (p) =>
+              p.discountPercent !== null &&
+              p.discountPercent !== undefined &&
+              p.discountPercent > 0,
+          );
+
           // Sort by highest discount percentage first
-          list = [...list].sort((a, b) => (b.discountPercent || 0) - (a.discountPercent || 0)).slice(0, 4);
+          list = [...list]
+            .sort((a, b) => (b.discountPercent || 0) - (a.discountPercent || 0))
+            .slice(0, 4);
         }
         setProducts(list);
       })
-      .catch(err => {
+      .catch((err) => {
         console.error(`Failed to fetch products for section ${type}:`, err);
       })
       .finally(() => {
@@ -71,15 +85,15 @@ export default function HomeProductsSection({ title, subtitle, type }: HomeProdu
     <section className="flex flex-col gap-8 max-w-[1536px] w-full px-8">
       {/* Section Header */}
       <div className="flex flex-col gap-1.5 align-left">
-        <h2 
+        <h2
           className="text-[#191c1e] text-[28px] sm:text-[32px] tracking-[-1px] font-bold leading-tight"
-          style={{ fontFamily: 'Inter, sans-serif' }}
+          style={{ fontFamily: "Inter, sans-serif" }}
         >
           {title}
         </h2>
-        <p 
+        <p
           className="text-[#64748b] text-[14px] sm:text-[15px] font-medium leading-snug"
-          style={{ fontFamily: 'Inter, sans-serif' }}
+          style={{ fontFamily: "Inter, sans-serif" }}
         >
           {subtitle}
         </p>
@@ -87,19 +101,17 @@ export default function HomeProductsSection({ title, subtitle, type }: HomeProdu
 
       {/* Grid of Product Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 w-full">
-        {loading ? (
-          Array.from({ length: 4 }).map((_, idx) => (
-            <ProductSkeleton key={idx} />
-          ))
-        ) : (
-          products.map(product => (
-            <HomeProductCard 
-              key={product.id} 
-              product={product} 
-              badgeType={type} 
-            />
-          ))
-        )}
+        {loading
+          ? Array.from({ length: 4 }).map((_, idx) => (
+              <ProductSkeleton key={idx} />
+            ))
+          : products.map((product) => (
+              <HomeProductCard
+                key={product.id}
+                product={product}
+                badgeType={type}
+              />
+            ))}
       </div>
     </section>
   );

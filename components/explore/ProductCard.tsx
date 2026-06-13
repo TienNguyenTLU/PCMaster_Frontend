@@ -1,21 +1,39 @@
-"use client";
-
 import React, { useState } from "react";
+import { ShoppingCart, Package } from "lucide-react";
 import Link from "next/link";
-import { ShoppingCart, Package, Cpu } from "lucide-react";
 import { Product } from "@/lib/api";
 import { useCartStore } from "@/lib/store";
 import { CldImage } from "next-cloudinary";
 import toast from "react-hot-toast";
 
-interface PrebuiltProductCardProps {
+interface ProductCardProps {
   product: Product;
 }
 
-export function PrebuiltProductCard({ product }: PrebuiltProductCardProps) {
+export default function ProductCard({ product }: ProductCardProps) {
   const [imgErr, setImgErr] = useState(false);
   const [adding, setAdding] = useState(false);
   const { addItem } = useCartStore();
+  const specs = (() => {
+    try {
+      return product.specsJson ? JSON.parse(product.specsJson) : {};
+    } catch {
+      return {};
+    }
+  })();
+
+  const highlights: string[] = [];
+  if (specs.cores) highlights.push(`${specs.cores} nhân`);
+  if (specs.threads) highlights.push(`${specs.threads} luồng`);
+  if (specs.socket) highlights.push(specs.socket);
+  if (specs.vram_gb) highlights.push(`${specs.vram_gb}GB VRAM`);
+  if (specs.capacity_gb && !specs.vram_gb)
+    highlights.push(`${specs.capacity_gb}GB`);
+  if (specs.wattage) highlights.push(`${specs.wattage}W`);
+  if (specs.refresh_rate_hz) highlights.push(`${specs.refresh_rate_hz}Hz`);
+  if (specs.panel_type) highlights.push(specs.panel_type);
+  if (specs.ram_type && !specs.vram_gb && !specs.cores)
+    highlights.push(specs.ram_type);
 
   const imgSrc = product.thumbnailUrl?.startsWith("http")
     ? product.thumbnailUrl
@@ -29,9 +47,9 @@ export function PrebuiltProductCard({ product }: PrebuiltProductCardProps) {
     setAdding(true);
     try {
       await addItem(Number(product.id), 1);
-      toast.success("Đã thêm PC build sẵn vào giỏ hàng!");
+      toast.success("Đã thêm vào giỏ hàng!");
     } catch {
-      toast.error("Vui lòng đăng nhập trước khi mua hàng.");
+      toast.error("Không thể thêm. Vui lòng đăng nhập trước.");
     } finally {
       setAdding(false);
     }
@@ -47,7 +65,7 @@ export function PrebuiltProductCard({ product }: PrebuiltProductCardProps) {
       />
 
       {/* Image */}
-      <div className="relative bg-[#f7f9fb] h-[192px] flex items-center justify-center overflow-hidden border-b border-[#f1f5f9]">
+      <div className="relative bg-[#f7f9fb] h-[192px] flex items-center justify-center overflow-hidden">
         {imgSrc && !imgErr ? (
           imgSrc.startsWith("http://localhost") ? (
             <img
@@ -78,6 +96,13 @@ export function PrebuiltProductCard({ product }: PrebuiltProductCardProps) {
             Hết hàng
           </span>
         )}
+        {product.stock > 0 &&
+        product.discountPercent &&
+        product.discountPercent > 0 ? (
+          <span className="absolute top-2.5 right-2.5 bg-red-500 text-white text-[10px] font-bold px-2 py-0.5 rounded-[6px] shadow-sm z-20 animate-pulse">
+            SALE -{product.discountPercent}%
+          </span>
+        ) : null}
         {product.stock > 0 && product.stock <= 5 && (
           <span className="absolute top-2.5 left-2.5 bg-amber-100 text-amber-700 text-[10px] font-bold px-2 py-0.5 rounded-full z-20">
             Còn {product.stock} SP
@@ -86,62 +111,53 @@ export function PrebuiltProductCard({ product }: PrebuiltProductCardProps) {
       </div>
 
       {/* Content */}
-      <div className="flex flex-col flex-1 p-4 gap-2.5 z-0 justify-between">
-        <div className="flex flex-col gap-2">
-          {product.brand && (
-            <span className="text-[10px] font-bold text-[#0058be] uppercase tracking-[0.8px]">
-              {product.brand.name}
-            </span>
-          )}
-          <h3
-            className={`text-[13px] font-semibold leading-snug line-clamp-2 transition-colors ${product.stock === 0 ? "text-[#94a3b8]" : "text-[#0f172a] group-hover:text-[#0058be]"}`}
-          >
-            {product.name}
-          </h3>
-
-          {/* Embedded specification lists (Premium display) */}
-          {product.pcComponents && product.pcComponents.length > 0 && (
-            <div className="flex flex-col gap-1.5 bg-[#f8fafc] rounded-[12px] p-2.5 border border-slate-100 mt-1 relative z-20 text-left">
-              <p className="text-[9px] font-extrabold text-[#64748b] uppercase tracking-[0.5px] flex items-center gap-1">
-                <Cpu className="size-3 text-[#0058be]" /> Linh kiện đi kèm:
+      <div className="flex flex-col flex-1 p-4 gap-2.5 z-0">
+        {product.brand && (
+          <span className="text-[10px] font-bold text-[#0058be] uppercase tracking-[0.8px]">
+            {product.brand.name}
+          </span>
+        )}
+        <h3
+          className={`text-[13px] font-semibold leading-snug line-clamp-2 transition-colors ${product.stock === 0 ? "text-[#94a3b8]" : "text-[#0f172a] group-hover:text-[#0058be]"}`}
+        >
+          {product.name}
+        </h3>
+        {highlights.length > 0 && (
+          <div className="flex flex-wrap gap-1 relative z-20">
+            {highlights.slice(0, 3).map((h, i) => (
+              <span
+                key={i}
+                className="text-[10px] bg-[#f1f5f9] text-[#64748b] px-2 py-0.5 rounded-full font-medium"
+              >
+                {h}
+              </span>
+            ))}
+          </div>
+        )}
+        <div className="flex-1" />
+        <div className="flex items-center justify-between pt-2.5 border-t border-[#f1f5f9] relative z-20">
+          {product.discountPrice ? (
+            <div className="flex flex-col gap-0.5">
+              <p
+                className={`text-[16px] font-bold ${product.stock === 0 ? "text-[#94a3b8]" : "text-red-500"}`}
+              >
+                {product.discountPrice.toLocaleString("vi-VN")}
+                <span className="text-[11px] font-normal ml-0.5 opacity-70">
+                  ₫
+                </span>
               </p>
-              <div className="flex flex-col gap-0.5">
-                {product.pcComponents.slice(0, 3).map((comp) => (
-                  <div
-                    key={comp.componentProductId}
-                    className="flex items-center gap-1 text-[11px] text-[#475569] font-medium truncate"
-                  >
-                    <span className="text-[#0058be] font-bold text-[8px]">
-                      •
-                    </span>
-                    <span className="truncate">
-                      {comp.componentProductName}
-                    </span>
-                  </div>
-                ))}
-                {product.pcComponents.length > 3 && (
-                  <p className="text-[9px] font-bold text-[#0058be] mt-0.5">
-                    Và {product.pcComponents.length - 3} linh kiện khác...
-                  </p>
-                )}
-              </div>
+              <p className="text-[11px] text-[#94a3b8] line-through font-medium leading-none">
+                {product.price.toLocaleString("vi-VN")}₫
+              </p>
             </div>
-          )}
-        </div>
-
-        <div className="flex items-center justify-between pt-2.5 border-t border-[#f1f5f9] relative z-20 mt-2">
-          <div>
-            <p className="text-[9px] font-bold text-[#94a3b8] uppercase tracking-[0.5px]">
-              Giá bán lẻ
-            </p>
+          ) : (
             <p
               className={`text-[16px] font-bold ${product.stock === 0 ? "text-[#94a3b8]" : "text-[#0058be]"}`}
-              style={{ fontFamily: "Inter, sans-serif" }}
             >
               {product.price.toLocaleString("vi-VN")}
               <span className="text-[11px] font-normal ml-1 opacity-70">₫</span>
             </p>
-          </div>
+          )}
           <button
             type="button"
             disabled={product.stock === 0 || adding}
@@ -158,23 +174,5 @@ export function PrebuiltProductCard({ product }: PrebuiltProductCardProps) {
         </div>
       </div>
     </Link>
-  );
-}
-
-export function SkeletonCard() {
-  return (
-    <div className="bg-white rounded-[16px] border border-[#e8ecf2] flex flex-col overflow-hidden animate-pulse">
-      <div className="h-[192px] bg-[#f1f5f9]" />
-      <div className="p-4 flex flex-col gap-2.5">
-        <div className="h-3 bg-[#e2e8f0] rounded w-16" />
-        <div className="h-4 bg-[#e2e8f0] rounded w-full" />
-        <div className="h-4 bg-[#e2e8f0] rounded w-3/4" />
-        <div className="h-[52px] bg-[#f1f5f9] rounded-[12px] w-full" />
-        <div className="flex justify-between items-center pt-2.5 border-t border-[#f1f5f9] mt-auto">
-          <div className="h-5 bg-[#e2e8f0] rounded w-24" />
-          <div className="h-8 w-8 bg-[#e2e8f0] rounded-[8px]" />
-        </div>
-      </div>
-    </div>
   );
 }

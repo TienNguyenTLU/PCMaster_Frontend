@@ -1,31 +1,35 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { adminAPI, Banner } from '@/lib/api';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { Autoplay, Pagination, Navigation } from 'swiper/modules';
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { adminAPI, Banner } from "@/lib/api";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { Swiper, SwiperSlide } from "swiper/react";
+import { Autoplay, Pagination, Navigation } from "swiper/modules";
 
 // Import Swiper styles
-import 'swiper/css';
-import 'swiper/css/pagination';
-import 'swiper/css/navigation';
+import "swiper/css";
+import "swiper/css/pagination";
+import "swiper/css/navigation";
 
-const imgPC = 'http://localhost:3845/assets/3fc0fbbb64b098f587482e466fbf7df039ea5484.png';
+const imgPC =
+  "http://localhost:3845/assets/3fc0fbbb64b098f587482e466fbf7df039ea5484.png";
 
 export default function HomeHero() {
   const [banners, setBanners] = useState<Banner[]>([]);
 
   useEffect(() => {
-    adminAPI.getBanners()
-      .then(data => {
+    adminAPI
+      .getBanners()
+      .then((data) => {
         // Sort by displayOrder ascending
-        const sorted = [...data].sort((a, b) => a.displayOrder - b.displayOrder);
+        const sorted = [...data].sort(
+          (a, b) => a.displayOrder - b.displayOrder,
+        );
         setBanners(sorted);
       })
-      .catch(err => {
-        console.error('Error fetching home banners:', err);
+      .catch((err) => {
+        console.error("Error fetching home banners:", err);
       });
   }, []);
 
@@ -58,21 +62,33 @@ export default function HomeHero() {
         spaceBetween={0}
         slidesPerView={1}
         loop={banners.length > 1}
-        autoplay={banners.length > 1 ? {
-          delay: 5000,
-          disableOnInteraction: false,
-          pauseOnMouseEnter: true,
-        } : false}
-        pagination={banners.length > 1 ? {
-          el: '.swiper-pagination-custom',
-          clickable: true,
-          bulletClass: 'swiper-pagination-bullet-custom',
-          bulletActiveClass: 'swiper-pagination-bullet-active-custom',
-        } : false}
-        navigation={banners.length > 1 ? {
-          prevEl: '.swiper-button-prev-custom',
-          nextEl: '.swiper-button-next-custom',
-        } : false}
+        autoplay={
+          banners.length > 1
+            ? {
+                delay: 5000,
+                disableOnInteraction: false,
+                pauseOnMouseEnter: true,
+              }
+            : false
+        }
+        pagination={
+          banners.length > 1
+            ? {
+                el: ".swiper-pagination-custom",
+                clickable: true,
+                bulletClass: "swiper-pagination-bullet-custom",
+                bulletActiveClass: "swiper-pagination-bullet-active-custom",
+              }
+            : false
+        }
+        navigation={
+          banners.length > 1
+            ? {
+                prevEl: ".swiper-button-prev-custom",
+                nextEl: ".swiper-button-next-custom",
+              }
+            : false
+        }
         className="w-full h-full"
       >
         {banners.map((banner) => {
@@ -87,11 +103,16 @@ export default function HomeHero() {
           );
 
           return (
-            <SwiperSlide key={banner.id} className="w-full h-full overflow-hidden">
+            <SwiperSlide
+              key={banner.id}
+              className="w-full h-full overflow-hidden"
+            >
               {banner.linkUrl ? (
                 <a
                   href={banner.linkUrl}
-                  target={banner.linkUrl.startsWith('http') ? '_blank' : '_self'}
+                  target={
+                    banner.linkUrl.startsWith("http") ? "_blank" : "_self"
+                  }
                   rel="noopener noreferrer"
                   className="block w-full h-full cursor-pointer overflow-hidden"
                 >
@@ -134,4 +155,3 @@ export default function HomeHero() {
     </section>
   );
 }
-

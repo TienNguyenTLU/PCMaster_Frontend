@@ -1,67 +1,106 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { adminAPI, Category } from '@/lib/api';
-import HomeCategoryCard from './HomeCategoryCard';
-import { 
-  Cpu, 
-  Gamepad2, 
-  HardDrive, 
-  Layers, 
-  Zap, 
-  Fan, 
-  Server, 
-  Monitor, 
-  CircuitBoard, 
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { adminAPI, Category } from "@/lib/api";
+import HomeCategoryCard from "./HomeCategoryCard";
+import {
+  Cpu,
+  Gamepad2,
+  HardDrive,
+  Layers,
+  Zap,
+  Fan,
+  Server,
+  Monitor,
+  CircuitBoard,
   HelpCircle,
   Laptop,
   Keyboard,
   Mouse,
-  Headphones
-} from 'lucide-react';
+  Headphones,
+} from "lucide-react";
 
-const imgArrowSmall = 'http://localhost:3845/assets/61dd0d1d6928fb3ddfc20fcb1cfc8aee254066a1.svg';
+const imgArrowSmall =
+  "http://localhost:3845/assets/61dd0d1d6928fb3ddfc20fcb1cfc8aee254066a1.svg";
 
 function getCategoryIcon(name: string) {
-  const slug = name.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-  if (slug.includes('cpu') || slug.includes('vi xu ly') || slug.includes('processor')) {
+  const slug = name
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+  if (
+    slug.includes("cpu") ||
+    slug.includes("vi xu ly") ||
+    slug.includes("processor")
+  ) {
     return Cpu;
   }
-  if (slug.includes('vga') || slug.includes('graphics') || slug.includes('do hoa') || slug.includes('card man hinh')) {
+  if (
+    slug.includes("vga") ||
+    slug.includes("graphics") ||
+    slug.includes("do hoa") ||
+    slug.includes("card man hinh")
+  ) {
     return Gamepad2;
   }
-  if (slug.includes('ram') || slug.includes('bo nho') || slug.includes('memory')) {
+  if (
+    slug.includes("ram") ||
+    slug.includes("bo nho") ||
+    slug.includes("memory")
+  ) {
     return Layers;
   }
-  if (slug.includes('main') || slug.includes('board') || slug.includes('bo mach')) {
+  if (
+    slug.includes("main") ||
+    slug.includes("board") ||
+    slug.includes("bo mach")
+  ) {
     return CircuitBoard;
   }
-  if (slug.includes('storage') || slug.includes('ssd') || slug.includes('hdd') || slug.includes('o cung')) {
+  if (
+    slug.includes("storage") ||
+    slug.includes("ssd") ||
+    slug.includes("hdd") ||
+    slug.includes("o cung")
+  ) {
     return HardDrive;
   }
-  if (slug.includes('psu') || slug.includes('power') || slug.includes('nguon')) {
+  if (
+    slug.includes("psu") ||
+    slug.includes("power") ||
+    slug.includes("nguon")
+  ) {
     return Zap;
   }
-  if (slug.includes('case') || slug.includes('vo may')) {
+  if (slug.includes("case") || slug.includes("vo may")) {
     return Server;
   }
-  if (slug.includes('cool') || slug.includes('tan nhiet') || slug.includes('fan') || slug.includes('quat')) {
+  if (
+    slug.includes("cool") ||
+    slug.includes("tan nhiet") ||
+    slug.includes("fan") ||
+    slug.includes("quat")
+  ) {
     return Fan;
   }
-  if (slug.includes('monitor') || slug.includes('man hinh')) {
+  if (slug.includes("monitor") || slug.includes("man hinh")) {
     return Monitor;
   }
-  if (slug.includes('laptop')) {
+  if (slug.includes("laptop")) {
     return Laptop;
   }
-  if (slug.includes('ban phim') || slug.includes('keyboard')) {
+  if (slug.includes("ban phim") || slug.includes("keyboard")) {
     return Keyboard;
   }
-  if (slug.includes('chuot') || slug.includes('mouse')) {
+  if (slug.includes("chuot") || slug.includes("mouse")) {
     return Mouse;
   }
-  if (slug.includes('tai nghe') || slug.includes('headphone') || slug.includes('audio')) {
+  if (
+    slug.includes("tai nghe") ||
+    slug.includes("headphone") ||
+    slug.includes("audio")
+  ) {
     return Headphones;
   }
   return HelpCircle;
@@ -81,12 +120,13 @@ export default function HomeCategoriesSection() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    adminAPI.getCategories(0, 100)
-      .then(res => {
+    adminAPI
+      .getCategories(0, 100)
+      .then((res) => {
         setCategories(res.content || []);
       })
-      .catch(err => {
-        console.error('Failed to load categories on homepage:', err);
+      .catch((err) => {
+        console.error("Failed to load categories on homepage:", err);
       })
       .finally(() => {
         setLoading(false);
@@ -100,13 +140,13 @@ export default function HomeCategoriesSection() {
         <div className="flex flex-col gap-2">
           <p
             className="text-[#0058be] text-[14px] tracking-[1.4px] uppercase font-semibold leading-[20px]"
-            style={{ fontFamily: 'Inter, sans-serif' }}
+            style={{ fontFamily: "Inter, sans-serif" }}
           >
             DANH MỤC SẢN PHẨM
           </p>
           <h2
             className="text-[#191c1e] text-[36px] tracking-[-1.8px] leading-[40px] font-bold"
-            style={{ fontFamily: 'Inter, sans-serif' }}
+            style={{ fontFamily: "Inter, sans-serif" }}
           >
             Linh Kiện Cao Cấp
           </h2>
@@ -121,7 +161,7 @@ export default function HomeCategoriesSection() {
         <Link
           href="/explore"
           className="flex items-center gap-2 text-[#424754] text-[14px] leading-[20px] hover:text-[#0058be] transition-colors"
-          style={{ fontFamily: 'Inter, sans-serif' }}
+          style={{ fontFamily: "Inter, sans-serif" }}
         >
           Xem tất cả danh mục
           <img src={imgArrowSmall} alt="" className="size-[9.333px]" />
@@ -142,11 +182,11 @@ export default function HomeCategoriesSection() {
           categories.map((cat) => {
             const Icon = getCategoryIcon(cat.name);
             return (
-              <HomeCategoryCard 
-                key={cat.id} 
-                id={cat.id} 
-                name={cat.name} 
-                Icon={Icon} 
+              <HomeCategoryCard
+                key={cat.id}
+                id={cat.id}
+                name={cat.name}
+                Icon={Icon}
               />
             );
           })

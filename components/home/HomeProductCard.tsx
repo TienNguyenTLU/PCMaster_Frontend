@@ -1,22 +1,25 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import { ShoppingCart, Package } from 'lucide-react';
-import Link from 'next/link';
-import { Product } from '@/lib/api';
-import { useCartStore } from '@/lib/store';
-import toast from 'react-hot-toast';
+import { useState } from "react";
+import { ShoppingCart, Package } from "lucide-react";
+import Link from "next/link";
+import { Product } from "@/lib/api";
+import { useCartStore } from "@/lib/store";
+import toast from "react-hot-toast";
 
 interface HomeProductCardProps {
   product: Product;
-  badgeType?: 'new' | 'sale';
+  badgeType?: "new" | "sale";
 }
 
-export default function HomeProductCard({ product, badgeType }: HomeProductCardProps) {
+export default function HomeProductCard({
+  product,
+  badgeType,
+}: HomeProductCardProps) {
   const [adding, setAdding] = useState(false);
   const { addItem } = useCartStore();
 
-  const imgSrc = product.thumbnailUrl?.startsWith('http')
+  const imgSrc = product.thumbnailUrl?.startsWith("http")
     ? product.thumbnailUrl
     : product.thumbnailUrl
       ? `http://localhost:8080${product.thumbnailUrl}`
@@ -28,18 +31,19 @@ export default function HomeProductCard({ product, badgeType }: HomeProductCardP
     setAdding(true);
     try {
       await addItem(Number(product.id), 1);
-      toast.success('Đã thêm vào giỏ hàng!');
+      toast.success("Đã thêm vào giỏ hàng!");
     } catch {
-      toast.error('Không thể thêm. Vui lòng đăng nhập trước.');
+      toast.error("Không thể thêm. Vui lòng đăng nhập trước.");
     } finally {
       setAdding(false);
     }
   }
 
   // Calculate simulated discount original price if badgeType is 'sale'
-  const originalPrice = badgeType === 'sale' 
-    ? Math.round((product.price * 1.15) / 10000) * 10000 
-    : null;
+  const originalPrice =
+    badgeType === "sale"
+      ? Math.round((product.price * 1.15) / 10000) * 10000
+      : null;
 
   return (
     <Link
@@ -58,7 +62,7 @@ export default function HomeProductCard({ product, badgeType }: HomeProductCardP
             src={imgSrc}
             alt={product.name}
             className={`h-full w-full object-contain p-4 group-hover:scale-105 transition-transform duration-500 ${
-              product.stock === 0 ? 'grayscale opacity-60' : ''
+              product.stock === 0 ? "grayscale opacity-60" : ""
             }`}
           />
         ) : (
@@ -73,11 +77,11 @@ export default function HomeProductCard({ product, badgeType }: HomeProductCardP
           <span className="absolute top-3.5 left-3.5 bg-red-100 text-red-600 text-[10px] font-bold px-2.5 py-1 rounded-full z-20">
             Hết hàng
           </span>
-        ) : badgeType === 'new' ? (
+        ) : badgeType === "new" ? (
           <span className="absolute top-3.5 left-3.5 bg-[#eff6ff] text-[#0058be] border border-blue-100 text-[10px] font-bold px-2.5 py-1 rounded-full z-20 tracking-wider">
             MỚI NIÊM YẾT
           </span>
-        ) : badgeType === 'sale' ? (
+        ) : badgeType === "sale" ? (
           <span className="absolute top-3.5 left-3.5 bg-red-50 text-red-600 border border-red-100 text-[10px] font-bold px-2.5 py-1 rounded-full z-20 tracking-wider">
             GIẢM 15%
           </span>
@@ -99,11 +103,13 @@ export default function HomeProductCard({ product, badgeType }: HomeProductCardP
           </span>
         )}
 
-        <h3 
+        <h3
           className={`text-[14px] font-semibold leading-snug line-clamp-2 transition-colors min-h-[40px] ${
-            product.stock === 0 ? 'text-[#94a3b8]' : 'text-[#0f172a] group-hover:text-[#0058be]'
+            product.stock === 0
+              ? "text-[#94a3b8]"
+              : "text-[#0f172a] group-hover:text-[#0058be]"
           }`}
-          style={{ fontFamily: 'Inter, sans-serif' }}
+          style={{ fontFamily: "Inter, sans-serif" }}
         >
           {product.name}
         </h3>
@@ -113,12 +119,16 @@ export default function HomeProductCard({ product, badgeType }: HomeProductCardP
           <div className="flex flex-col gap-0.5">
             {originalPrice && (
               <span className="text-slate-400 text-[11px] line-through leading-none">
-                {originalPrice.toLocaleString('vi-VN')} ₫
+                {originalPrice.toLocaleString("vi-VN")} ₫
               </span>
             )}
-            <p className={`text-[16px] font-bold leading-none ${product.stock === 0 ? 'text-[#94a3b8]' : 'text-[#0058be]'}`}>
-              {product.price.toLocaleString('vi-VN')}
-              <span className="text-[11px] font-normal ml-0.5 opacity-70">₫</span>
+            <p
+              className={`text-[16px] font-bold leading-none ${product.stock === 0 ? "text-[#94a3b8]" : "text-[#0058be]"}`}
+            >
+              {product.price.toLocaleString("vi-VN")}
+              <span className="text-[11px] font-normal ml-0.5 opacity-70">
+                ₫
+              </span>
             </p>
           </div>
 

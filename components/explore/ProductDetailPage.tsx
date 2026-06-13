@@ -1,8 +1,8 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { useParams } from 'next/navigation';
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { useParams } from "next/navigation";
 import {
   ChevronLeft,
   ChevronRight,
@@ -14,367 +14,52 @@ import {
   Plus,
   AlertCircle,
   ArrowLeft,
-  X,
-  Maximize2
-} from 'lucide-react';
-import { adminAPI, Product, ProductImage, getCategoryLabel } from '@/lib/api';
-import { useCartStore } from '@/lib/store';
-import toast from 'react-hot-toast';
+  Maximize2,
+} from "lucide-react";
+import { adminAPI, Product, ProductImage, getCategoryLabel } from "@/lib/api";
+import { SPEC_LABEL_MAP } from "@/lib/labelMapping";
+import { useCartStore } from "@/lib/store";
+import toast from "react-hot-toast";
+import LightboxModal from "./LightboxModal";
 
 // ─── SPECS_BY_CATEGORY mirrors ExplorePage ────────────────────────────────────
-const SPEC_LABEL_MAP: Record<string, string> = {
-  // General & Pre-built
-  usage_need: 'Nhu cầu sử dụng',
-  brand: 'Thương hiệu',
-  component_type: 'Loại linh kiện',
-  series: 'Dòng sản phẩm (Series)',
-  accessories: 'Phụ kiện đi kèm',
-  intended_use: 'Mục đích sử dụng',
-  technologies: 'Công nghệ tích hợp',
-  mainboard_type: 'Phân khúc bo mạch',
-
-  // CPU
-  cores: 'Số nhân',
-  threads: 'Số luồng',
-  socket: 'Socket',
-  integrated_gpu: 'GPU tích hợp',
-  tdp_w: 'TDP (W)',
-  cache_mb: 'Bộ nhớ đệm (MB)',
-  base_clock_ghz: 'Xung cơ bản (GHz)',
-  boost_clock_ghz: 'Xung tối đa (GHz)',
-  performance_score: 'Điểm hiệu năng',
-  // RAM
-  type: 'Loại',
-  capacity_gb: 'Dung lượng (GB)',
-  kit: 'Kit',
-  has_rgb: 'Có RGB',
-  bus_speed_mhz: 'Tốc độ Bus (MHz)',
-  latency_cl: 'CAS Latency',
-  // SSD/HDD
-  interface: 'Giao diện kết nối',
-  giao_di_n_k_t_n_i: 'Giao diện kết nối',
-  read_speed_mbps: 'Tốc độ đọc (MB/s)',
-  t_c_c_mb_s: 'Tốc độ đọc (MB/s)',
-  write_speed_mbps: 'Tốc độ ghi (MB/s)',
-  t_c_ghi_mb_s: 'Tốc độ ghi (MB/s)',
-  nand_type: 'Loại chip nhớ (NAND)',
-  lo_i_chip_nh: 'Loại chip nhớ (NAND)',
-  mtbf: 'Tuổi thọ thiết bị (MTBF)',
-  operating_temperature: 'Nhiệt độ hoạt động',
-  nhi_t_ho_t_ng: 'Nhiệt độ hoạt động',
-  has_heatsink: 'Tản nhiệt đi kèm',
-  lo_i_ssd: 'Chuẩn SSD',
-  k_ch_c_form_factor: 'Kích thước / Form factor',
-  cache: 'Bộ nhớ đệm (Cache)',
-  b_nh_m: 'Bộ nhớ đệm (Cache)',
-  'bộ nhớ đệm': 'Bộ nhớ đệm (Cache)',
-  tbw: 'Độ bền ghi (TBW)',
-  tbw_b_n_ghi: 'Độ bền ghi (TBW)',
-  tbw_w: 'Độ bền ghi (TBW)',
-  dung_l_ng: 'Dung lượng',
-  // VGA
-  vram_gb: 'VRAM (GB)',
-  vram_type: 'Loại VRAM',
-  base_clock_mhz: 'Xung cơ bản (MHz)',
-  boost_clock_mhz: 'Xung boost (MHz)',
-  length_mm: 'Chiều dài (mm)',
-  min_psu_w: 'Nguồn tối thiểu (W)',
-  vga_series: 'Dòng sản phẩm VGA',
-  vram: 'Dung lượng VRAM',
-  base_clock: 'Xung cơ bản (MHz)',
-  boost_clock: 'Xung boost (MHz)',
-  memory_bus: 'Bus bộ nhớ',
-  memory_type: 'Kiểu bộ nhớ',
-  fan_count: 'Số quạt tản nhiệt',
-  directx: 'DirectX hỗ trợ',
-  dlss: 'Hỗ trợ DLSS',
-  ray_tracing: 'Hỗ trợ Ray Tracing',
-  opengl: 'OpenGL hỗ trợ',
-  graphics_processor: 'Nhân đồ họa',
-  multi_monitor: 'Hỗ trợ đa màn hình',
-  max_resolution: 'Độ phân giải tối đa',
-  power_connectors: 'Đầu cấp nguồn',
-  recommended_psu: 'Nguồn đề xuất',
-  tdp: 'Điện năng tiêu thụ (TDP)',
-  dimensions: 'Kích thước card',
-  weight: 'Trọng lượng',
-  // Mainboard
-  chipset: 'Chipset',
-  ram_type: 'Loại RAM',
-  form_factor: 'Form factor',
-  has_wifi: 'Có Wifi',
-  ram_slots: 'Số khe RAM',
-  max_ram_gb: 'RAM tối đa (GB)',
-  m2_slots: 'Số khe M.2',
-  // PSU
-  wattage: 'Công suất (W)',
-  efficiency_rating: 'Hiệu suất',
-  modularity: 'Modularity',
-  // Monitor
-  panel_type: 'Loại tấm nền',
-  resolution: 'Độ phân giải',
-  refresh_rate_hz: 'Tần số quét (Hz)',
-  has_hdr: 'Hỗ trợ HDR',
-  aspect_ratio: 'Tỉ lệ màn hình',
-  ports: 'Cổng kết nối',
-  size_inch: 'Kích thước (inch)',
-  brightness_cdm2: 'Độ sáng (cd/m²)',
-  response_time_ms: 'Phản hồi (ms)',
-  color_accuracy: 'Độ chuẩn màu',
-  // Cooler
-  cooler_type: 'Loại tản nhiệt',
-  lo_i_s_n_ph_m: 'Loại tản nhiệt',
-  fan_size_mm: 'Kích thước quạt (mm)',
-  k_ch_th_c_qu_t_t_n: 'Kích thước quạt (mm)',
-  tdp_rating_w: 'TDP hỗ trợ (W)',
-  noise_level_db: 'Độ ồn (dB)',
-  pump_noise_db: 'Độ ồn Pump (dB)',
-  ti_ng_n_pump: 'Độ ồn Pump (dB)',
-  radiator_size_mm: 'Kích thước Radiator (mm)',
-  supported_sockets: 'Socket hỗ trợ',
-  cpu_socket_support: 'Socket CPU hỗ trợ',
-  t_ng_th_ch_cpu: 'Socket CPU hỗ trợ',
-  // fan_count: 'Số quạt',
-  s_qu_t: 'Số quạt',
-  fan_speed_rpm: 'Tốc độ quạt (RPM)',
-  t_c_qu_t: 'Tốc độ quạt (RPM)',
-  airflow_cfm: 'Lưu lượng gió (CFM)',
-  lu_ng_kh: 'Lưu lượng gió (CFM)',
-  static_pressure_mmh2o: 'Áp suất tĩnh (mmH₂O)',
-  p_su_t_t_nh: 'Áp suất tĩnh (mmH₂O)',
-  pump_dimensions: 'Kích thước Pump',
-  k_ch_th_c_pump: 'Kích thước Pump',
-  fan_lifespan: 'Tuổi thọ quạt',
-  tu_i_th_qu_t: 'Tuổi thọ quạt',
-  bearing_type: 'Loại vòng bi',
-  lo_i_v_ng_bi: 'Loại vòng bi',
-  heatsink_material: 'Vật liệu Heat Sink',
-  v_t_li_u_heat_sink: 'Vật liệu Heat Sink',
-  tube_length: 'Chiều dài ống dẫn',
-  chi_u_d_i_ng: 'Chiều dài ống dẫn',
-  led_type: 'Đèn LED',
-  special_features: 'Tính năng đặc biệt',
-  t_nh_n_ng_c_bi_t: 'Tính năng đặc biệt',
-  // Fan
-  is_addressable_rgb: 'LED ARGB',
-  size_mm: 'Kích thước (mm)',
-  // airflow_cfm: 'Lưu lượng gió (CFM)',
-  // bearing_type: 'Loại trục quay (Bearing)',
-  // fan_speed_rpm: 'Tốc độ quay (RPM)',
-  connection_type: 'Chuẩn cắm',
-  voltage: 'Điện áp',
-  'Điện áp': 'Điện áp',
-  i_n_p: 'Điện áp',
-  // fan_lifespan: 'Tuổi thọ quạt',
-  'Tuổi thọ quạt': 'Tuổi thọ quạt',
-  // tu_i_th_qu_t: 'Tuổi thọ quạt',
-  // static_pressure_mmh2o: 'Áp suất tĩnh (mmH₂O)',
-  'Áp suất tĩnh (mmH₂O)': 'Áp suất tĩnh (mmH₂O)',
-  // p_su_t_t_nh: 'Áp suất tĩnh (mmH₂O)',
-  fan_type: 'Loại quạt',
-  lo_i_qu_t: 'Loại quạt',
-  // led_type: 'Đèn LED',
-  lo_i_n_led: 'Loại đèn LED',
-  lo_i_tr_c: 'Loại trục quay (Bearing)',
-  lo_i_k_t_n_i: 'Chuẩn cắm',
-  t_c_quay: 'Tốc độ quay (RPM)',
-  // noise_level_db: 'Độ ồn (dB)',
-  n: 'Độ ồn (dB)',
-  'Lưu lượng gió (CFM)': 'Lưu lượng gió (CFM)',
-  'Kích thước quạt (mm)': 'Kích thước quạt (mm)',
-  m_u_s_c: 'Màu sắc',
-  
-  // Laptop
-  cpu: 'Bộ vi xử lý (CPU)',
-  ram: 'Bộ nhớ RAM',
-  // ram_slots: 'Số khe cắm RAM',
-  s_khe_ram: 'Số khe cắm RAM',
-  ssd: 'Ổ cứng SSD',
-  ssd_slots: 'Số khe cắm SSD',
-  s_khe_ssd: 'Số khe cắm SSD',
-  ssd_type: 'Chuẩn SSD',
-  chu_n_ssd: 'Chuẩn SSD',
-  screen_size: 'Kích thước màn hình (inch)',
-  k_ch_th_c_m_n_h_nh: 'Kích thước màn hình (inch)',
-  refresh_rate: 'Tần số quét (Hz)',
-  t_n_s_qu_t: 'Tần số quét (Hz)',
-  screen_tech: 'Công nghệ màn hình',
-  c_ng_ngh_m_n_h_nh: 'Công nghệ màn hình',
-  connectivity: 'Kết nối không dây',
-  chu_n_wifi_bluetooth: 'Kết nối không dây',
-  os: 'Hệ điều hành',
-  h_i_u_h_nh: 'Hệ điều hành',
-  webcam: 'Webcam',
-  battery: 'Pin & Bộ sạc',
-  k_ch_th_c_m_y: 'Kích thước máy',
-  ch_t_li_u_v_m_n_h_nh: 'Chất liệu vỏ',
-  // brightness_cdm2: 'Độ sáng (cd/m²)',
-  s_ng_m_n_h_nh: 'Độ sáng (cd/m²)',
-  audio_tech: 'Công nghệ âm thanh',
-  c_ng_ngh_m_thanh: 'Công nghệ âm thanh',
-  touchscreen: 'Màn hình cảm ứng',
-  m_n_h_nh_c_m_ng: 'Màn hình cảm ứng',
-  has_numpad: 'Bàn phím số (Numpad)',
-  b_n_ph_m_c_n: 'Bàn phím số (Numpad)',
-  is_two_in_one: 'Laptop 2-in-1 (Xoay gập)',
-  laptop_2_trong_1: 'Laptop 2-in-1 (Xoay gập)',
-  screen_finish: 'Bề mặt màn hình',
-  t_nh_ch_t_b_m_t: 'Bề mặt màn hình',
-  ph_n_gi_i: 'Độ phân giải',
-  chu_n_m_u: 'Độ chuẩn màu',
-  card_h_a: 'Card đồ họa (VGA)',
-  nhu_c_u_s_d_ng_laptop: 'Nhu cầu sử dụng',
-
-  // Case
-  size: 'Kích thước',
-  case_size: 'Kích thước vỏ máy',
-  k_ch_th_c_case: 'Kích thước vỏ máy',
-  max_gpu_length_mm: 'Độ dài GPU tối đa (mm)',
-  d_i_vga_t_i_a: 'Độ dài GPU tối đa (mm)',
-  supported_mainboards: 'Bo mạch hỗ trợ',
-  h_tr_main: 'Bo mạch hỗ trợ',
-  max_cpu_cooler_height_mm: 'Chiều cao CPU Cooler tối đa (mm)',
-  chi_u_cao_t_n_nhi_t_cpu_t_i_a: 'Chiều cao tản nhiệt CPU tối đa',
-  fan_count_included: 'Số lượng quạt đi kèm',
-  s_l_ng_qu_t_i_k_m: 'Số lượng quạt đi kèm',
-  color: 'Màu sắc',
-  'Màu sắc': 'Màu sắc',
-  material: 'Chất liệu',
-  ch_t_li_u: 'Chất liệu',
-  usb_3_0_ports: 'Cổng USB 3.0',
-  c_ng_usb_3_0: 'Cổng USB 3.0',
-  usb_2_0_ports: 'Cổng USB 2.0',
-  c_ng_usb_2_0: 'Cổng USB 2.0',
-  usb_type_c_ports: 'Cổng USB Type-C',
-  'Cổng USB Type-C': 'Cổng USB Type-C',
-  c_ng_usb_type_c: 'Cổng USB Type-C',
-  audio_ports: 'Cổng kết nối Audio',
-  c_ng_audio: 'Cổng kết nối Audio',
-  supported_psu: 'Hỗ trợ nguồn (PSU)',
-  h_tr_ngu_n_psu: 'Hỗ trợ nguồn (PSU)',
-  supported_radiators: 'Hỗ trợ Radiator tản nhiệt nước',
-  h_tr_t_n_nhi_t_n_c_radiator: 'Hỗ trợ Radiator tản nhiệt nước',
-  pci_slots: 'Khe cắm mở rộng PCI',
-  khe_c_m_m_r_ng_pci: 'Khe cắm mở rộng PCI',
-  odd_bays: 'Khoang ổ đĩa quang (ODD)',
-  khoang_a_quang_odd: 'Khoang ổ đĩa quang (ODD)',
-  tempered_glass_side: 'Mặt kính cường lực',
-  m_t_k_nh_c_ng_l_c: 'Mặt kính cường lực',
-  bottom_fan_support: 'Hỗ trợ quạt mặt dưới',
-  qu_t_t_n_nhi_t_m_t_d_i: 'Hỗ trợ quạt mặt dưới',
-  drive_bays: 'Khay gắn ổ cứng (SSD/HDD)',
-  khay_g_n_c_ng: 'Khay gắn ổ cứng (SSD/HDD)',
-  rear_fan_support: 'Hỗ trợ quạt mặt sau',
-  qu_t_t_n_nhi_t_m_t_sau: 'Hỗ trợ quạt mặt sau',
-  top_fan_support: 'Hỗ trợ quạt mặt trên',
-  qu_t_t_n_nhi_t_m_t_tr_n: 'Hỗ trợ quạt mặt trên',
-  front_fan_support: 'Hỗ trợ quạt mặt trước',
-  qu_t_t_n_nhi_t_m_t_tr_c: 'Hỗ trợ quạt mặt trước',
-  psu_position: 'Vị trí đặt nguồn',
-  v_tr_t_ngu_n: 'Vị trí đặt nguồn',
-
-  // Crawled & fallback component specs
-  vrm_pha: 'Pha nguồn VRM',
-  k_t_n_i_m_ng_lan: 'Tốc độ mạng LAN',
-  rgb_led: 'Đèn LED RGB',
-  s_c_ng_sata: 'Số cổng SATA',
-  pcie_gen: 'Thế hệ PCIe (PCIe Gen)',
-  bluetooth: 'Kết nối Bluetooth',
-  cpu_h_tr: 'CPU hỗ trợ',
-  c_ng_usb: 'Số cổng USB',
-  c_ng_xu_t_h_nh: 'Cổng xuất hình',
-  ch_t_li_u_v_m_t_tr_n: 'Chất liệu vỏ / mặt trước',
-  khe_ram_t_i_a: 'Số khe RAM tối đa',
-  warranty: 'Bảo hành',
-  max_memory_capacity: 'Dung lượng bộ nhớ tối đa',
-  cuda_cores: 'số nhân Cuda',
-  ai_tops: 'Hiệu năng AI (TOPS)',
-  water_cooled: 'Tản nhiệt nước',
-  radiator_dimensions: 'Kích thước Radiator',
-  slot_width: 'Số slot chiếm dụng',
-  lithography: 'Tiến trình sản xuất',
-  memory_support: 'Hỗ trợ RAM',
-  b_ng_th_ng: 'Băng thông',
-  cas_latency: 'Độ trễ CAS (CL)',
-  product_series: 'Dòng sản phẩm',
-  ecc: 'Công nghệ sửa lỗi ECC',
-  lo_i_m_y: 'Thiết bị tương thích (Loại máy)',
-  s_k_nh: 'Số kênh RAM',
-  s_l_ng_thanh: 'Số lượng thanh',
-  t_n_nhi_t: 'Tản nhiệt đi kèm',
-  // i_n_p: 'Điện áp',
-  intel_xmp: 'Hỗ trợ Intel XMP',
-  amd_expo: 'Hỗ trợ AMD EXPO',
-  capacity: 'Dung lượng',
-  lo_i_ram: 'Loại Ram',
-  memory_speed: 'Bus RAM / Tốc độ',
-  latency: 'Độ trễ Latency',
-  p_cores: 'Số nhân hiệu năng (P-Core)',
-  e_cores: 'Số nhân tiết kiệm điện (E-Core)',
-  e_core_base_clock_ghz: 'Xung cơ bản E-Core (GHz)',
-  e_core_boost_clock_ghz: 'Xung tối đa E-Core (GHz)',
-  l1_cache: 'Bộ nhớ đệm L1 Cache',
-  l2_cache: 'Bộ nhớ đệm L2 Cache',
-  l3_cache: 'Bộ nhớ đệm L3 Cache',
-  gpu_integrated_name: 'Tên đồ họa tích hợp',
-  pcie_support: 'Hỗ trợ PCIe',
-  memory_channels: 'Số kênh RAM',
-  condition: 'Tình trạng',
-
-  // PSU specifications
-  chu_n_ch_ng_nh_n: 'Chuẩn hiệu suất (80 Plus)',
-  chu_n_ngu_n: 'Chuẩn nguồn',
-  ch_qu_t: 'Chế độ quạt',
-  s_c_ng_c_m: 'Số cổng kết nối',
-  c_ng_su_t_t_i_a: 'Công suất tối đa',
-  c_ng_su_t: 'Công suất',
-  hi_u_su_t: 'Hiệu suất',
-  ki_u_rail: 'Kiểu thiết kế Rail',
-  ki_u_d_y_ngu_n: 'Kiểu dây nguồn',
-  k_ch_th_c_qu_t: 'Kích thước quạt',
-  lo_i_modular: 'Dạng modular',
-  // m_u_s_c: 'Màu sắc',
-  phi_n_b_n_chu_n: 'Phiên bản chuẩn nguồn',
-  t_nh_n_ng_b_o_v: 'Tính năng bảo vệ',
-  i_n_p_u_v_o: 'Điện áp đầu vào',
-  t_c_quay_c_a_fan: 'Tốc độ quay của quạt',
-  // t_nh_n_ng_c_bi_t: 'Tính năng đặc biệt',
-};
 
 function formatSpecValue(key: string, value: unknown): string {
-  if (typeof value === 'boolean') return value ? 'Có' : 'Không';
-  if (Array.isArray(value)) return value.join(', ');
-  if (value === null || value === undefined) return '—';
+  if (typeof value === "boolean") return value ? "Có" : "Không";
+  if (Array.isArray(value)) return value.join(", ");
+  if (value === null || value === undefined) return "—";
 
   const valStr = String(value).trim();
   const valLower = valStr.toLowerCase();
 
   // Normalize stringified booleans
-  if (valLower === 'true' || valLower === 'yes' || valLower === 'có') return 'Có';
-  if (valLower === 'false' || valLower === 'no' || valLower === 'không') return 'Không';
+  if (valLower === "true" || valLower === "yes" || valLower === "có")
+    return "Có";
+  if (valLower === "false" || valLower === "no" || valLower === "không")
+    return "Không";
 
   // Format numeric values with appropriate units
-  const numericVal = parseFloat(valStr.replace(/[^0-9.]/g, ''));
+  const numericVal = parseFloat(valStr.replace(/[^0-9.]/g, ""));
   if (!isNaN(numericVal)) {
-    if (key === 'mtbf') {
-      return numericVal.toLocaleString('vi-VN') + ' giờ';
+    if (key === "mtbf") {
+      return numericVal.toLocaleString("vi-VN") + " giờ";
     }
     if (
-      key === 'read_speed_mbps' ||
-      key === 'write_speed_mbps' ||
-      key === 't_c_c_mb_s' ||
-      key === 't_c_ghi_mb_s'
+      key === "read_speed_mbps" ||
+      key === "write_speed_mbps" ||
+      key === "t_c_c_mb_s" ||
+      key === "t_c_ghi_mb_s"
     ) {
-      return numericVal.toLocaleString('vi-VN') + ' MB/s';
+      return numericVal.toLocaleString("vi-VN") + " MB/s";
     }
-    if (key === 'warranty') {
-      return numericVal.toLocaleString('vi-VN') + ' tháng';
+    if (key === "warranty") {
+      return numericVal.toLocaleString("vi-VN") + " tháng";
     }
-    if (key === 'capacity_gb' || key === 'capacity' || key === 'dung_l_ng') {
-      return numericVal.toLocaleString('vi-VN') + ' GB';
+    if (key === "capacity_gb" || key === "capacity" || key === "dung_l_ng") {
+      return numericVal.toLocaleString("vi-VN") + " GB";
     }
-    if (key === 'tbw' || key === 'tbw_b_n_ghi' || key === 'tbw_w') {
-      return numericVal.toLocaleString('vi-VN') + ' TBW';
+    if (key === "tbw" || key === "tbw_b_n_ghi" || key === "tbw_w") {
+      return numericVal.toLocaleString("vi-VN") + " TBW";
     }
   }
 
@@ -434,13 +119,14 @@ export default function ProductDetailPage() {
         setProduct(p);
         setLoading(false);
         // Fetch detailed product images
-        adminAPI.getProductImages(p.id)
+        adminAPI
+          .getProductImages(p.id)
           .then((imgs) => {
             const sorted = [...imgs].sort((a, b) => a.sortOrder - b.sortOrder);
             setDetailImages(sorted);
           })
           .catch((err) => {
-            console.error('Error fetching product detail images:', err);
+            console.error("Error fetching product detail images:", err);
           });
       })
       .catch(() => {
@@ -458,10 +144,10 @@ export default function ProductDetailPage() {
   })();
 
   const specEntries = Object.entries(specs).filter(
-    ([, v]) => v !== null && v !== undefined && v !== ''
+    ([, v]) => v !== null && v !== undefined && v !== "",
   );
 
-  const imgSrc = product?.thumbnailUrl?.startsWith('http')
+  const imgSrc = product?.thumbnailUrl?.startsWith("http")
     ? product.thumbnailUrl
     : product?.thumbnailUrl
       ? `http://localhost:8080${product.thumbnailUrl}`
@@ -470,19 +156,25 @@ export default function ProductDetailPage() {
   const outOfStock = product ? product.stock === 0 : false;
 
   // Build complete list of images: main thumbnail + detail images
-  const allImages = imgSrc ? [imgSrc, ...detailImages.map(img => img.url)] : (detailImages.length > 0 ? detailImages.map(img => img.url) : []);
+  const allImages = imgSrc
+    ? [imgSrc, ...detailImages.map((img) => img.url)]
+    : detailImages.length > 0
+      ? detailImages.map((img) => img.url)
+      : [];
   const activeImageUrl = allImages[selectedImgIndex] || null;
 
   const handlePrevImage = (e?: React.MouseEvent) => {
     e?.stopPropagation();
     if (allImages.length <= 1) return;
-    setSelectedImgIndex(prev => (prev - 1 + allImages.length) % allImages.length);
+    setSelectedImgIndex(
+      (prev) => (prev - 1 + allImages.length) % allImages.length,
+    );
   };
 
   const handleNextImage = (e?: React.MouseEvent) => {
     e?.stopPropagation();
     if (allImages.length <= 1) return;
-    setSelectedImgIndex(prev => (prev + 1) % allImages.length);
+    setSelectedImgIndex((prev) => (prev + 1) % allImages.length);
   };
 
   async function handleAddToCart() {
@@ -492,7 +184,7 @@ export default function ProductDetailPage() {
       await addItem(Number(product.id), quantity);
       toast.success(`Đã thêm ${quantity} sản phẩm vào giỏ hàng!`);
     } catch {
-      toast.error('Không thể thêm vào giỏ hàng. Vui lòng thử lại.');
+      toast.error("Không thể thêm vào giỏ hàng. Vui lòng thử lại.");
     } finally {
       setAddingToCart(false);
     }
@@ -503,7 +195,9 @@ export default function ProductDetailPage() {
     return (
       <div
         className="min-h-screen"
-        style={{ background: 'linear-gradient(180deg, #f7f9fb 0%, #f0f4fa 100%)' }}
+        style={{
+          background: "linear-gradient(180deg, #f7f9fb 0%, #f0f4fa 100%)",
+        }}
       >
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 pt-5 pb-1">
           <div className="h-4 bg-[#cbd5e1] rounded w-64 animate-pulse" />
@@ -518,12 +212,16 @@ export default function ProductDetailPage() {
     return (
       <div
         className="min-h-screen flex flex-col items-center justify-center gap-4"
-        style={{ background: 'linear-gradient(180deg, #f7f9fb 0%, #f0f4fa 100%)' }}
+        style={{
+          background: "linear-gradient(180deg, #f7f9fb 0%, #f0f4fa 100%)",
+        }}
       >
         <div className="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center">
           <AlertCircle className="size-8 text-red-400" />
         </div>
-        <p className="text-[18px] font-bold text-[#0f172a]">Không tìm thấy sản phẩm</p>
+        <p className="text-[18px] font-bold text-[#0f172a]">
+          Không tìm thấy sản phẩm
+        </p>
         <p className="text-[14px] text-[#94a3b8]">
           Sản phẩm này không tồn tại hoặc đã bị xóa.
         </p>
@@ -542,7 +240,9 @@ export default function ProductDetailPage() {
   return (
     <div
       className="min-h-screen"
-      style={{ background: 'linear-gradient(180deg, #f7f9fb 0%, #f0f4fa 100%)' }}
+      style={{
+        background: "linear-gradient(180deg, #f7f9fb 0%, #f0f4fa 100%)",
+      }}
     >
       {/* Plain Breadcrumb */}
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 pt-5 pb-1">
@@ -551,13 +251,18 @@ export default function ProductDetailPage() {
             Trang chủ
           </Link>
           <span className="text-[#cbd5e1] font-normal">/</span>
-          <Link href="/explore" className="hover:text-[#0058be] transition-colors">
+          <Link
+            href="/explore"
+            className="hover:text-[#0058be] transition-colors"
+          >
             Khám phá linh kiện
           </Link>
           {product.category && (
             <>
               <span className="text-[#cbd5e1] font-normal">/</span>
-              <span className="text-[#64748b]">{getCategoryLabel(product.category.name)}</span>
+              <span className="text-[#64748b]">
+                {getCategoryLabel(product.category.name)}
+              </span>
             </>
           )}
           <span className="text-[#cbd5e1] font-normal">/</span>
@@ -574,7 +279,7 @@ export default function ProductDetailPage() {
           {/* Interactive Image Gallery */}
           <div className="w-full lg:w-[460px] shrink-0 flex flex-col gap-4">
             {/* Active Large Image Frame */}
-            <div 
+            <div
               onClick={() => activeImageUrl && setIsLightboxOpen(true)}
               className="bg-white rounded-[24px] border border-[#e8ecf2] shadow-xs p-6 flex items-center justify-center h-[380px] relative overflow-hidden group cursor-zoom-in transition-all hover:shadow-md"
             >
@@ -592,7 +297,9 @@ export default function ProductDetailPage() {
                   src={activeImageUrl}
                   alt={product.name}
                   className={`h-full w-full object-contain transition-all duration-500 ease-out select-none ${
-                    outOfStock ? 'grayscale opacity-50' : 'group-hover:scale-105'
+                    outOfStock
+                      ? "grayscale opacity-50"
+                      : "group-hover:scale-105"
                   }`}
                   onError={() => setImgErr(true)}
                 />
@@ -644,12 +351,16 @@ export default function ProductDetailPage() {
                       type="button"
                       onClick={() => setSelectedImgIndex(idx)}
                       className={`size-[72px] shrink-0 bg-white rounded-[14px] p-1.5 flex items-center justify-center border-2 overflow-hidden transition-all duration-200 hover:scale-102 hover:shadow-xs cursor-pointer ${
-                        isActive 
-                          ? 'border-[#0058be] shadow-xs' 
-                          : 'border-[#e8ecf2] opacity-75 hover:opacity-100 hover:border-slate-300'
+                        isActive
+                          ? "border-[#0058be] shadow-xs"
+                          : "border-[#e8ecf2] opacity-75 hover:opacity-100 hover:border-slate-300"
                       }`}
                     >
-                      <img src={img} alt={`Thumbnail ${idx + 1}`} className="w-full h-full object-contain rounded-[8px]" />
+                      <img
+                        src={img}
+                        alt={`Thumbnail ${idx + 1}`}
+                        className="w-full h-full object-contain rounded-[8px]"
+                      />
                     </button>
                   );
                 })}
@@ -683,13 +394,15 @@ export default function ProductDetailPage() {
               {product.discountPrice ? (
                 <>
                   <span
-                    className={`text-[32px] font-bold tracking-tight ${outOfStock ? 'text-[#94a3b8]' : 'text-red-500'}`}
+                    className={`text-[32px] font-bold tracking-tight ${outOfStock ? "text-[#94a3b8]" : "text-red-500"}`}
                   >
-                    {product.discountPrice.toLocaleString('vi-VN')}
-                    <span className="text-[16px] font-normal ml-1 opacity-70">₫</span>
+                    {product.discountPrice.toLocaleString("vi-VN")}
+                    <span className="text-[16px] font-normal ml-1 opacity-70">
+                      ₫
+                    </span>
                   </span>
                   <span className="text-[16px] text-[#cbd5e1] line-through font-semibold">
-                    {product.price.toLocaleString('vi-VN')}₫
+                    {product.price.toLocaleString("vi-VN")}₫
                   </span>
                   <span className="bg-red-100 text-red-600 text-[12px] font-bold px-2 py-0.5 rounded-full border border-red-200 shadow-xs">
                     Giảm -{product.discountPercent}%
@@ -697,10 +410,12 @@ export default function ProductDetailPage() {
                 </>
               ) : (
                 <span
-                  className={`text-[32px] font-bold tracking-tight ${outOfStock ? 'text-[#94a3b8]' : 'text-[#0058be]'}`}
+                  className={`text-[32px] font-bold tracking-tight ${outOfStock ? "text-[#94a3b8]" : "text-[#0058be]"}`}
                 >
-                  {product.price.toLocaleString('vi-VN')}
-                  <span className="text-[16px] font-normal ml-1 opacity-70">₫</span>
+                  {product.price.toLocaleString("vi-VN")}
+                  <span className="text-[16px] font-normal ml-1 opacity-70">
+                    ₫
+                  </span>
                 </span>
               )}
             </div>
@@ -710,7 +425,9 @@ export default function ProductDetailPage() {
               {product.stock === 0 ? (
                 <>
                   <XCircle className="size-4 text-red-500 shrink-0" />
-                  <span className="text-[13px] font-semibold text-red-500">Hết hàng</span>
+                  <span className="text-[13px] font-semibold text-red-500">
+                    Hết hàng
+                  </span>
                 </>
               ) : product.stock <= 5 ? (
                 <>
@@ -785,7 +502,7 @@ export default function ProductDetailPage() {
                 ) : (
                   <>
                     <ShoppingCart className="size-4" />
-                    {outOfStock ? 'Hết hàng' : 'Thêm vào giỏ hàng'}
+                    {outOfStock ? "Hết hàng" : "Thêm vào giỏ hàng"}
                   </>
                 )}
               </button>
@@ -825,29 +542,29 @@ export default function ProductDetailPage() {
                     const isEven = idx % 2 === 0;
 
                     const isBool =
-                      typeof value === 'boolean' ||
-                      (typeof value === 'string' &&
-                        (value.toLowerCase() === 'true' ||
-                          value.toLowerCase() === 'false' ||
-                          value.toLowerCase() === 'có' ||
-                          value.toLowerCase() === 'không')) ||
-                      key.startsWith('has_') ||
-                      key.startsWith('is_') ||
-                      key === 't_n_nhi_t' ||
-                      key === 'water_cooled';
+                      typeof value === "boolean" ||
+                      (typeof value === "string" &&
+                        (value.toLowerCase() === "true" ||
+                          value.toLowerCase() === "false" ||
+                          value.toLowerCase() === "có" ||
+                          value.toLowerCase() === "không")) ||
+                      key.startsWith("has_") ||
+                      key.startsWith("is_") ||
+                      key === "t_n_nhi_t" ||
+                      key === "water_cooled";
 
                     const boolVal =
-                      typeof value === 'boolean'
+                      typeof value === "boolean"
                         ? value
-                        : typeof value === 'string' &&
-                          (value.toLowerCase() === 'true' ||
-                            value.toLowerCase() === 'có' ||
-                            value.toLowerCase() === 'yes');
+                        : typeof value === "string" &&
+                          (value.toLowerCase() === "true" ||
+                            value.toLowerCase() === "có" ||
+                            value.toLowerCase() === "yes");
 
                     return (
                       <tr
                         key={key}
-                        className={`border-b border-[#f1f5f9] last:border-0 transition-colors hover:bg-[#eff6ff]/40 ${isEven ? 'bg-[#f8fafc]' : 'bg-white'}`}
+                        className={`border-b border-[#f1f5f9] last:border-0 transition-colors hover:bg-[#eff6ff]/40 ${isEven ? "bg-[#f8fafc]" : "bg-white"}`}
                       >
                         <td className="px-6 py-3.5 text-[13px] font-semibold text-[#374151]">
                           {label}
@@ -894,62 +611,15 @@ export default function ProductDetailPage() {
           </section>
         )}
         {/* ── Lightbox Modal ── */}
-        {isLightboxOpen && activeImageUrl && (
-          <div 
-            className="fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex flex-col items-center justify-center animate-in fade-in duration-200 select-none"
-            onClick={() => setIsLightboxOpen(false)}
-          >
-            {/* Close Button */}
-            <button 
-              onClick={() => setIsLightboxOpen(false)} 
-              className="absolute top-6 right-6 p-3 bg-white/10 hover:bg-white/20 border border-white/10 rounded-full text-white transition-all cursor-pointer"
-              aria-label="Close lightbox"
-            >
-              <X className="size-6" />
-            </button>
-            
-            {/* Navigation Left */}
-            {allImages.length > 1 && (
-              <button 
-                onClick={(e) => { e.stopPropagation(); handlePrevImage(); }} 
-                className="absolute left-6 p-4 bg-white/10 hover:bg-white/20 border border-white/10 rounded-full text-white transition-all hover:scale-105 active:scale-95 duration-200 cursor-pointer"
-                aria-label="Previous image"
-              >
-                <ChevronLeft className="size-8" />
-              </button>
-            )}
-
-            {/* Active Image frame in lightbox */}
-            <div 
-              className="max-w-[85vw] max-h-[80vh] flex items-center justify-center animate-in zoom-in-95 duration-300" 
-              onClick={(e) => e.stopPropagation()}
-            >
-              <img 
-                src={activeImageUrl} 
-                alt="Product detail expanded view" 
-                className="max-w-full max-h-full object-contain rounded-[12px] shadow-2xl" 
-              />
-            </div>
-
-            {/* Navigation Right */}
-            {allImages.length > 1 && (
-              <button 
-                onClick={(e) => { e.stopPropagation(); handleNextImage(); }} 
-                className="absolute right-6 p-4 bg-white/10 hover:bg-white/20 border border-white/10 rounded-full text-white transition-all hover:scale-105 active:scale-95 duration-200 cursor-pointer"
-                aria-label="Next image"
-              >
-                <ChevronRight className="size-8" />
-              </button>
-            )}
-
-            {/* Image Counter */}
-            {allImages.length > 1 && (
-              <div className="absolute bottom-8 bg-white/10 px-4 py-1.5 rounded-full border border-white/10 text-white text-[14px] font-medium tracking-wide">
-                {selectedImgIndex + 1} / {allImages.length}
-              </div>
-            )}
-          </div>
-        )}
+        <LightboxModal
+          isOpen={isLightboxOpen}
+          onClose={() => setIsLightboxOpen(false)}
+          activeImageUrl={activeImageUrl}
+          allImages={allImages}
+          selectedImgIndex={selectedImgIndex}
+          onPrevImage={handlePrevImage}
+          onNextImage={handleNextImage}
+        />
       </div>
     </div>
   );

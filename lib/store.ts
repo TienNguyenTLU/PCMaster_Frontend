@@ -1,5 +1,5 @@
-import { create } from 'zustand';
-import { authAPI, AuthResponse, cartAPI, CartItemDto } from './api';
+import { create } from "zustand";
+import { authAPI, AuthResponse, cartAPI, CartItemDto } from "./api";
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
@@ -7,7 +7,7 @@ export interface User {
   id: string;
   email: string;
   username: string;
-  role: 'ADMIN' | 'CUSTOMER' | 'STAFF';
+  role: "ADMIN" | "CUSTOMER" | "STAFF";
 }
 
 interface AuthStore {
@@ -31,10 +31,10 @@ interface AuthStore {
 // ─── JWT Utilities ───────────────────────────────────────────────────────────
 
 interface JwtPayload {
-  sub: string;       // userId (set as subject in backend)
-  username: string;  // claim added by JwtTokenProvider
-  role: string;      // claim added by JwtTokenProvider
-  exp: number;       // expiry in seconds
+  sub: string; // userId (set as subject in backend)
+  username: string; // claim added by JwtTokenProvider
+  role: string; // claim added by JwtTokenProvider
+  exp: number; // expiry in seconds
   iat: number;
 }
 
@@ -44,10 +44,10 @@ interface JwtPayload {
  */
 function decodeJwt(token: string): JwtPayload | null {
   try {
-    const base64Url = token.split('.')[1];
+    const base64Url = token.split(".")[1];
     if (!base64Url) return null;
     // atob is available in all modern browsers and Next.js Edge runtime
-    const json = atob(base64Url.replace(/-/g, '+').replace(/_/g, '/'));
+    const json = atob(base64Url.replace(/-/g, "+").replace(/_/g, "/"));
     return JSON.parse(json) as JwtPayload;
   } catch {
     return null;
@@ -57,7 +57,7 @@ function decodeJwt(token: string): JwtPayload | null {
 /** Returns true if the token exists and has not expired yet (10s grace window). */
 function isTokenAlive(token: string): boolean {
   const payload = decodeJwt(token);
-  if (!payload || typeof payload.exp !== 'number') return false;
+  if (!payload || typeof payload.exp !== "number") return false;
   return payload.exp * 1000 > Date.now() - 10_000;
 }
 
@@ -68,8 +68,8 @@ function userFromPayload(payload: JwtPayload): User {
     username: payload.username,
     // email is not in the JWT claims — we get it from the login response
     // and store it separately in a lightweight way below
-    email: '',
-    role: payload.role as 'ADMIN' | 'CUSTOMER' | 'STAFF',
+    email: "",
+    role: payload.role as "ADMIN" | "CUSTOMER" | "STAFF",
   };
 }
 
@@ -77,8 +77,8 @@ function userFromPayload(payload: JwtPayload): User {
 // Only token is persisted. User info is derived from the JWT on every hydration
 // so it's always in sync with the token. Email (not in JWT) is stored separately.
 
-const TOKEN_KEY = 'authToken';
-const EMAIL_KEY = 'authEmail';
+const TOKEN_KEY = "authToken";
+const EMAIL_KEY = "authEmail";
 
 function saveSession(token: string, email: string) {
   localStorage.setItem(TOKEN_KEY, token);
@@ -89,8 +89,8 @@ function clearSession() {
   localStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(EMAIL_KEY);
   // Also clear any leftover keys from the old implementation
-  localStorage.removeItem('user');
-  localStorage.removeItem('auth-store');
+  localStorage.removeItem("user");
+  localStorage.removeItem("auth-store");
 }
 
 // ─── Store ───────────────────────────────────────────────────────────────────
@@ -106,7 +106,10 @@ export const useAuthStore = create<AuthStore>()((set) => ({
   login: async (usernameOrEmail: string, password: string) => {
     set({ isLoading: true, error: null });
     try {
-      const res: AuthResponse = await authAPI.login({ usernameOrEmail, password });
+      const res: AuthResponse = await authAPI.login({
+        usernameOrEmail,
+        password,
+      });
 
       // Backend returns flat fields: token, userId, username, email, role
       saveSession(res.token, res.email);
@@ -121,7 +124,7 @@ export const useAuthStore = create<AuthStore>()((set) => ({
       set({ user, token: res.token, isLoading: false, isHydrated: true });
     } catch (err) {
       const errorMessage =
-        err instanceof Error ? err.message : 'Đăng nhập thất bại';
+        err instanceof Error ? err.message : "Đăng nhập thất bại";
       set({ error: errorMessage, isLoading: false });
       throw err;
     }
@@ -131,7 +134,11 @@ export const useAuthStore = create<AuthStore>()((set) => ({
   signup: async (username: string, email: string, password: string) => {
     set({ isLoading: true, error: null });
     try {
-      const res: AuthResponse = await authAPI.signup({ username, email, password });
+      const res: AuthResponse = await authAPI.signup({
+        username,
+        email,
+        password,
+      });
 
       saveSession(res.token, res.email);
 
@@ -145,7 +152,7 @@ export const useAuthStore = create<AuthStore>()((set) => ({
       set({ user, token: res.token, isLoading: false, isHydrated: true });
     } catch (err) {
       const errorMessage =
-        err instanceof Error ? err.message : 'Đăng ký thất bại';
+        err instanceof Error ? err.message : "Đăng ký thất bại";
       set({ error: errorMessage, isLoading: false });
       throw err;
     }
@@ -169,7 +176,7 @@ export const useAuthStore = create<AuthStore>()((set) => ({
       set({ user, token: res.token, isLoading: false, isHydrated: true });
     } catch (err) {
       const errorMessage =
-        err instanceof Error ? err.message : 'Đăng nhập Google thất bại';
+        err instanceof Error ? err.message : "Đăng nhập Google thất bại";
       set({ error: errorMessage, isLoading: false });
       throw err;
     }
@@ -186,7 +193,7 @@ export const useAuthStore = create<AuthStore>()((set) => ({
 
   // ── Hydrate (call once on client mount) ──────────────────────────────────
   hydrate: () => {
-    if (typeof window === 'undefined') return;
+    if (typeof window === "undefined") return;
 
     const token = localStorage.getItem(TOKEN_KEY);
 
@@ -210,7 +217,7 @@ export const useAuthStore = create<AuthStore>()((set) => ({
       return;
     }
 
-    const email = localStorage.getItem(EMAIL_KEY) ?? '';
+    const email = localStorage.getItem(EMAIL_KEY) ?? "";
     const user: User = { ...userFromPayload(payload), email };
 
     set({ user, token, isHydrated: true });
@@ -219,7 +226,7 @@ export const useAuthStore = create<AuthStore>()((set) => ({
 
 // ─── Exported helper for axiosInstance 401 handler ──────────────────────────
 export function forceLogout() {
-  if (typeof window !== 'undefined') {
+  if (typeof window !== "undefined") {
     clearSession();
   }
   useAuthStore.setState({ user: null, token: null, isHydrated: true });
@@ -247,7 +254,7 @@ export const useCartStore = create<CartStore>()((set) => ({
       const cart = await cartAPI.getCart();
       set({ items: cart.items, isLoading: false });
     } catch (err) {
-      console.error('Lỗi khi tải giỏ hàng', err);
+      console.error("Lỗi khi tải giỏ hàng", err);
       set({ isLoading: false });
     }
   },
@@ -258,7 +265,7 @@ export const useCartStore = create<CartStore>()((set) => ({
       const cart = await cartAPI.addToCart(productId, quantity);
       set({ items: cart.items, isLoading: false });
     } catch (err) {
-      console.error('Lỗi khi thêm vào giỏ hàng', err);
+      console.error("Lỗi khi thêm vào giỏ hàng", err);
       set({ isLoading: false });
       throw err;
     }
@@ -270,7 +277,7 @@ export const useCartStore = create<CartStore>()((set) => ({
       const cart = await cartAPI.removeItem(itemId);
       set({ items: cart.items, isLoading: false });
     } catch (err) {
-      console.error('Lỗi khi xóa khỏi giỏ hàng', err);
+      console.error("Lỗi khi xóa khỏi giỏ hàng", err);
       set({ isLoading: false });
     }
   },
@@ -281,7 +288,7 @@ export const useCartStore = create<CartStore>()((set) => ({
       const cart = await cartAPI.updateQuantity(itemId, quantity);
       set({ items: cart.items, isLoading: false });
     } catch (err) {
-      console.error('Lỗi khi cập nhật số lượng', err);
+      console.error("Lỗi khi cập nhật số lượng", err);
       set({ isLoading: false });
     }
   },
@@ -292,7 +299,7 @@ export const useCartStore = create<CartStore>()((set) => ({
       await cartAPI.clearCart();
       set({ items: [], isLoading: false });
     } catch (err) {
-      console.error('Lỗi khi xóa giỏ hàng', err);
+      console.error("Lỗi khi xóa giỏ hàng", err);
       set({ isLoading: false });
     }
   },

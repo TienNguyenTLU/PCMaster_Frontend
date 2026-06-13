@@ -1,24 +1,35 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { Loader2, Save, X } from 'lucide-react';
-import { InventoryBatchResponse } from '@/lib/api';
+import { useState, useEffect } from "react";
+import { Loader2, Save, X } from "lucide-react";
+import { InventoryBatchResponse } from "@/lib/api";
 
 const formatVND = (value: number | string) => {
-  if (value === undefined || value === null || value === '') return '';
-  const clean = String(value).replace(/\D/g, '');
-  return clean.replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+  if (value === undefined || value === null || value === "") return "";
+  const clean = String(value).replace(/\D/g, "");
+  return clean.replace(/\B(?=(\d{3})+(?!\d))/g, ".");
 };
 
 interface EditPricesModalProps {
   batch: InventoryBatchResponse;
   onClose: () => void;
-  onSave: (batchId: number, importPrice: number, sellingPrice: number) => Promise<void>;
+  onSave: (
+    batchId: number,
+    importPrice: number,
+    sellingPrice: number,
+  ) => Promise<void>;
   saving: boolean;
 }
 
-export default function EditPricesModal({ batch, onClose, onSave, saving }: EditPricesModalProps) {
-  const [newSellingPrice, setNewSellingPrice] = useState<number>(batch.sellingPrice);
+export default function EditPricesModal({
+  batch,
+  onClose,
+  onSave,
+  saving,
+}: EditPricesModalProps) {
+  const [newSellingPrice, setNewSellingPrice] = useState<number>(
+    batch.sellingPrice,
+  );
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
@@ -32,12 +43,14 @@ export default function EditPricesModal({ batch, onClose, onSave, saving }: Edit
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newSellingPrice) {
-      setErrors({ sellingPrice: 'Vui lòng nhập giá bán.' });
+      setErrors({ sellingPrice: "Vui lòng nhập giá bán." });
       return;
     }
 
     if (newSellingPrice <= batch.importPrice) {
-      setErrors({ sellingPrice: `Giá bán mới phải cao hơn giá nhập (${batch.importPrice.toLocaleString('vi-VN')}₫).` });
+      setErrors({
+        sellingPrice: `Giá bán mới phải cao hơn giá nhập (${batch.importPrice.toLocaleString("vi-VN")}₫).`,
+      });
       return;
     }
 
@@ -47,17 +60,23 @@ export default function EditPricesModal({ batch, onClose, onSave, saving }: Edit
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
     >
-      <div className="bg-white rounded-[12px] shadow-xl w-full max-w-[500px] flex flex-col overflow-hidden border border-[#e2e8f0]" style={{ fontFamily: 'Inter, sans-serif' }}>
-        
+      <div
+        className="bg-white rounded-[12px] shadow-xl w-full max-w-[500px] flex flex-col overflow-hidden border border-[#e2e8f0]"
+        style={{ fontFamily: "Inter, sans-serif" }}
+      >
         {/* Modal Header */}
         <div className="border-b border-[#e2e8f0] px-6 py-4 flex items-center justify-between bg-[#f8fafc]">
           <div>
             <h2 className="text-[#0f172a] text-[18px] font-semibold tracking-[-0.3px]">
-              Chỉnh sửa giá bán: Lô #{String(batch.id).padStart(4, '0')}
+              Chỉnh sửa giá bán: Lô #{String(batch.id).padStart(4, "0")}
             </h2>
-            <p className="text-[12px] text-[#64748b] mt-0.5">Hiệu chỉnh sai sót giá bán sản phẩm</p>
+            <p className="text-[12px] text-[#64748b] mt-0.5">
+              Hiệu chỉnh sai sót giá bán sản phẩm
+            </p>
           </div>
           <button
             onClick={onClose}
@@ -80,12 +99,18 @@ export default function EditPricesModal({ batch, onClose, onSave, saving }: Edit
                   className="w-full h-full object-cover"
                 />
               ) : (
-                <div className="text-[10px] text-[#94a3b8] font-bold">No Image</div>
+                <div className="text-[10px] text-[#94a3b8] font-bold">
+                  No Image
+                </div>
               )}
             </div>
             <div className="min-w-0">
-              <p className="text-[13.5px] font-semibold text-[#0f172a] line-clamp-1">{batch.productName}</p>
-              <p className="text-[11px] text-[#64748b] mt-0.5">Mã SP: #{batch.productId}</p>
+              <p className="text-[13.5px] font-semibold text-[#0f172a] line-clamp-1">
+                {batch.productName}
+              </p>
+              <p className="text-[11px] text-[#64748b] mt-0.5">
+                Mã SP: #{batch.productId}
+              </p>
             </div>
           </div>
 
@@ -97,7 +122,9 @@ export default function EditPricesModal({ batch, onClose, onSave, saving }: Edit
                 Giá nhập (VND) - Lô này (Không thể thay đổi)
               </label>
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[14px] font-medium text-[#94a3b8]">₫</span>
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[14px] font-medium text-[#94a3b8]">
+                  ₫
+                </span>
                 <input
                   type="text"
                   value={formatVND(batch.importPrice)}
@@ -119,25 +146,30 @@ export default function EditPricesModal({ batch, onClose, onSave, saving }: Edit
                 </span>
               )}
               <div className="relative">
-                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[14px] font-medium text-[#94a3b8]">₫</span>
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[14px] font-medium text-[#94a3b8]">
+                  ₫
+                </span>
                 <input
                   type="text"
                   value={formatVND(newSellingPrice)}
                   onChange={(e) => {
-                    const rawVal = e.target.value.replace(/\./g, '');
+                    const rawVal = e.target.value.replace(/\./g, "");
                     if (/^\d*$/.test(rawVal)) {
                       setNewSellingPrice(Number(rawVal) || 0);
-                      setErrors(prev => ({ ...prev, sellingPrice: '' }));
+                      setErrors((prev) => ({ ...prev, sellingPrice: "" }));
                     }
                   }}
                   className={`w-full bg-[#f8fafc] border rounded-[8px] pl-8 pr-4 py-2 text-[14px] text-[#0f172a] font-semibold focus:outline-none transition-all ${
-                    errors.sellingPrice ? 'border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500' : 'border-[#e2e8f0] focus:border-[#0058be] focus:ring-1 focus:ring-[#0058be]'
+                    errors.sellingPrice
+                      ? "border-red-500 focus:border-red-500 focus:ring-1 focus:ring-red-500"
+                      : "border-[#e2e8f0] focus:border-[#0058be] focus:ring-1 focus:ring-[#0058be]"
                   }`}
                   placeholder="Nhập giá bán..."
                 />
               </div>
               <p className="text-[10px] text-amber-600 font-medium mt-1">
-                * Lưu ý: Thay đổi này sẽ cập nhật trực tiếp giá bán sản phẩm trên toàn hệ thống cửa hàng.
+                * Lưu ý: Thay đổi này sẽ cập nhật trực tiếp giá bán sản phẩm
+                trên toàn hệ thống cửa hàng.
               </p>
             </div>
           </div>
@@ -165,7 +197,6 @@ export default function EditPricesModal({ batch, onClose, onSave, saving }: Edit
             </button>
           </div>
         </form>
-
       </div>
     </div>
   );

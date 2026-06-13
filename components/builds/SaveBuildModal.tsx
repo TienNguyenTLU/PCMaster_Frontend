@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { Loader2, X } from 'lucide-react';
+import React from "react";
+import { Loader2, X } from "lucide-react";
 
 interface SaveBuildModalProps {
   showSaveModal: boolean;
@@ -22,15 +22,20 @@ export default function SaveBuildModal({
   savingBuild,
   errors,
   setErrors,
-  handleSaveConfirm
+  handleSaveConfirm,
 }: SaveBuildModalProps) {
   if (!showSaveModal) return null;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
-      <form onSubmit={handleSaveConfirm} className="bg-white rounded-[20px] shadow-2xl w-full max-w-sm mx-4 p-6 flex flex-col gap-4">
+      <form
+        onSubmit={handleSaveConfirm}
+        className="bg-white rounded-[20px] shadow-2xl w-full max-w-sm mx-4 p-6 flex flex-col gap-4"
+      >
         <div className="flex items-center justify-between border-b border-slate-100 pb-2">
-          <h4 className="text-[#0f172a] font-bold text-[16px]">Lưu cấu hình PC</h4>
+          <h4 className="text-[#0f172a] font-bold text-[16px]">
+            Lưu cấu hình PC
+          </h4>
           <button
             type="button"
             onClick={() => setShowSaveModal(false)}
@@ -39,9 +44,11 @@ export default function SaveBuildModal({
             <X className="size-4" />
           </button>
         </div>
-        
+
         <div className="flex flex-col gap-1.5">
-          <label className="text-[12px] font-semibold text-[#475569]">Tên cấu hình của bạn:</label>
+          <label className="text-[12px] font-semibold text-[#475569]">
+            Tên cấu hình của bạn:
+          </label>
           {errors.buildName && (
             <span className="text-red-500 text-[11px] font-semibold flex items-center gap-1 animate-in fade-in slide-in-from-top-1 duration-150">
               ⚠️ {errors.buildName}
@@ -51,13 +58,15 @@ export default function SaveBuildModal({
             type="text"
             required
             value={buildName}
-            onChange={e => {
+            onChange={(e) => {
               setBuildName(e.target.value);
-              setErrors(prev => ({ ...prev, buildName: '' }));
+              setErrors((prev) => ({ ...prev, buildName: "" }));
             }}
             placeholder="VD: PC Chuyên Chiến Game"
             className={`bg-[#f8fafc] border rounded-[8px] px-3 py-2 text-[14px] focus:outline-none transition-all ${
-              errors.buildName ? 'border-red-500 focus:border-red-500' : 'border-[#e2e8f0] focus:border-[#0058be]'
+              errors.buildName
+                ? "border-red-500 focus:border-red-500"
+                : "border-[#e2e8f0] focus:border-[#0058be]"
             }`}
           />
         </div>

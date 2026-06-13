@@ -1,11 +1,12 @@
-import type { Metadata } from 'next';
-import HomeNavBar from '@/components/home/HomeNavBar';
-import AuthFooter from '@/components/auth/AuthFooter';
-import ProductDetailPage from '@/components/explore/ProductDetailPage';
+import type { Metadata } from "next";
+import HomeNavBar from "@/components/home/HomeNavBar";
+import AuthFooter from "@/components/auth/AuthFooter";
+import ProductDetailPage from "@/components/explore/ProductDetailPage";
 
 export const metadata: Metadata = {
-  title: 'Chi tiết sản phẩm – PCMaster',
-  description: 'Xem thông tin chi tiết, thông số kỹ thuật và giá sản phẩm linh kiện máy tính tại PCMaster.',
+  title: "Chi tiết sản phẩm – PCMaster",
+  description:
+    "Xem thông tin chi tiết, thông số kỹ thuật và giá sản phẩm linh kiện máy tính tại PCMaster.",
 };
 
 export default function ProductDetailRoute() {

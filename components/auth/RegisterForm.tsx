@@ -1,56 +1,62 @@
-'use client';
+"use client";
 
-import { useState, FormEvent } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import AuthFormField from './AuthFormField';
-import AuthSocialButtons from './AuthSocialButtons';
-import { useAuthStore } from '@/lib/store';
+import { useState, FormEvent } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import AuthFormField from "./AuthFormField";
+import AuthSocialButtons from "./AuthSocialButtons";
+import { useAuthStore } from "@/lib/store";
 
-const imgArrow = 'http://localhost:3845/assets/fadd198d26aadd8b0ee816378d8a8139f72021b1.svg';
+const imgArrow =
+  "http://localhost:3845/assets/fadd198d26aadd8b0ee816378d8a8139f72021b1.svg";
 
 export default function RegisterForm() {
   const router = useRouter();
   const { signup, isLoading, error, clearError } = useAuthStore();
 
-  const [form, setForm] = useState({ username: '', email: '', password: '', confirmPassword: '' });
+  const [form, setForm] = useState({
+    username: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleChange =
     (field: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) => {
       clearError();
       setForm((prev) => ({ ...prev, [field]: e.target.value }));
-      setErrors((prev) => ({ ...prev, [field]: '' }));
+      setErrors((prev) => ({ ...prev, [field]: "" }));
     };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     const newErrors: Record<string, string> = {};
     if (!form.username.trim()) {
-      newErrors.username = 'Vui lòng nhập tên đăng nhập';
+      newErrors.username = "Vui lòng nhập tên đăng nhập";
     } else if (form.username.trim().length < 3) {
-      newErrors.username = 'Tên đăng nhập phải chứa ít nhất 3 ký tự';
+      newErrors.username = "Tên đăng nhập phải chứa ít nhất 3 ký tự";
     }
 
     if (!form.email.trim()) {
-      newErrors.email = 'Vui lòng nhập địa chỉ email';
+      newErrors.email = "Vui lòng nhập địa chỉ email";
     } else {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(form.email.trim())) {
-        newErrors.email = 'Địa chỉ email không đúng định dạng';
+        newErrors.email = "Địa chỉ email không đúng định dạng";
       }
     }
 
     if (!form.password) {
-      newErrors.password = 'Vui lòng nhập mật khẩu';
+      newErrors.password = "Vui lòng nhập mật khẩu";
     } else if (form.password.length < 6) {
-      newErrors.password = 'Mật khẩu phải chứa ít nhất 6 ký tự';
+      newErrors.password = "Mật khẩu phải chứa ít nhất 6 ký tự";
     }
 
     if (!form.confirmPassword) {
-      newErrors.confirmPassword = 'Vui lòng xác nhận mật khẩu';
+      newErrors.confirmPassword = "Vui lòng xác nhận mật khẩu";
     } else if (form.password !== form.confirmPassword) {
-      newErrors.confirmPassword = 'Mật khẩu xác nhận không khớp';
+      newErrors.confirmPassword = "Mật khẩu xác nhận không khớp";
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -62,7 +68,11 @@ export default function RegisterForm() {
       await signup(form.username, form.email, form.password);
       // After signup the store has user.role – re-read from store state
       const { user } = useAuthStore.getState();
-      router.push(user?.role === 'ADMIN' || user?.role === 'STAFF' ? '/dashboard' : '/home');
+      router.push(
+        user?.role === "ADMIN" || user?.role === "STAFF"
+          ? "/dashboard"
+          : "/home",
+      );
     } catch {
       // error displayed from store
     }
@@ -83,26 +93,30 @@ export default function RegisterForm() {
       <div className="flex flex-col gap-2 w-full">
         <h1
           className="text-[#191c1e] text-[24px] tracking-[-0.6px] leading-[32px] font-normal"
-          style={{ fontFamily: 'Inter, sans-serif' }}
+          style={{ fontFamily: "Inter, sans-serif" }}
         >
           Đăng Ký Tài Khoản
         </h1>
         <p
           className="text-[#424754] text-[14px] leading-[20px] font-normal"
-          style={{ fontFamily: 'Inter, sans-serif' }}
+          style={{ fontFamily: "Inter, sans-serif" }}
         >
           Nâng tầm trải nghiệm lắp ráp PC của bạn ngay hôm nay.
         </p>
       </div>
 
       {/* Form */}
-      <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-6 w-full pt-[8.5px]">
+      <form
+        onSubmit={handleSubmit}
+        noValidate
+        className="flex flex-col gap-6 w-full pt-[8.5px]"
+      >
         <AuthFormField
           label="TÊN ĐĂNG NHẬP"
           type="text"
           placeholder="nikola_tesla"
           value={form.username}
-          onChange={handleChange('username')}
+          onChange={handleChange("username")}
           error={errors.username}
           autoComplete="username"
           id="register-username"
@@ -113,7 +127,7 @@ export default function RegisterForm() {
           type="email"
           placeholder="builder@pcmaster.tech"
           value={form.email}
-          onChange={handleChange('email')}
+          onChange={handleChange("email")}
           error={errors.email}
           autoComplete="email"
           id="register-email"
@@ -124,7 +138,7 @@ export default function RegisterForm() {
           type="password"
           placeholder="••••••••"
           value={form.password}
-          onChange={handleChange('password')}
+          onChange={handleChange("password")}
           error={errors.password}
           autoComplete="new-password"
           id="register-password"
@@ -135,7 +149,7 @@ export default function RegisterForm() {
           type="password"
           placeholder="••••••••"
           value={form.confirmPassword}
-          onChange={handleChange('confirmPassword')}
+          onChange={handleChange("confirmPassword")}
           error={errors.confirmPassword}
           autoComplete="new-password"
           id="register-confirm-password"
@@ -145,7 +159,7 @@ export default function RegisterForm() {
         {error && (
           <p
             className="text-red-500 text-[13px] font-normal -mt-2"
-            style={{ fontFamily: 'Inter, sans-serif' }}
+            style={{ fontFamily: "Inter, sans-serif" }}
           >
             {error}
           </p>
@@ -165,9 +179,9 @@ export default function RegisterForm() {
             disabled:opacity-60 disabled:cursor-not-allowed
             cursor-pointer
           "
-          style={{ fontFamily: 'Inter, sans-serif' }}
+          style={{ fontFamily: "Inter, sans-serif" }}
         >
-          {isLoading ? 'Đang đăng ký…' : 'Đăng ký'}
+          {isLoading ? "Đang đăng ký…" : "Đăng ký"}
           {!isLoading && (
             <img src={imgArrow} alt="" className="size-[9.333px]" aria-hidden />
           )}
@@ -177,9 +191,16 @@ export default function RegisterForm() {
         <AuthSocialButtons />
 
         {/* Sign in link */}
-        <p className="text-[14px] text-center w-full" style={{ fontFamily: 'Inter, sans-serif' }}>
+        <p
+          className="text-[14px] text-center w-full"
+          style={{ fontFamily: "Inter, sans-serif" }}
+        >
           <span className="text-[#424754]">Đã có tài khoản? </span>
-          <Link href="/auth/login" className="text-[#0058be] hover:underline" id="signin-link">
+          <Link
+            href="/auth/login"
+            className="text-[#0058be] hover:underline"
+            id="signin-link"
+          >
             Đăng nhập
           </Link>
         </p>

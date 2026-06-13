@@ -1,16 +1,22 @@
-'use client';
+"use client";
 
-import { ChevronLeft, ChevronRight, Edit2, Warehouse } from 'lucide-react';
-import { InventoryBatchResponse } from '@/lib/api';
+import { ChevronLeft, ChevronRight, Edit2, Warehouse } from "lucide-react";
+import { InventoryBatchResponse } from "@/lib/api";
 
 function formatPrice(n: number) {
-  return new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(n);
+  return new Intl.NumberFormat("vi-VN", {
+    style: "currency",
+    currency: "VND",
+  }).format(n);
 }
 
 function formatDate(iso: string) {
-  return new Date(iso).toLocaleString('vi-VN', {
-    day: '2-digit', month: '2-digit', year: 'numeric',
-    hour: '2-digit', minute: '2-digit',
+  return new Date(iso).toLocaleString("vi-VN", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   });
 }
 
@@ -38,16 +44,17 @@ export default function BatchList({
   hideOutOfStock,
 }: BatchListProps) {
   // Apply filtering locally for search
-  const filteredBatches = batches.filter(batch => {
-    const matchesSearch = batch.productName.toLowerCase().includes(searchQuery.toLowerCase()) || 
-                          String(batch.productId).includes(searchQuery) ||
-                          String(batch.id).includes(searchQuery);
+  const filteredBatches = batches.filter((batch) => {
+    const matchesSearch =
+      batch.productName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      String(batch.productId).includes(searchQuery) ||
+      String(batch.id).includes(searchQuery);
     const matchesStock = hideOutOfStock ? batch.remainingQuantity > 0 : true;
     return matchesSearch && matchesStock;
   });
 
   return (
-    <div className="space-y-4" style={{ fontFamily: 'Inter, sans-serif' }}>
+    <div className="space-y-4" style={{ fontFamily: "Inter, sans-serif" }}>
       <div className="bg-white border border-[#e2e8f0] rounded-[12px] overflow-hidden shadow-sm">
         <div className="overflow-x-auto min-h-[300px]">
           {filteredBatches.length === 0 ? (
@@ -61,10 +68,18 @@ export default function BatchList({
                 <tr>
                   <th className="px-6 py-4 font-medium">Mã lô</th>
                   <th className="px-6 py-4 font-medium">Sản phẩm</th>
-                  <th className="px-6 py-4 font-medium text-right">Giá nhập (VND)</th>
-                  <th className="px-6 py-4 font-medium text-right">Giá bán (VND)</th>
-                  <th className="px-6 py-4 font-medium text-center">Tồn kho / Ban đầu</th>
-                  <th className="px-6 py-4 font-medium text-center">Trạng thái</th>
+                  <th className="px-6 py-4 font-medium text-right">
+                    Giá nhập (VND)
+                  </th>
+                  <th className="px-6 py-4 font-medium text-right">
+                    Giá bán (VND)
+                  </th>
+                  <th className="px-6 py-4 font-medium text-center">
+                    Tồn kho / Ban đầu
+                  </th>
+                  <th className="px-6 py-4 font-medium text-center">
+                    Trạng thái
+                  </th>
                   <th className="px-6 py-4 font-medium">Ngày nhập</th>
                   <th className="px-6 py-4 font-medium text-right">Thao tác</th>
                 </tr>
@@ -72,15 +87,19 @@ export default function BatchList({
               <tbody className="divide-y divide-[#e2e8f0] text-[#475569]">
                 {filteredBatches.map((batch) => {
                   const isOutOfStock = batch.remainingQuantity === 0;
-                  const isLowStock = batch.remainingQuantity > 0 && batch.remainingQuantity <= 5;
-                  
+                  const isLowStock =
+                    batch.remainingQuantity > 0 && batch.remainingQuantity <= 5;
+
                   return (
-                    <tr key={batch.id} className="hover:bg-[#f8fafc]/50 transition-colors">
+                    <tr
+                      key={batch.id}
+                      className="hover:bg-[#f8fafc]/50 transition-colors"
+                    >
                       {/* Batch ID */}
                       <td className="px-6 py-4 font-medium text-[#0f172a]">
-                        #{String(batch.id).padStart(4, '0')}
+                        #{String(batch.id).padStart(4, "0")}
                       </td>
-                      
+
                       {/* Product Detail */}
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
@@ -97,8 +116,12 @@ export default function BatchList({
                             )}
                           </div>
                           <div className="min-w-0">
-                            <p className="font-semibold text-[#0f172a] line-clamp-1">{batch.productName}</p>
-                            <p className="text-[11px] text-[#94a3b8] mt-0.5">Mã SP: #{batch.productId}</p>
+                            <p className="font-semibold text-[#0f172a] line-clamp-1">
+                              {batch.productName}
+                            </p>
+                            <p className="text-[11px] text-[#94a3b8] mt-0.5">
+                              Mã SP: #{batch.productId}
+                            </p>
                           </div>
                         </div>
                       </td>
@@ -170,9 +193,21 @@ export default function BatchList({
       {totalPages > 1 && (
         <div className="flex items-center justify-between bg-white border border-[#e2e8f0] rounded-[12px] px-6 py-4 shadow-sm">
           <span className="text-[13px] text-[#64748b] font-medium">
-            Hiển thị <span className="font-semibold text-[#334155]">{page * size + 1}</span> – <span className="font-semibold text-[#334155]">{Math.min((page + 1) * size, totalElements)}</span> trong <span className="font-semibold text-[#334155]">{totalElements}</span> lô hàng
+            Hiển thị{" "}
+            <span className="font-semibold text-[#334155]">
+              {page * size + 1}
+            </span>{" "}
+            –{" "}
+            <span className="font-semibold text-[#334155]">
+              {Math.min((page + 1) * size, totalElements)}
+            </span>{" "}
+            trong{" "}
+            <span className="font-semibold text-[#334155]">
+              {totalElements}
+            </span>{" "}
+            lô hàng
           </span>
-          
+
           <div className="flex items-center gap-2">
             <button
               onClick={() => onPageChange(Math.max(0, page - 1))}

@@ -15,14 +15,14 @@ export interface RecommendedProduct {
 }
 
 export interface ChatMessage {
-  role: 'user' | 'assistant';
+  role: "user" | "assistant";
   content: string;
   products?: RecommendedProduct[];
   timestamp?: string;
 }
 
 export interface ChatHistoryItem {
-  role: 'user' | 'assistant';
+  role: "user" | "assistant";
   content: string;
 }
 

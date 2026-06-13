@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback } from "react";
 import {
   MessageSquare,
   X,
@@ -18,38 +18,53 @@ import {
   Bot,
   RefreshCw,
   Plus,
-} from 'lucide-react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import { chatbotAPI } from '@/lib/api';
-import { ChatMessage, RecommendedProduct } from '@/lib/types/chatbot';
-import { useCartStore } from '@/lib/store';
-import toast from 'react-hot-toast';
+} from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { chatbotAPI } from "@/lib/api";
+import { ChatMessage, RecommendedProduct } from "@/lib/types/chatbot";
+import { useCartStore } from "@/lib/store";
+import toast from "react-hot-toast";
 
 // ─── Hằng số & dữ liệu tĩnh ──────────────────────────────────────────────────
 const WELCOME_CONSULT_MESSAGE: ChatMessage = {
-  role: 'assistant',
-  content: 'Xin chào! Tôi là **Trợ lý AI PCMaster** 🤖\n\nTôi có thể giúp bạn:\n- *Tìm kiếm và so sánh linh kiện phù hợp*\n- *Tư vấn nâng cấp phần cứng*\n- *Giải đáp thông số kỹ thuật sản phẩm*\n\nHãy đặt câu hỏi bất kỳ!',
+  role: "assistant",
+  content:
+    "Xin chào! Tôi là **Trợ lý AI PCMaster** 🤖\n\nTôi có thể giúp bạn:\n- *Tìm kiếm và so sánh linh kiện phù hợp*\n- *Tư vấn nâng cấp phần cứng*\n- *Giải đáp thông số kỹ thuật sản phẩm*\n\nHãy đặt câu hỏi bất kỳ!",
   timestamp: new Date().toISOString(),
 };
 
 const QUICK_PROMPTS = [
-  { text: 'PC gaming tầm 20 triệu', icon: <Gamepad2 className="size-3 text-violet-500" /> },
-  { text: 'Tư vấn VGA dưới 8 triệu', icon: <Cpu className="size-3 text-blue-500" /> },
-  { text: 'Màn hình 144Hz tốt nhất', icon: <Monitor className="size-3 text-emerald-500" /> },
-  { text: 'SSD tốc độ cao giá tốt', icon: <HardDrive className="size-3 text-orange-500" /> },
+  {
+    text: "PC gaming tầm 20 triệu",
+    icon: <Gamepad2 className="size-3 text-violet-500" />,
+  },
+  {
+    text: "Tư vấn VGA dưới 8 triệu",
+    icon: <Cpu className="size-3 text-blue-500" />,
+  },
+  {
+    text: "Màn hình 144Hz tốt nhất",
+    icon: <Monitor className="size-3 text-emerald-500" />,
+  },
+  {
+    text: "SSD tốc độ cao giá tốt",
+    icon: <HardDrive className="size-3 text-orange-500" />,
+  },
 ];
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function ChatbotWidget() {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
-  const [input, setInput] = useState('');
+  const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [addingId, setAddingId] = useState<number | null>(null);
 
   // Message history
-  const [messages, setMessages] = useState<ChatMessage[]>([WELCOME_CONSULT_MESSAGE]);
+  const [messages, setMessages] = useState<ChatMessage[]>([
+    WELCOME_CONSULT_MESSAGE,
+  ]);
 
   const chatEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -57,7 +72,7 @@ export default function ChatbotWidget() {
 
   // Tự động cuộn xuống khi có tin nhắn mới
   useEffect(() => {
-    chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isLoading]);
 
   // Focus input khi mở widget
@@ -68,77 +83,86 @@ export default function ChatbotWidget() {
   }, [isOpen]);
 
   // Gửi tin nhắn lên backend RAG
-  const handleSendMessage = useCallback(async (textToSend: string) => {
-    if (!textToSend.trim() || isLoading) return;
+  const handleSendMessage = useCallback(
+    async (textToSend: string) => {
+      if (!textToSend.trim() || isLoading) return;
 
-    const userMsg: ChatMessage = {
-      role: 'user',
-      content: textToSend.trim(),
-      timestamp: new Date().toISOString(),
-    };
-
-    setMessages(prev => [...prev, userMsg]);
-    setInput('');
-    setIsLoading(true);
-
-    // Chuẩn bị lịch sử hội thoại (bỏ tin chào đầu tiên)
-    const historyPayload = messages
-      .slice(1)
-      .map(msg => ({ role: msg.role, content: msg.content }));
-
-    try {
-      const response = await chatbotAPI.chat(textToSend.trim(), historyPayload, 'consult');
-
-      const aiMsg: ChatMessage = {
-        role: 'assistant',
-        content: response.message,
-        products: response.recommendedProducts || [],
+      const userMsg: ChatMessage = {
+        role: "user",
+        content: textToSend.trim(),
         timestamp: new Date().toISOString(),
       };
-      setMessages(prev => [...prev, aiMsg]);
-    } catch {
-      setMessages(prev => [
-        ...prev,
-        {
-          role: 'assistant',
-          content: 'Xin lỗi bạn, trợ lý AI đang gặp sự cố kết nối 🛠️\n\nVui lòng đảm bảo **Ollama** đang chạy và thử lại sau nhé!',
+
+      setMessages((prev) => [...prev, userMsg]);
+      setInput("");
+      setIsLoading(true);
+
+      // Chuẩn bị lịch sử hội thoại (bỏ tin chào đầu tiên)
+      const historyPayload = messages
+        .slice(1)
+        .map((msg) => ({ role: msg.role, content: msg.content }));
+
+      try {
+        const response = await chatbotAPI.chat(
+          textToSend.trim(),
+          historyPayload,
+          "consult",
+        );
+
+        const aiMsg: ChatMessage = {
+          role: "assistant",
+          content: response.message,
+          products: response.recommendedProducts || [],
           timestamp: new Date().toISOString(),
-        },
-      ]);
-    } finally {
-      setIsLoading(false);
-    }
-  }, [isLoading, messages, setMessages]);
-
-
+        };
+        setMessages((prev) => [...prev, aiMsg]);
+      } catch {
+        setMessages((prev) => [
+          ...prev,
+          {
+            role: "assistant",
+            content:
+              "Xin lỗi bạn, trợ lý AI đang gặp sự cố kết nối 🛠️\n\nVui lòng đảm bảo **Ollama** đang chạy và thử lại sau nhé!",
+            timestamp: new Date().toISOString(),
+          },
+        ]);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [isLoading, messages, setMessages],
+  );
 
   // Thêm sản phẩm vào giỏ hàng từ card đề xuất
-  const handleAddToCart = useCallback(async (e: React.MouseEvent, product: RecommendedProduct) => {
-    e.preventDefault();
-    if (product.stock === 0 || addingId !== null) return;
+  const handleAddToCart = useCallback(
+    async (e: React.MouseEvent, product: RecommendedProduct) => {
+      e.preventDefault();
+      if (product.stock === 0 || addingId !== null) return;
 
-    setAddingId(product.id);
-    try {
-      await addItem(product.id, 1);
-      toast.success(`Đã thêm "${product.name}" vào giỏ hàng!`);
-    } catch {
-      toast.error('Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng.');
-    } finally {
-      setAddingId(null);
-    }
-  }, [addingId, addItem]);
+      setAddingId(product.id);
+      try {
+        await addItem(product.id, 1);
+        toast.success(`Đã thêm "${product.name}" vào giỏ hàng!`);
+      } catch {
+        toast.error("Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng.");
+      } finally {
+        setAddingId(null);
+      }
+    },
+    [addingId, addItem],
+  );
 
   // Reset cuộc trò chuyện
   const handleReset = useCallback(() => {
     setMessages([WELCOME_CONSULT_MESSAGE]);
-    setInput('');
+    setInput("");
   }, []);
 
   return (
     <>
       {/* ── Floating Action Button ─────────────────────────────────────────── */}
       <button
-        onClick={() => setIsOpen(prev => !prev)}
+        onClick={() => setIsOpen((prev) => !prev)}
         className="fixed bottom-6 right-6 z-50 group"
         aria-label="Trợ lý AI PCMaster"
       >
@@ -164,7 +188,6 @@ export default function ChatbotWidget() {
       {/* ── Chat Panel ────────────────────────────────────────────────────── */}
       {isOpen && (
         <div className="fixed bottom-24 right-6 w-96 h-[580px] z-50 flex flex-col rounded-2xl overflow-hidden shadow-2xl shadow-gray-300/50 border border-gray-200 animate-chat-in bg-white">
-
           {/* Header */}
           <div className="px-5 py-4 bg-gradient-to-r from-[#0058be] to-[#0070e0] flex items-center justify-between flex-shrink-0">
             <div className="flex items-center gap-3">
@@ -195,8 +218,6 @@ export default function ChatbotWidget() {
               </button>
             </div>
           </div>
-
-
 
           {/* Messages Area */}
           <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 bg-gray-50 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
@@ -243,7 +264,10 @@ export default function ChatbotWidget() {
 
           {/* Input Form */}
           <form
-            onSubmit={(e) => { e.preventDefault(); handleSendMessage(input); }}
+            onSubmit={(e) => {
+              e.preventDefault();
+              handleSendMessage(input);
+            }}
             className="p-4 bg-white border-t border-gray-100 flex items-center gap-2 flex-shrink-0"
           >
             <input
@@ -267,7 +291,8 @@ export default function ChatbotWidget() {
       )}
 
       {/* ── CSS Animations ────────────────────────────────────────────────── */}
-      <style>{`
+      <style>
+        {`
         @keyframes chat-in {
           from { opacity: 0; transform: translateY(16px) scale(0.97); }
           to   { opacity: 1; transform: translateY(0)    scale(1);    }
@@ -279,7 +304,6 @@ export default function ChatbotWidget() {
   );
 }
 
-
 // ─── MessageBubble Component ─────────────────────────────────────────────────
 interface MessageBubbleProps {
   message: ChatMessage;
@@ -288,12 +312,16 @@ interface MessageBubbleProps {
 }
 
 function MessageBubble({ message, addingId, onAddToCart }: MessageBubbleProps) {
-  const isUser = message.role === 'user';
+  const isUser = message.role === "user";
 
   return (
-    <div className={`flex flex-col ${isUser ? 'items-end' : 'items-start'} gap-2`}>
+    <div
+      className={`flex flex-col ${isUser ? "items-end" : "items-start"} gap-2`}
+    >
       {/* Avatar + Bubble row */}
-      <div className={`flex items-start gap-2 max-w-[88%] ${isUser ? 'flex-row-reverse' : 'flex-row'}`}>
+      <div
+        className={`flex items-start gap-2 max-w-[88%] ${isUser ? "flex-row-reverse" : "flex-row"}`}
+      >
         {/* Avatar */}
         {!isUser && (
           <div className="p-1.5 rounded-lg bg-blue-50 border border-blue-100 flex-shrink-0 mt-0.5">
@@ -302,11 +330,13 @@ function MessageBubble({ message, addingId, onAddToCart }: MessageBubbleProps) {
         )}
 
         {/* Message Bubble */}
-        <div className={`px-4 py-3 rounded-2xl text-xs leading-relaxed ${
-          isUser
-            ? 'bg-[#0058be] text-white rounded-tr-sm shadow-md shadow-blue-200/40'
-            : 'bg-white text-gray-700 border border-gray-200 rounded-tl-sm shadow-sm'
-        }`}>
+        <div
+          className={`px-4 py-3 rounded-2xl text-xs leading-relaxed ${
+            isUser
+              ? "bg-[#0058be] text-white rounded-tr-sm shadow-md shadow-blue-200/40"
+              : "bg-white text-gray-700 border border-gray-200 rounded-tl-sm shadow-sm"
+          }`}
+        >
           <MarkdownText text={message.content} isUser={isUser} />
         </div>
       </div>
@@ -327,11 +357,19 @@ function MessageBubble({ message, addingId, onAddToCart }: MessageBubbleProps) {
 function MarkdownText({ text, isUser }: { text: string; isUser: boolean }) {
   const html = text
     .replace(/\n\n/g, '</p><p class="mt-2">')
-    .replace(/\n/g, '<br />')
-    .replace(/\*\*(.*?)\*\*/g, `<strong class="font-semibold ${isUser ? 'text-blue-100' : 'text-gray-900'}">${'$1'}</strong>`)
-    .replace(/\*(.*?)\*/g, `<em class="italic ${isUser ? 'text-blue-200' : 'text-gray-500'}">${'$1'}</em>`)
-    .replace(/(?:^|<br \/>)\s*[-•]\s+(.*?)(?=<br \/>|$)/g,
-      `<li class="ml-4 list-disc ${isUser ? 'text-blue-50' : 'text-gray-600'} mt-1">${'$1'}</li>`);
+    .replace(/\n/g, "<br />")
+    .replace(
+      /\*\*(.*?)\*\*/g,
+      `<strong class="font-semibold ${isUser ? "text-blue-100" : "text-gray-900"}">${"$1"}</strong>`,
+    )
+    .replace(
+      /\*(.*?)\*/g,
+      `<em class="italic ${isUser ? "text-blue-200" : "text-gray-500"}">${"$1"}</em>`,
+    )
+    .replace(
+      /(?:^|<br \/>)\s*[-•]\s+(.*?)(?=<br \/>|$)/g,
+      `<li class="ml-4 list-disc ${isUser ? "text-blue-50" : "text-gray-600"} mt-1">${"$1"}</li>`,
+    );
 
   return <div dangerouslySetInnerHTML={{ __html: `<p>${html}</p>` }} />;
 }
@@ -343,7 +381,11 @@ interface ProductSliderProps {
   onAddToCart: (e: React.MouseEvent, product: RecommendedProduct) => void;
 }
 
-function ProductSlider({ products, addingId, onAddToCart }: ProductSliderProps) {
+function ProductSlider({
+  products,
+  addingId,
+  onAddToCart,
+}: ProductSliderProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [showLeft, setShowLeft] = useState(false);
   const [showRight, setShowRight] = useState(false);
@@ -359,19 +401,22 @@ function ProductSlider({ products, addingId, onAddToCart }: ProductSliderProps) 
     const el = containerRef.current;
     if (!el) return;
     checkScroll();
-    el.addEventListener('scroll', checkScroll);
-    window.addEventListener('resize', checkScroll);
+    el.addEventListener("scroll", checkScroll);
+    window.addEventListener("resize", checkScroll);
     const observer = new ResizeObserver(checkScroll);
     observer.observe(el);
     return () => {
-      el.removeEventListener('scroll', checkScroll);
-      window.removeEventListener('resize', checkScroll);
+      el.removeEventListener("scroll", checkScroll);
+      window.removeEventListener("resize", checkScroll);
       observer.disconnect();
     };
   }, [products, checkScroll]);
 
-  const scroll = (dir: 'left' | 'right') => {
-    containerRef.current?.scrollBy({ left: dir === 'left' ? -192 : 192, behavior: 'smooth' });
+  const scroll = (dir: "left" | "right") => {
+    containerRef.current?.scrollBy({
+      left: dir === "left" ? -192 : 192,
+      behavior: "smooth",
+    });
   };
 
   return (
@@ -388,7 +433,7 @@ function ProductSlider({ products, addingId, onAddToCart }: ProductSliderProps) 
         {showLeft && (
           <button
             type="button"
-            onClick={() => scroll('left')}
+            onClick={() => scroll("left")}
             className="absolute left-0 top-1/2 -translate-y-1/2 z-10 size-7 flex items-center justify-center rounded-full bg-white border border-gray-200 text-gray-500 hover:bg-[#0058be] hover:border-[#0058be] hover:text-white hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer shadow-md"
           >
             <ChevronLeft className="size-4" />
@@ -399,7 +444,7 @@ function ProductSlider({ products, addingId, onAddToCart }: ProductSliderProps) 
         {showRight && (
           <button
             type="button"
-            onClick={() => scroll('right')}
+            onClick={() => scroll("right")}
             className="absolute right-0 top-1/2 -translate-y-1/2 z-10 size-7 flex items-center justify-center rounded-full bg-white border border-gray-200 text-gray-500 hover:bg-[#0058be] hover:border-[#0058be] hover:text-white hover:scale-105 active:scale-95 transition-all duration-200 cursor-pointer shadow-md"
           >
             <ChevronRight className="size-4" />
@@ -411,9 +456,11 @@ function ProductSlider({ products, addingId, onAddToCart }: ProductSliderProps) 
           ref={containerRef}
           className="flex overflow-x-auto gap-3 pb-2 scrollbar-none snap-x snap-mandatory"
         >
-          {products.map(product => {
-            const isSale = product.discountPrice !== null && product.discountPercent !== null;
-            const imgSrc = product.thumbnailUrl?.startsWith('http')
+          {products.map((product) => {
+            const isSale =
+              product.discountPrice !== null &&
+              product.discountPercent !== null;
+            const imgSrc = product.thumbnailUrl?.startsWith("http")
               ? product.thumbnailUrl
               : product.thumbnailUrl
                 ? `http://localhost:8080${product.thumbnailUrl}`
@@ -426,7 +473,10 @@ function ProductSlider({ products, addingId, onAddToCart }: ProductSliderProps) 
                 className="flex-shrink-0 w-44 snap-start bg-white border border-gray-200 rounded-xl overflow-hidden hover:border-blue-300 hover:shadow-md hover:shadow-blue-50 transition-all duration-300 flex flex-col"
               >
                 {/* Product image */}
-                <Link href={`/explore/${product.id}`} className="block h-24 bg-gray-50 relative overflow-hidden group">
+                <Link
+                  href={`/explore/${product.id}`}
+                  className="block h-24 bg-gray-50 relative overflow-hidden group"
+                >
                   {imgSrc ? (
                     <img
                       src={imgSrc}
@@ -460,11 +510,11 @@ function ProductSlider({ products, addingId, onAddToCart }: ProductSliderProps) 
                     <div className="flex flex-col">
                       {isSale && (
                         <span className="text-[9px] text-gray-400 line-through">
-                          {product.price.toLocaleString('vi-VN')}₫
+                          {product.price.toLocaleString("vi-VN")}₫
                         </span>
                       )}
                       <span className="text-[11px] font-bold text-[#0058be]">
-                        {displayPrice.toLocaleString('vi-VN')}₫
+                        {displayPrice.toLocaleString("vi-VN")}₫
                       </span>
                     </div>
 

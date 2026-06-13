@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { Trash2 } from 'lucide-react';
+import React from "react";
+import { Trash2 } from "lucide-react";
 
 interface DeleteBuildModalProps {
   showDeleteConfirmModal: boolean;
@@ -14,7 +14,7 @@ export default function DeleteBuildModal({
   showDeleteConfirmModal,
   pendingDeleteBuildId,
   cancelDeleteBuild,
-  confirmDeleteBuild
+  confirmDeleteBuild,
 }: DeleteBuildModalProps) {
   if (!showDeleteConfirmModal || pendingDeleteBuildId === null) return null;
 
@@ -25,10 +25,13 @@ export default function DeleteBuildModal({
           <div className="p-3 bg-rose-50 text-rose-600 rounded-full shrink-0">
             <Trash2 className="size-5 text-red-500" />
           </div>
-          <h3 className="text-[17px] font-bold text-[#0f172a]">Xóa cấu hình PC?</h3>
+          <h3 className="text-[17px] font-bold text-[#0f172a]">
+            Xóa cấu hình PC?
+          </h3>
         </div>
         <p className="text-[13px] text-[#64748b] leading-relaxed">
-          Bạn có chắc chắn muốn xóa cấu hình này khỏi tài khoản của mình? Hành động này không thể hoàn tác.
+          Bạn có chắc chắn muốn xóa cấu hình này khỏi tài khoản của mình? Hành
+          động này không thể hoàn tác.
         </p>
         <div className="flex justify-end gap-3 pt-3 border-t border-[#f1f5f9]">
           <button

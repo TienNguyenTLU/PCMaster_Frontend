@@ -1,48 +1,49 @@
-'use client';
+"use client";
 
-import { useState, FormEvent } from 'react';
-import Link from 'next/link';
-import { useRouter } from 'next/navigation';
-import AuthFormField from './AuthFormField';
-import AuthSocialButtons from './AuthSocialButtons';
-import { useAuthStore } from '@/lib/store';
+import { useState, FormEvent } from "react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import AuthFormField from "./AuthFormField";
+import AuthSocialButtons from "./AuthSocialButtons";
+import { useAuthStore } from "@/lib/store";
 
-import toast from 'react-hot-toast';
+import toast from "react-hot-toast";
 
-const imgArrow = 'http://localhost:3845/assets/fadd198d26aadd8b0ee816378d8a8139f72021b1.svg';
+const imgArrow =
+  "http://localhost:3845/assets/fadd198d26aadd8b0ee816378d8a8139f72021b1.svg";
 
 export default function LoginForm() {
   const router = useRouter();
   const { login, isLoading, error, clearError } = useAuthStore();
 
-  const [form, setForm] = useState({ usernameOrEmail: '', password: '' });
+  const [form, setForm] = useState({ usernameOrEmail: "", password: "" });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleChange =
     (field: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement>) => {
       clearError();
       setForm((prev) => ({ ...prev, [field]: e.target.value }));
-      setErrors((prev) => ({ ...prev, [field]: '' }));
+      setErrors((prev) => ({ ...prev, [field]: "" }));
     };
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     const newErrors: Record<string, string> = {};
     if (!form.usernameOrEmail.trim()) {
-      newErrors.usernameOrEmail = 'Vui lòng nhập tên đăng nhập hoặc email';
-    } else if (form.usernameOrEmail.includes('@')) {
+      newErrors.usernameOrEmail = "Vui lòng nhập tên đăng nhập hoặc email";
+    } else if (form.usernameOrEmail.includes("@")) {
       const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
       if (!emailRegex.test(form.usernameOrEmail.trim())) {
-        newErrors.usernameOrEmail = 'Địa chỉ email không đúng định dạng';
+        newErrors.usernameOrEmail = "Địa chỉ email không đúng định dạng";
       }
     } else if (form.usernameOrEmail.trim().length < 3) {
-      newErrors.usernameOrEmail = 'Tên đăng nhập phải chứa ít nhất 3 ký tự';
+      newErrors.usernameOrEmail = "Tên đăng nhập phải chứa ít nhất 3 ký tự";
     }
 
     if (!form.password) {
-      newErrors.password = 'Vui lòng nhập mật khẩu';
+      newErrors.password = "Vui lòng nhập mật khẩu";
     } else if (form.password.length < 6) {
-      newErrors.password = 'Mật khẩu phải chứa ít nhất 6 ký tự';
+      newErrors.password = "Mật khẩu phải chứa ít nhất 6 ký tự";
     }
 
     if (Object.keys(newErrors).length > 0) {
@@ -52,10 +53,14 @@ export default function LoginForm() {
 
     try {
       await login(form.usernameOrEmail, form.password);
-      toast.success('Đăng nhập thành công!');
+      toast.success("Đăng nhập thành công!");
       // Role-based redirect
       const { user } = useAuthStore.getState();
-      router.push(user?.role === 'ADMIN' || user?.role === 'STAFF' ? '/dashboard' : '/home');
+      router.push(
+        user?.role === "ADMIN" || user?.role === "STAFF"
+          ? "/dashboard"
+          : "/home",
+      );
     } catch {
       // error shown from store
     }
@@ -76,26 +81,30 @@ export default function LoginForm() {
       <div className="flex flex-col gap-2 w-full">
         <h1
           className="text-[#191c1e] text-[24px] tracking-[-0.6px] leading-[32px] font-normal"
-          style={{ fontFamily: 'Inter, sans-serif' }}
+          style={{ fontFamily: "Inter, sans-serif" }}
         >
           Đăng Nhập
         </h1>
         <p
           className="text-[#424754] text-[14px] leading-[20px] font-normal"
-          style={{ fontFamily: 'Inter, sans-serif' }}
+          style={{ fontFamily: "Inter, sans-serif" }}
         >
           Chào mừng bạn quay lại với hệ thống PCMaster.
         </p>
       </div>
 
       {/* Form */}
-      <form onSubmit={handleSubmit} noValidate className="flex flex-col gap-6 w-full pt-[8.5px]">
+      <form
+        onSubmit={handleSubmit}
+        noValidate
+        className="flex flex-col gap-6 w-full pt-[8.5px]"
+      >
         <AuthFormField
           label="TÊN ĐĂNG NHẬP HOẶC EMAIL"
           type="text"
           placeholder="builder@pcmaster.tech"
           value={form.usernameOrEmail}
-          onChange={handleChange('usernameOrEmail')}
+          onChange={handleChange("usernameOrEmail")}
           error={errors.usernameOrEmail}
           autoComplete="username"
           id="login-email"
@@ -106,7 +115,7 @@ export default function LoginForm() {
           type="password"
           placeholder="••••••••"
           value={form.password}
-          onChange={handleChange('password')}
+          onChange={handleChange("password")}
           error={errors.password}
           autoComplete="current-password"
           id="login-password"
@@ -116,7 +125,7 @@ export default function LoginForm() {
         {error && (
           <p
             className="text-red-500 text-[13px] font-normal -mt-2"
-            style={{ fontFamily: 'Inter, sans-serif' }}
+            style={{ fontFamily: "Inter, sans-serif" }}
           >
             {error}
           </p>
@@ -136,9 +145,9 @@ export default function LoginForm() {
             disabled:opacity-60 disabled:cursor-not-allowed
             cursor-pointer
           "
-          style={{ fontFamily: 'Inter, sans-serif' }}
+          style={{ fontFamily: "Inter, sans-serif" }}
         >
-          {isLoading ? 'Đang đăng nhập…' : 'Đăng nhập'}
+          {isLoading ? "Đang đăng nhập…" : "Đăng nhập"}
           {!isLoading && (
             <img src={imgArrow} alt="" className="size-[9.333px]" aria-hidden />
           )}
@@ -148,9 +157,16 @@ export default function LoginForm() {
         <AuthSocialButtons />
 
         {/* Register link */}
-        <p className="text-[14px] text-center w-full" style={{ fontFamily: 'Inter, sans-serif' }}>
+        <p
+          className="text-[14px] text-center w-full"
+          style={{ fontFamily: "Inter, sans-serif" }}
+        >
           <span className="text-[#424754]">Chưa có tài khoản? </span>
-          <Link href="/auth/register" className="text-[#0058be] hover:underline" id="register-link">
+          <Link
+            href="/auth/register"
+            className="text-[#0058be] hover:underline"
+            id="register-link"
+          >
             Đăng ký ngay
           </Link>
         </p>

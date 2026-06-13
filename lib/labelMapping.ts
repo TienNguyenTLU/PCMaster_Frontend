@@ -1,0 +1,465 @@
+import {
+  CheckCircle2,
+  ClipboardList,
+  Package2,
+  Truck,
+  XCircle,
+  Home,
+  Store,
+  Cpu,
+  Layers,
+  Video,
+  Database,
+  Zap,
+  HardDrive,
+  Box,
+  Wind,
+  Disc,
+} from "lucide-react";
+import { OrderStatus, DeliveryType } from "./api";
+
+// 1. Order Status Mappings
+export const STATUS_META: Record<
+  OrderStatus,
+  { label: string; color: string; bg: string; Icon: React.ComponentType<any> }
+> = {
+  DRAFT: {
+    label: "Chờ duyệt",
+    color: "text-amber-700",
+    bg: "bg-amber-50/70 border border-amber-200",
+    Icon: ClipboardList,
+  },
+  CONFIRMED: {
+    label: "Đã duyệt",
+    color: "text-blue-700",
+    bg: "bg-blue-50/70 border border-blue-200",
+    Icon: CheckCircle2,
+  },
+  SHIPPED: {
+    label: "Đang giao",
+    color: "text-violet-700",
+    bg: "bg-violet-50/70 border border-violet-200",
+    Icon: Truck,
+  },
+  DELIVERED: {
+    label: "Đã giao",
+    color: "text-emerald-700",
+    bg: "bg-emerald-50/70 border border-emerald-200",
+    Icon: Package2,
+  },
+  CANCELLED: {
+    label: "Đã hủy",
+    color: "text-red-600",
+    bg: "bg-red-50/70 border border-red-200",
+    Icon: XCircle,
+  },
+};
+
+// 2. Delivery Type Mappings
+export const DELIVERY_META: Record<
+  DeliveryType,
+  { label: string; Icon: React.ComponentType<any> }
+> = {
+  HOME_DELIVERY: { label: "Giao tận nhà", Icon: Home },
+  SHOWROOM_PICKUP: { label: "Tại showroom", Icon: Store },
+};
+
+// 3. User Role Mappings
+export const USER_ROLE_MAP = {
+  ADMIN: "Quản trị viên",
+  STAFF: "Nhân viên",
+  CUSTOMER: "Khách hàng",
+};
+
+// 4. Breadcrumb Title Mappings for Dashboard Header
+export const DASHBOARD_TITLE_MAP: Record<string, string> = {
+  overview: "Tổng quan thống kê",
+  products: "Quản lý sản phẩm",
+  brands: "Quản lý thương hiệu",
+  banners: "Quản lý banner",
+  suppliers: "Quản lý nhà cung cấp",
+  "purchase-orders": "Quản lý đơn nhập hàng",
+  orders: "Quản lý đơn bán hàng",
+  inventory: "Quản lý kho hàng",
+  users: "Quản lý người dùng",
+};
+
+// 5. Custom PC Slot Labels Mappings
+export const SLOT_LABEL_MAP: Record<string, string> = {
+  cpu: "Vi xử lý (CPU)",
+  mainboard: "Bo mạch chủ (Mainboard)",
+  ram: "Bộ nhớ RAM",
+  storage: "Ổ cứng SSD/HDD",
+  case: "Vỏ máy (Case)",
+  cooler: "Tản nhiệt CPU",
+};
+
+// 6. Category Keys to Labels Mappings (PC Configuration)
+export const PC_COMPONENT_CATEGORY_LABELS = {
+  cpu: "Bộ vi xử lý (CPU)",
+  mainboard: "Bo mạch chủ (Mainboard)",
+  vga: "Card màn hình (VGA)",
+  ram: "Bộ nhớ RAM (RAM)",
+  psu: "Nguồn máy tính (PSU)",
+  ssd: "Ổ cứng SSD (SSD/Storage)",
+  case: "Vỏ máy tính (Case)",
+  cooler: "Tản nhiệt (Cooler)",
+  fan: "Quạt tản nhiệt (Fan)",
+};
+
+export const PC_COMPONENT_CATEGORY_ICONS = {
+  cpu: Cpu,
+  mainboard: Layers,
+  vga: Video,
+  ram: Database,
+  psu: Zap,
+  ssd: HardDrive,
+  case: Box,
+  cooler: Wind,
+  fan: Disc,
+};
+
+// 7. General Categories Translation Map (getCategoryLabel)
+export function getCategoryLabel(name: string): string {
+  if (!name) return "";
+  const cleanName = name.trim().toUpperCase().replace(/\s+/g, "_");
+  switch (cleanName) {
+    case "LAPTOP":
+      return "Laptop";
+    case "PC_SYSTEM":
+      return "PC Nguyên Bộ";
+    case "PC_GEAR":
+      return "Gaming Gear";
+    case "CPU":
+      return "CPU - Vi xử lý";
+    case "CASE":
+      return "Vỏ máy tính (Case)";
+    case "COOLER":
+      return "Tản nhiệt";
+    case "FAN":
+      return "Quạt tản nhiệt (Fan)";
+    case "MAINBOARD":
+      return "Bo mạch chủ (Mainboard)";
+    case "MONITOR":
+      return "Màn hình máy tính";
+    case "PSU":
+      return "Nguồn máy tính (PSU)";
+    case "RAM":
+      return "Bộ nhớ RAM";
+    case "SSD":
+      return "Ổ cứng SSD";
+    case "VGA":
+      return "Card màn hình (VGA)";
+    default:
+      return name;
+  }
+}
+
+// 8. Specifications Field Translations (SPEC_LABEL_MAP)
+export const SPEC_LABEL_MAP: Record<string, string> = {
+  // General & Pre-built
+  usage_need: "Nhu cầu sử dụng",
+  brand: "Thương hiệu",
+  component_type: "Loại linh kiện",
+  series: "Dòng sản phẩm (Series)",
+  accessories: "Phụ kiện đi kèm",
+  intended_use: "Mục đích sử dụng",
+  technologies: "Công nghệ tích hợp",
+  mainboard_type: "Phân khúc bo mạch",
+  generation: "Thế hệ CPU",
+  architecture: "Kiến trúc",
+  platform: "Nền tảng",
+
+  // CPU
+  cores: "Số nhân",
+  threads: "Số luồng",
+  socket: "Socket",
+  integrated_gpu: "GPU tích hợp",
+  tdp_w: "TDP (W)",
+  cache_mb: "Bộ nhớ đệm (MB)",
+  base_clock_ghz: "Xung cơ bản (GHz)",
+  boost_clock_ghz: "Xung tối đa (GHz)",
+  performance_score: "Điểm hiệu năng",
+  e_core_base_clock_ghz: "Xung cơ bản E-Core (GHz)",
+  e_core_boost_clock_ghz: "Xung tối đa E-Core (GHz)",
+  p_cores: "Số nhân P-Core",
+  e_cores: "Số nhân E-Core",
+  l1_cache: "Bộ nhớ đệm L1 Cache",
+  l2_cache: "Bộ nhớ đệm L2 Cache",
+  l3_cache: "Bộ nhớ đệm L3 Cache",
+  gpu_integrated_name: "Tên đồ họa tích hợp",
+  pcie_support: "Hỗ trợ PCIe",
+  memory_support: "Hỗ trợ RAM",
+  memory_channels: "Số kênh RAM",
+  condition: "Tình trạng",
+
+  // RAM
+  type: "Loại",
+  capacity_gb: "Dung lượng (GB)",
+  kit: "Kit",
+  has_rgb: "Có RGB",
+  bus_speed_mhz: "Tốc độ Bus (MHz)",
+  latency_cl: "CAS Latency",
+  b_ng_th_ng: "Băng thông",
+  cas_latency: "Độ trễ CAS (CL)",
+  product_series: "Dòng sản phẩm",
+  ecc: "Công nghệ sửa lỗi ECC",
+  lo_i_m_y: "Thiết bị tương thích (Loại máy)",
+  s_k_nh: "Số kênh RAM",
+  s_l_ng_thanh: "Số lượng thanh",
+  t_n_nhi_t: "Tản nhiệt đi kèm",
+  intel_xmp: "Hỗ trợ Intel XMP",
+  amd_expo: "Hỗ trợ AMD EXPO",
+  capacity: "Dung lượng",
+  lo_i_ram: "Loại Ram",
+  memory_speed: "Bus RAM / Tốc độ",
+  latency: "Độ trễ Latency",
+
+  // SSD/HDD
+  interface: "Giao diện kết nối",
+  giao_di_n_k_t_n_i: "Giao diện kết nối",
+  read_speed_mbps: "Tốc độ đọc (MB/s)",
+  t_c_c_mb_s: "Tốc độ đọc (MB/s)",
+  write_speed_mbps: "Tốc độ ghi (MB/s)",
+  t_c_ghi_mb_s: "Tốc độ ghi (MB/s)",
+  nand_type: "Loại chip nhớ (NAND)",
+  lo_i_chip_nh: "Loại chip nhớ (NAND)",
+  mtbf: "Tuổi thọ thiết bị (MTBF)",
+  operating_temperature: "Nhiệt độ hoạt động",
+  nhi_t_ho_t_ng: "Nhiệt độ hoạt động",
+  has_heatsink: "Tản nhiệt đi kèm",
+  lo_i_ssd: "Chuẩn SSD",
+  k_ch_c_form_factor: "Kích thước / Form factor",
+  cache: "Bộ nhớ đệm (Cache)",
+  b_nh_m: "Bộ nhớ đệm (Cache)",
+  "bộ nhớ đệm": "Bộ nhớ đệm (Cache)",
+  tbw: "Độ bền ghi (TBW)",
+  tbw_b_n_ghi: "Độ bền ghi (TBW)",
+  tbw_w: "Độ bền ghi (TBW)",
+  dung_l_ng: "Dung lượng",
+
+  // VGA
+  vram_gb: "VRAM (GB)",
+  vram_type: "Loại VRAM",
+  base_clock_mhz: "Xung cơ bản (MHz)",
+  boost_clock_mhz: "Xung boost (MHz)",
+  length_mm: "Chiều dài (mm)",
+  min_psu_w: "Nguồn tối thiểu (W)",
+  vga_series: "Dòng sản phẩm VGA",
+  vram: "Dung lượng VRAM",
+  base_clock: "Xung cơ bản (MHz)",
+  boost_clock: "Xung boost (MHz)",
+  memory_bus: "Bus bộ nhớ",
+  memory_type: "Kiểu bộ nhớ",
+  fan_count: "Số quạt tản nhiệt",
+  directx: "DirectX hỗ trợ",
+  dlss: "Hỗ trợ DLSS",
+  ray_tracing: "Hỗ trợ Ray Tracing",
+  opengl: "OpenGL hỗ trợ",
+  graphics_processor: "Nhân đồ họa",
+  multi_monitor: "Hỗ trợ đa màn hình",
+  max_resolution: "Độ phân giải tối đa",
+  power_connectors: "Đầu cấp nguồn",
+  recommended_psu: "Nguồn đề xuất",
+  tdp: "Điện năng tiêu thụ (TDP)",
+  dimensions: "Kích thước card",
+  weight: "Trọng lượng",
+  cuda_cores: "số nhân Cuda",
+  ai_tops: "Hiệu năng AI (TOPS)",
+
+  // Mainboard
+  chipset: "Chipset",
+  ram_type: "Loại RAM",
+  form_factor: "Form factor",
+  has_wifi: "Có Wifi",
+  ram_slots: "Số khe RAM",
+  max_ram_gb: "RAM tối đa (GB)",
+  m2_slots: "Số khe M.2",
+  vrm_pha: "Pha nguồn VRM",
+  k_t_n_i_m_ng_lan: "Tốc độ mạng LAN",
+  rgb_led: "Đèn LED RGB",
+  s_c_ng_sata: "Số cổng SATA",
+  pcie_gen: "Thế hệ PCIe (PCIe Gen)",
+  bluetooth: "Kết nối Bluetooth",
+  cpu_h_tr: "CPU hỗ trợ",
+  c_ng_usb: "Số cổng USB",
+  c_ng_xu_t_h_nh: "Cổng xuất hình",
+  ch_t_li_u_v_m_t_tr_n: "Chất liệu vỏ / mặt trước",
+  khe_ram_t_i_a: "Số khe RAM tối đa",
+  warranty: "Bảo hành",
+  max_memory_capacity: "Dung lượng bộ nhớ tối đa",
+
+  // PSU
+  wattage: "Công suất (W)",
+  efficiency_rating: "Hiệu suất",
+  modularity: "Modularity",
+  chu_n_ch_ng_nh_n: "Chuẩn hiệu suất (80 Plus)",
+  chu_n_ngu_n: "Chuẩn nguồn",
+  ch_qu_t: "Chế độ quạt",
+  s_c_ng_c_m: "Số cổng kết nối",
+  c_ng_su_t_t_i_a: "Công suất tối đa",
+  c_ng_su_t: "Công suất",
+  hi_u_su_t: "Hiệu suất",
+  ki_u_rail: "Kiểu thiết kế Rail",
+  ki_u_d_y_ngu_n: "Kiểu dây nguồn",
+  k_ch_th_c_qu_t: "Kích thước quạt",
+  lo_i_modular: "Dạng modular",
+  phi_n_b_n_chu_n: "Phiên bản chuẩn nguồn",
+  t_nh_n_ng_b_o_v: "Tính năng bảo vệ",
+  i_n_p_u_v_o: "Điện áp đầu vào",
+  t_c_quay_c_a_fan: "Tốc độ quay của quạt",
+
+  // Monitor
+  panel_type: "Loại tấm nền",
+  resolution: "Độ phân giải",
+  refresh_rate_hz: "Tần số quét (Hz)",
+  has_hdr: "Hỗ trợ HDR",
+  aspect_ratio: "Tỉ lệ màn hình",
+  ports: "Cổng kết nối",
+  size_inch: "Kích thước (inch)",
+  brightness_cdm2: "Độ sáng (cd/m²)",
+  response_time_ms: "Phản hồi (ms)",
+  color_accuracy: "Độ chuẩn màu",
+
+  // Cooler
+  cooler_type: "Loại tản nhiệt",
+  lo_i_s_n_ph_m: "Loại tản nhiệt",
+  fan_size_mm: "Kích thước quạt (mm)",
+  k_ch_th_c_qu_t_t_n: "Kích thước quạt (mm)",
+  tdp_rating_w: "TDP hỗ trợ (W)",
+  noise_level_db: "Độ ồn (dB)",
+  pump_noise_db: "Độ ồn Pump (dB)",
+  ti_ng_n_pump: "Độ ồn Pump (dB)",
+  radiator_size_mm: "Kích thước Radiator (mm)",
+  supported_sockets: "Socket hỗ trợ",
+  cpu_socket_support: "Socket CPU hỗ trợ",
+  t_ng_th_ch_cpu: "Socket CPU hỗ trợ",
+  s_qu_t: "Số quạt",
+  fan_speed_rpm: "Tốc độ quạt (RPM)",
+  t_c_qu_t: "Tốc độ quạt (RPM)",
+  airflow_cfm: "Lưu lượng gió (CFM)",
+  lu_ng_kh: "Lưu lượng gió (CFM)",
+  static_pressure_mmh2o: "Áp suất tĩnh (mmH₂O)",
+  p_su_t_t_nh: "Áp suất tĩnh (mmH₂O)",
+  pump_dimensions: "Kích thước Pump",
+  k_ch_th_c_pump: "Kích thước Pump",
+  fan_lifespan: "Tuổi thọ quạt",
+  tu_i_th_qu_t: "Tuổi thọ quạt",
+  bearing_type: "Loại vòng bi",
+  lo_i_v_ng_bi: "Loại vòng bi",
+  heatsink_material: "Vật liệu Heat Sink",
+  v_t_li_u_heat_sink: "Vật liệu Heat Sink",
+  radiator_dimensions: "Kích thước Radiator",
+  tube_length: "Chiều dài ống dẫn",
+  chi_u_d_i_ng: "Chiều dài ống dẫn",
+  led_type: "Đèn LED",
+  special_features: "Tính năng đặc biệt",
+  t_nh_n_ng_c_bi_t: "Tính năng đặc biệt",
+
+  // Fan
+  is_addressable_rgb: "LED ARGB",
+  size_mm: "Kích thước (mm)",
+  connection_type: "Chuẩn cắm",
+  voltage: "Điện áp",
+  "Điện áp": "Điện áp",
+  i_n_p: "Điện áp",
+  "Tuổi thọ quạt": "Tuổi thọ quạt",
+  "Áp suất tĩnh (mmH₂O)": "Áp suất tĩnh (mmH₂O)",
+  fan_type: "Loại quạt",
+  lo_i_qu_t: "Loại quạt",
+  lo_i_n_led: "Loại đèn LED",
+  lo_i_tr_c: "Loại trục quay (Bearing)",
+  lo_i_k_t_n_i: "Chuẩn cắm",
+  t_c_quay: "Tốc độ quay (RPM)",
+  n: "Độ ồn (dB)",
+  "Lưu lượng gió (CFM)": "Lưu lượng gió (CFM)",
+  "Kích thước quạt (mm)": "Kích thước quạt (mm)",
+  m_u_s_c: "Màu sắc",
+
+  // Laptop
+  cpu: "Bộ vi xử lý (CPU)",
+  ram: "Bộ nhớ RAM",
+  s_khe_ram: "Số khe cắm RAM",
+  ssd: "Ổ cứng SSD",
+  ssd_slots: "Số khe cắm SSD",
+  s_khe_ssd: "Số khe cắm SSD",
+  ssd_type: "Chuẩn SSD",
+  chu_n_ssd: "Chuẩn SSD",
+  screen_size: "Kích thước màn hình (inch)",
+  k_ch_th_c_m_n_h_nh: "Kích thước màn hình (inch)",
+  refresh_rate: "Tần số quét (Hz)",
+  t_n_s_qu_t: "Tần số quét (Hz)",
+  screen_tech: "Công nghệ màn hình",
+  c_ng_ngh_m_n_h_nh: "Công nghệ màn hình",
+  connectivity: "Kết nối không dây",
+  chu_n_wifi_bluetooth: "Kết nối không dây",
+  os: "Hệ điều hành",
+  h_i_u_h_nh: "Hệ điều hành",
+  webcam: "Webcam",
+  battery: "Pin & Bộ sạc",
+  k_ch_th_c_m_y: "Kích thước máy",
+  ch_t_li_u_v_m_n_h_nh: "Chất liệu vỏ",
+  s_ng_m_n_h_nh: "Độ sáng (cd/m²)",
+  audio_tech: "Công nghệ âm thanh",
+  c_ng_ngh_m_thanh: "Công nghệ âm thanh",
+  touchscreen: "Màn hình cảm ứng",
+  m_n_h_nh_c_m_ng: "Màn hình cảm ứng",
+  has_numpad: "Bàn phím số (Numpad)",
+  b_n_ph_m_c_n: "Bàn phím số (Numpad)",
+  is_two_in_one: "Laptop 2-in-1 (Xoay gập)",
+  laptop_2_trong_1: "Laptop 2-in-1 (Xoay gập)",
+  screen_finish: "Bề mặt màn hình",
+  t_nh_ch_t_b_m_t: "Bề mặt màn hình",
+  ph_n_gi_i: "Độ phân giải",
+  chu_n_m_u: "Độ chuẩn màu",
+  card_h_a: "Card đồ họa (VGA)",
+  nhu_c_u_s_d_ng_laptop: "Nhu cầu sử dụng",
+
+  // Case
+  size: "Kích thước",
+  case_size: "Kích thước vỏ máy",
+  k_ch_th_c_case: "Kích thước vỏ máy",
+  max_gpu_length_mm: "Độ dài GPU tối đa (mm)",
+  d_i_vga_t_i_a: "Độ dài GPU tối đa (mm)",
+  supported_mainboards: "Bo mạch hỗ trợ",
+  h_tr_main: "Bo mạch hỗ trợ",
+  max_cpu_cooler_height_mm: "Chiều cao CPU Cooler tối đa (mm)",
+  chi_u_cao_t_n_nhi_t_cpu_t_i_a: "Chiều cao tản nhiệt CPU tối đa",
+  fan_count_included: "Số lượng quạt đi kèm",
+  s_l_ng_qu_t_i_k_m: "Số lượng quạt đi kèm",
+  color: "Màu sắc",
+  "Màu sắc": "Màu sắc",
+  material: "Chất liệu",
+  ch_t_li_u: "Chất liệu",
+  usb_3_0_ports: "Cổng USB 3.0",
+  c_ng_usb_3_0: "Cổng USB 3.0",
+  usb_2_0_ports: "Cổng USB 2.0",
+  c_ng_usb_2_0: "Cổng USB 2.0",
+  usb_type_c_ports: "Cổng USB Type-C",
+  "Cổng USB Type-C": "Cổng USB Type-C",
+  c_ng_usb_type_c: "Cổng USB Type-C",
+  audio_ports: "Cổng kết nối Audio",
+  c_ng_audio: "Cổng kết nối Audio",
+  supported_psu: "Hỗ trợ nguồn (PSU)",
+  h_tr_ngu_n_psu: "Hỗ trợ nguồn (PSU)",
+  supported_radiators: "Hỗ trợ Radiator tản nhiệt nước",
+  h_tr_t_n_nhi_t_n_c_radiator: "Hỗ trợ Radiator tản nhiệt nước",
+  pci_slots: "Khe cắm mở rộng PCI",
+  khe_c_m_m_r_ng_pci: "Khe cắm mở rộng PCI",
+  odd_bays: "Khoang ổ đĩa quang (ODD)",
+  khoang_a_quang_odd: "Khoang ổ đĩa quang (ODD)",
+  tempered_glass_side: "Mặt kính cường lực",
+  m_t_k_nh_c_ng_l_c: "Mặt kính cường lực",
+  bottom_fan_support: "Hỗ trợ quạt mặt dưới",
+  qu_t_t_n_nhi_t_m_t_d_i: "Hỗ trợ quạt mặt dưới",
+  drive_bays: "Khay gắn ổ cứng (SSD/HDD)",
+  khay_g_n_c_ng: "Khay gắn ổ cứng (SSD/HDD)",
+  rear_fan_support: "Hỗ trợ quạt mặt sau",
+  qu_t_t_n_nhi_t_m_t_sau: "Hỗ trợ quạt mặt sau",
+  top_fan_support: "Hỗ trợ quạt mặt trên",
+  qu_t_t_n_nhi_t_m_t_tr_n: "Hỗ trợ quạt mặt trên",
+  front_fan_support: "Hỗ trợ quạt mặt trước",
+  qu_t_t_n_nhi_t_m_t_tr_c: "Hỗ trợ quạt mặt trước",
+  psu_position: "Vị trí đặt nguồn",
+  v_tr_t_ngu_n: "Vị trí đặt nguồn",
+};

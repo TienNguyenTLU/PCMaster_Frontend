@@ -1,8 +1,9 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { AlertTriangle } from 'lucide-react';
-import { BuildState } from './BuildPage';
+import React from "react";
+import { AlertTriangle } from "lucide-react";
+import { BuildState } from "./BuildPage";
+import { SLOT_LABEL_MAP } from "@/lib/labelMapping";
 
 interface ConfirmSelectionModalProps {
   showConfirmModal: boolean;
@@ -17,18 +18,9 @@ export default function ConfirmSelectionModal({
   pendingSelection,
   cancelPendingSelection,
   confirmPendingSelection,
-  build
+  build,
 }: ConfirmSelectionModalProps) {
   if (!showConfirmModal || !pendingSelection) return null;
-
-  const slotLabelsMap: Record<string, string> = {
-    cpu: 'Vi xử lý (CPU)',
-    mainboard: 'Bo mạch chủ (Mainboard)',
-    ram: 'Bộ nhớ RAM',
-    storage: 'Ổ cứng SSD/HDD',
-    case: 'Vỏ máy (Case)',
-    cooler: 'Tản nhiệt CPU'
-  };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in duration-200">
@@ -38,9 +30,15 @@ export default function ConfirmSelectionModal({
             <AlertTriangle className="size-6 text-red-500" />
           </div>
           <div className="flex-1 min-w-0">
-            <h3 className="text-[17px] font-bold text-[#0f172a] mb-1">Xác nhận đổi linh kiện?</h3>
+            <h3 className="text-[17px] font-bold text-[#0f172a] mb-1">
+              Xác nhận đổi linh kiện?
+            </h3>
             <p className="text-[13px] text-[#64748b] leading-relaxed">
-              Linh kiện <span className="font-semibold text-[#0f172a]">{pendingSelection.product.name}</span> bạn chọn không tương thích với cấu hình hiện tại.
+              Linh kiện{" "}
+              <span className="font-semibold text-[#0f172a]">
+                {pendingSelection.product.name}
+              </span>{" "}
+              bạn chọn không tương thích với cấu hình hiện tại.
             </p>
           </div>
         </div>
@@ -51,13 +49,20 @@ export default function ConfirmSelectionModal({
           </p>
           <div className="flex flex-col gap-2">
             {pendingSelection.incompatibleSlots.map((slot: string) => {
-              const currentCompName = build[slot]?.name || 'Chưa chọn';
+              const currentCompName = build[slot]?.name || "Chưa chọn";
               return (
-                <div key={slot} className="flex items-start gap-2.5 text-[13px]">
+                <div
+                  key={slot}
+                  className="flex items-start gap-2.5 text-[13px]"
+                >
                   <span className="w-1.5 h-1.5 rounded-full bg-red-400 mt-2 shrink-0" />
                   <div className="flex-1 min-w-0">
-                    <span className="font-semibold text-slate-700">{slotLabelsMap[slot] || slot}:</span>{' '}
-                    <span className="text-slate-500 line-clamp-1">{currentCompName}</span>
+                    <span className="font-semibold text-slate-700">
+                      {SLOT_LABEL_MAP[slot] || slot}:
+                    </span>{" "}
+                    <span className="text-slate-500 line-clamp-1">
+                      {currentCompName}
+                    </span>
                   </div>
                 </div>
               );

@@ -1,12 +1,27 @@
-'use client';
+"use client";
 
-import { CheckCircle2, Clock, ExternalLink, Home, Layers, Loader2, MapPin, Store, Truck, User, X } from 'lucide-react';
-import { IssueSlipResponse } from '@/lib/api';
+import {
+  CheckCircle2,
+  Clock,
+  ExternalLink,
+  Home,
+  Layers,
+  Loader2,
+  MapPin,
+  Store,
+  Truck,
+  User,
+  X,
+} from "lucide-react";
+import { IssueSlipResponse } from "@/lib/api";
 
 function formatDate(iso: string) {
-  return new Date(iso).toLocaleString('vi-VN', {
-    day: '2-digit', month: '2-digit', year: 'numeric',
-    hour: '2-digit', minute: '2-digit',
+  return new Date(iso).toLocaleString("vi-VN", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
   });
 }
 
@@ -17,16 +32,25 @@ interface IssueSlipDetailModalProps {
   dispatching: boolean;
 }
 
-export default function IssueSlipDetailModal({ slip, onClose, onDispatch, dispatching }: IssueSlipDetailModalProps) {
-  const isPending = slip.status === 'PENDING';
+export default function IssueSlipDetailModal({
+  slip,
+  onClose,
+  onDispatch,
+  dispatching,
+}: IssueSlipDetailModalProps) {
+  const isPending = slip.status === "PENDING";
 
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
-      onClick={e => { if (e.target === e.currentTarget) onClose(); }}
+      onClick={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
     >
-      <div className="bg-white rounded-[12px] shadow-xl w-full max-w-[650px] max-h-[90vh] flex flex-col overflow-hidden border border-[#e2e8f0]" style={{ fontFamily: 'Inter, sans-serif' }}>
-        
+      <div
+        className="bg-white rounded-[12px] shadow-xl w-full max-w-[650px] max-h-[90vh] flex flex-col overflow-hidden border border-[#e2e8f0]"
+        style={{ fontFamily: "Inter, sans-serif" }}
+      >
         {/* Modal Header */}
         <div className="border-b border-[#e2e8f0] px-6 py-4 flex items-center justify-between bg-[#f8fafc]">
           <div>
@@ -34,7 +58,9 @@ export default function IssueSlipDetailModal({ slip, onClose, onDispatch, dispat
               Mã phiếu: {slip.code}
             </h2>
             <p className="text-[12px] text-[#64748b] mt-0.5">
-              {slip.orderId ? 'Chi tiết yêu cầu phiếu xuất kho bán lẻ' : 'Chi tiết phiếu xuất kho trực tiếp'}
+              {slip.orderId
+                ? "Chi tiết yêu cầu phiếu xuất kho bán lẻ"
+                : "Chi tiết phiếu xuất kho trực tiếp"}
             </p>
           </div>
           <div className="flex items-center gap-3">
@@ -58,7 +84,6 @@ export default function IssueSlipDetailModal({ slip, onClose, onDispatch, dispat
 
         {/* Modal Content */}
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
-          
           {/* Slip Metadata Card */}
           <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[8px] p-4 grid grid-cols-1 md:grid-cols-2 gap-4 text-[13px]">
             {slip.orderId ? (
@@ -66,43 +91,64 @@ export default function IssueSlipDetailModal({ slip, onClose, onDispatch, dispat
                 <div className="flex items-start gap-2.5">
                   <User className="size-4 text-[#0058be] shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-[10px] font-bold text-[#64748b] uppercase tracking-[0.5px]">Người nhận hàng</p>
-                    <p className="font-semibold text-[#0f172a] mt-0.5">{slip.recipientName ?? '—'}</p>
-                    <p className="text-[11.5px] text-[#64748b] mt-0.5">{slip.recipientPhone ?? '—'}</p>
+                    <p className="text-[10px] font-bold text-[#64748b] uppercase tracking-[0.5px]">
+                      Người nhận hàng
+                    </p>
+                    <p className="font-semibold text-[#0f172a] mt-0.5">
+                      {slip.recipientName ?? "—"}
+                    </p>
+                    <p className="text-[11.5px] text-[#64748b] mt-0.5">
+                      {slip.recipientPhone ?? "—"}
+                    </p>
                   </div>
                 </div>
 
                 <div className="flex items-start gap-2.5">
-                  {slip.deliveryType === 'HOME_DELIVERY' ? (
+                  {slip.deliveryType === "HOME_DELIVERY" ? (
                     <Home className="size-4 text-[#0058be] shrink-0 mt-0.5" />
                   ) : (
                     <Store className="size-4 text-amber-600 shrink-0 mt-0.5" />
                   )}
                   <div>
-                    <p className="text-[10px] font-bold text-[#64748b] uppercase tracking-[0.5px]">Hình thức nhận</p>
+                    <p className="text-[10px] font-bold text-[#64748b] uppercase tracking-[0.5px]">
+                      Hình thức nhận
+                    </p>
                     <p className="font-semibold text-[#0f172a] mt-0.5">
-                      {slip.deliveryType === 'HOME_DELIVERY' ? 'Giao hàng tận nơi' : 'Nhận tại cửa hàng'}
+                      {slip.deliveryType === "HOME_DELIVERY"
+                        ? "Giao hàng tận nơi"
+                        : "Nhận tại cửa hàng"}
                     </p>
                   </div>
                 </div>
 
-                {slip.deliveryType === 'HOME_DELIVERY' && slip.shippingAddress && (
-                  <div className="col-span-1 md:col-span-2 flex items-start gap-2.5 border-t border-[#e2e8f0] pt-3">
-                    <MapPin className="size-4 text-[#94a3b8] shrink-0 mt-0.5" />
-                    <div>
-                      <p className="text-[10px] font-bold text-[#64748b] uppercase tracking-[0.5px]">Địa chỉ giao hàng</p>
-                      <p className="text-[#475569] font-medium leading-relaxed mt-0.5">{slip.shippingAddress}</p>
+                {slip.deliveryType === "HOME_DELIVERY" &&
+                  slip.shippingAddress && (
+                    <div className="col-span-1 md:col-span-2 flex items-start gap-2.5 border-t border-[#e2e8f0] pt-3">
+                      <MapPin className="size-4 text-[#94a3b8] shrink-0 mt-0.5" />
+                      <div>
+                        <p className="text-[10px] font-bold text-[#64748b] uppercase tracking-[0.5px]">
+                          Địa chỉ giao hàng
+                        </p>
+                        <p className="text-[#475569] font-medium leading-relaxed mt-0.5">
+                          {slip.shippingAddress}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
               </>
             ) : (
               <div className="col-span-1 md:col-span-2 flex items-start gap-2.5">
                 <User className="size-4 text-[#0058be] shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-[10px] font-bold text-[#64748b] uppercase tracking-[0.5px]">Lý do xuất kho</p>
-                  <p className="font-semibold text-[#0f172a] mt-0.5">{slip.recipientName ?? '—'}</p>
-                  <p className="text-[11.5px] text-[#64748b] mt-0.5">Xuất kho trực tiếp từ hệ thống quản lý</p>
+                  <p className="text-[10px] font-bold text-[#64748b] uppercase tracking-[0.5px]">
+                    Lý do xuất kho
+                  </p>
+                  <p className="font-semibold text-[#0f172a] mt-0.5">
+                    {slip.recipientName ?? "—"}
+                  </p>
+                  <p className="text-[11.5px] text-[#64748b] mt-0.5">
+                    Xuất kho trực tiếp từ hệ thống quản lý
+                  </p>
                 </div>
               </div>
             )}
@@ -111,12 +157,16 @@ export default function IssueSlipDetailModal({ slip, onClose, onDispatch, dispat
               <div className="flex justify-between">
                 <span>Mã đơn hàng liên kết:</span>
                 <span className="font-semibold text-[#334155]">
-                  {slip.orderId ? `#${slip.orderId}` : 'Không có (Xuất thủ công)'}
+                  {slip.orderId
+                    ? `#${slip.orderId}`
+                    : "Không có (Xuất thủ công)"}
                 </span>
               </div>
               <div className="flex justify-between">
                 <span>Ngày lập phiếu xuất:</span>
-                <span className="font-semibold text-[#334155]">{formatDate(slip.createdAt)}</span>
+                <span className="font-semibold text-[#334155]">
+                  {formatDate(slip.createdAt)}
+                </span>
               </div>
               {slip.completedAt && (
                 <div className="flex justify-between text-emerald-700 font-medium">
@@ -135,18 +185,27 @@ export default function IssueSlipDetailModal({ slip, onClose, onDispatch, dispat
             </h3>
             <div className="border border-[#e2e8f0] rounded-[8px] overflow-hidden divide-y divide-[#e2e8f0]">
               {slip.items.map((item, index) => (
-                <div key={item.id} className="bg-white hover:bg-[#f8fafc]/50 px-4 py-3 flex items-center justify-between text-[13px]">
+                <div
+                  key={item.id}
+                  className="bg-white hover:bg-[#f8fafc]/50 px-4 py-3 flex items-center justify-between text-[13px]"
+                >
                   <div className="flex items-center gap-3">
                     <span className="size-5.5 bg-[#f1f5f9] text-[#475569] text-[11px] font-semibold flex items-center justify-center rounded-full shrink-0">
                       {index + 1}
                     </span>
                     <div>
-                      <p className="font-semibold text-[#0f172a]">{item.productName}</p>
-                      <p className="text-[11px] text-[#94a3b8] mt-0.5">Mã SP: #{item.productId}</p>
+                      <p className="font-semibold text-[#0f172a]">
+                        {item.productName}
+                      </p>
+                      <p className="text-[11px] text-[#94a3b8] mt-0.5">
+                        Mã SP: #{item.productId}
+                      </p>
                     </div>
                   </div>
                   <div className="text-right">
-                    <span className="text-[10px] text-[#94a3b8] font-bold block">Số lượng</span>
+                    <span className="text-[10px] text-[#94a3b8] font-bold block">
+                      Số lượng
+                    </span>
                     <span className="text-[14px] font-bold text-[#0f172a]">
                       {item.quantity}
                     </span>
@@ -193,7 +252,6 @@ export default function IssueSlipDetailModal({ slip, onClose, onDispatch, dispat
             ) : null}
           </div>
         </div>
-
       </div>
     </div>
   );

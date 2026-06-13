@@ -1,12 +1,26 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { Plus, Search, Edit, Trash2, AlertTriangle, Loader2, Download } from 'lucide-react';
-import { adminAPI, Product, Brand, Category, getCategoryLabel } from '@/lib/api';
-import { CldImage } from 'next-cloudinary';
-import ProductFormModal from '@/components/dashboard/ProductFormModal';
-import GearvnImportModal from '@/components/dashboard/GearvnImportModal';
-import toast from 'react-hot-toast';
+import { useState, useEffect } from "react";
+import {
+  Plus,
+  Search,
+  Edit,
+  Trash2,
+  AlertTriangle,
+  Loader2,
+  Download,
+} from "lucide-react";
+import {
+  adminAPI,
+  Product,
+  Brand,
+  Category,
+  getCategoryLabel,
+} from "@/lib/api";
+import { CldImage } from "next-cloudinary";
+import ProductFormModal from "@/components/dashboard/ProductFormModal";
+import GearvnImportModal from "@/components/dashboard/GearvnImportModal";
+import toast from "react-hot-toast";
 
 export default function ProductsPage() {
   const [allProducts, setAllProducts] = useState<Product[]>([]);
@@ -15,15 +29,15 @@ export default function ProductsPage() {
 
   // Pagination & Loading state
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const [page, setPage] = useState(0);
   const PAGE_SIZE = 7;
 
   // Filter state
-  const [searchTerm, setSearchTerm] = useState('');
-  const [debouncedSearch, setDebouncedSearch] = useState('');
-  const [selectedCategory, setSelectedCategory] = useState('');
-  const [selectedBrand, setSelectedBrand] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedBrand, setSelectedBrand] = useState("");
 
   // Modal state
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -36,8 +50,6 @@ export default function ProductsPage() {
   // Gearvn import modal state
   const [isGearvnModalOpen, setIsGearvnModalOpen] = useState(false);
 
-
-
   // Debounce search term
   useEffect(() => {
     const handler = setTimeout(() => {
@@ -47,38 +59,38 @@ export default function ProductsPage() {
     return () => clearTimeout(handler);
   }, [searchTerm]);
 
-
-
   // Fetch initial data (brands, categories)
   useEffect(() => {
-    adminAPI.getBrands(0, 100).then(res => setBrandsList(res.content || []));
-    adminAPI.getCategories(0, 100).then(res => setCategoriesList(res.content || []));
+    adminAPI.getBrands(0, 100).then((res) => setBrandsList(res.content || []));
+    adminAPI
+      .getCategories(0, 100)
+      .then((res) => setCategoriesList(res.content || []));
   }, []);
 
   const fetchProducts = async () => {
     try {
       setLoading(true);
-      setError('');
-      
+      setError("");
+
       let all: Product[] = [];
       let currentPage = 0;
       let totalPages = 1;
-      
+
       // Loop through all pages to ensure we get 100% of the products for frontend filtering
       while (currentPage < totalPages) {
         const response = await adminAPI.getProducts(currentPage, 1000);
         const content = response.content || [];
         all = [...all, ...content];
         totalPages = response.totalPages || 1;
-        
+
         // Safety break to prevent infinite loops
         if (currentPage >= 100 || content.length === 0) break;
         currentPage++;
       }
-      
+
       setAllProducts(all);
     } catch {
-      setError('Lỗi khi tải danh sách sản phẩm. Vui lòng thử lại sau.');
+      setError("Lỗi khi tải danh sách sản phẩm. Vui lòng thử lại sau.");
     } finally {
       setLoading(false);
     }
@@ -93,16 +105,25 @@ export default function ProductsPage() {
   }, []);
 
   // Compute filtered and paginated products
-  const filteredProducts = allProducts.filter(p => {
-    const matchSearch = debouncedSearch ? p.name.toLowerCase().includes(debouncedSearch.toLowerCase()) : true;
-    const matchCat = selectedCategory ? String(p.category?.id ?? p.categoryId) === selectedCategory : true;
-    const matchBrand = selectedBrand ? String(p.brand?.id ?? p.brandId) === selectedBrand : true;
+  const filteredProducts = allProducts.filter((p) => {
+    const matchSearch = debouncedSearch
+      ? p.name.toLowerCase().includes(debouncedSearch.toLowerCase())
+      : true;
+    const matchCat = selectedCategory
+      ? String(p.category?.id ?? p.categoryId) === selectedCategory
+      : true;
+    const matchBrand = selectedBrand
+      ? String(p.brand?.id ?? p.brandId) === selectedBrand
+      : true;
     return matchSearch && matchCat && matchBrand;
   });
 
   const totalElements = filteredProducts.length;
   const totalPages = Math.ceil(totalElements / PAGE_SIZE) || 1;
-  const currentProducts = filteredProducts.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+  const currentProducts = filteredProducts.slice(
+    page * PAGE_SIZE,
+    (page + 1) * PAGE_SIZE,
+  );
 
   const handleAddClick = () => {
     setEditingProduct(null);
@@ -124,10 +145,10 @@ export default function ProductsPage() {
     try {
       await adminAPI.deleteProduct(deletingProduct.id);
       setDeletingProduct(null);
-      toast.success('Xóa sản phẩm thành công!');
+      toast.success("Xóa sản phẩm thành công!");
       fetchProducts();
     } catch {
-      toast.error('Xóa sản phẩm thất bại. Vui lòng thử lại.');
+      toast.error("Xóa sản phẩm thất bại. Vui lòng thử lại.");
     } finally {
       setDeleteLoading(false);
     }
@@ -138,8 +159,12 @@ export default function ProductsPage() {
       {/* Page Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-[#0f172a] text-[24px] font-semibold tracking-[-0.5px]">Sản phẩm</h2>
-          <p className="text-[#64748b] text-[14px] mt-1">Quản lý danh mục và kho hàng của cửa hàng.</p>
+          <h2 className="text-[#0f172a] text-[24px] font-semibold tracking-[-0.5px]">
+            Sản phẩm
+          </h2>
+          <p className="text-[#64748b] text-[14px] mt-1">
+            Quản lý danh mục và kho hàng của cửa hàng.
+          </p>
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -182,7 +207,11 @@ export default function ProductsPage() {
             className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[8px] px-3 py-2 text-[14px] focus:outline-none focus:border-[#0058be] transition-all"
           >
             <option value="">Tất cả danh mục</option>
-            {categoriesList.map(c => <option key={c.id} value={c.id}>{getCategoryLabel(c.name)}</option>)}
+            {categoriesList.map((c) => (
+              <option key={c.id} value={c.id}>
+                {getCategoryLabel(c.name)}
+              </option>
+            ))}
           </select>
 
           <select
@@ -194,7 +223,11 @@ export default function ProductsPage() {
             className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[8px] px-3 py-2 text-[14px] focus:outline-none focus:border-[#0058be] transition-all"
           >
             <option value="">Tất cả thương hiệu</option>
-            {brandsList.map(b => <option key={b.id} value={b.id}>{b.name}</option>)}
+            {brandsList.map((b) => (
+              <option key={b.id} value={b.id}>
+                {b.name}
+              </option>
+            ))}
           </select>
         </div>
       </div>
@@ -230,12 +263,17 @@ export default function ProductsPage() {
               </thead>
               <tbody className="divide-y divide-[#e2e8f0]">
                 {currentProducts.map((product) => {
-                  const categoryName = getCategoryLabel(product.category?.name ?? '');
-                  const brandName = product.brand?.name ?? '';
+                  const categoryName = getCategoryLabel(
+                    product.category?.name ?? "",
+                  );
+                  const brandName = product.brand?.name ?? "";
                   const brandLogo = product.brand?.logoUrl ?? null;
 
                   return (
-                    <tr key={product.id} className="hover:bg-[#f8fafc] transition-colors">
+                    <tr
+                      key={product.id}
+                      className="hover:bg-[#f8fafc] transition-colors"
+                    >
                       <td className="px-6 py-4">
                         {product.thumbnailUrl ? (
                           <div className="h-10 w-10 relative bg-white border border-[#e2e8f0] rounded-[8px] overflow-hidden flex items-center justify-center">
@@ -254,9 +292,15 @@ export default function ProductsPage() {
                           </div>
                         )}
                       </td>
-                      <td className="px-6 py-4 font-medium text-[#0f172a]">{product.id}</td>
-                      <td className="px-6 py-4 text-[#475569] max-w-[200px] truncate">{product.name}</td>
-                      <td className="px-6 py-4 text-[#475569]">{categoryName}</td>
+                      <td className="px-6 py-4 font-medium text-[#0f172a]">
+                        {product.id}
+                      </td>
+                      <td className="px-6 py-4 text-[#475569] max-w-[200px] truncate">
+                        {product.name}
+                      </td>
+                      <td className="px-6 py-4 text-[#475569]">
+                        {categoryName}
+                      </td>
                       <td className="px-6 py-4 text-[#475569]">
                         <div className="flex items-center">
                           {brandLogo ? (
@@ -272,15 +316,20 @@ export default function ProductsPage() {
                             </div>
                           ) : (
                             <div className="h-8 w-16 bg-gray-100 rounded flex items-center justify-center text-[10px] text-gray-400 font-medium truncate px-1">
-                              {brandName || 'Không logo'}
+                              {brandName || "Không logo"}
                             </div>
                           )}
                         </div>
                       </td>
                       <td className="px-6 py-4 text-[#0f172a] font-medium">
-                        {new Intl.NumberFormat('vi-VN', { style: 'currency', currency: 'VND' }).format(product.price)}
+                        {new Intl.NumberFormat("vi-VN", {
+                          style: "currency",
+                          currency: "VND",
+                        }).format(product.price)}
                       </td>
-                      <td className="px-6 py-4 text-[#475569]">{product.stock}</td>
+                      <td className="px-6 py-4 text-[#475569]">
+                        {product.stock}
+                      </td>
                       <td className="px-6 py-4">
                         <div className="flex items-center justify-end gap-2 text-[#94a3b8]">
                           <button
@@ -310,10 +359,13 @@ export default function ProductsPage() {
         {/* Pagination */}
         {!loading && !error && currentProducts.length > 0 && (
           <div className="px-6 py-4 border-t border-[#e2e8f0] flex items-center justify-between text-[13px] text-[#64748b]">
-            <span>Hiển thị trang {page + 1} / {totalPages} (Tổng số: {totalElements})</span>
+            <span>
+              Hiển thị trang {page + 1} / {totalPages} (Tổng số: {totalElements}
+              )
+            </span>
             <div className="flex gap-1">
               <button
-                onClick={() => setPage(p => Math.max(0, p - 1))}
+                onClick={() => setPage((p) => Math.max(0, p - 1))}
                 disabled={page === 0}
                 className="px-3 py-1 border border-[#e2e8f0] rounded-[6px] hover:bg-[#f8fafc] disabled:opacity-50 cursor-pointer"
               >
@@ -323,7 +375,7 @@ export default function ProductsPage() {
                 {page + 1}
               </button>
               <button
-                onClick={() => setPage(p => Math.min(totalPages - 1, p + 1))}
+                onClick={() => setPage((p) => Math.min(totalPages - 1, p + 1))}
                 disabled={page >= totalPages - 1}
                 className="px-3 py-1 border border-[#e2e8f0] rounded-[6px] hover:bg-[#f8fafc] disabled:opacity-50 cursor-pointer"
               >
@@ -349,13 +401,13 @@ export default function ProductsPage() {
         onSuccess={handleModalSuccess}
       />
 
-
-
       {/* Delete Confirm Dialog */}
       {deletingProduct && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
-          onClick={(e) => e.target === e.currentTarget && setDeletingProduct(null)}
+          onClick={(e) =>
+            e.target === e.currentTarget && setDeletingProduct(null)
+          }
         >
           <div className="bg-white rounded-[16px] shadow-2xl w-full max-w-sm mx-4 p-6 flex flex-col gap-4">
             <div className="flex items-start gap-3">
@@ -363,9 +415,15 @@ export default function ProductsPage() {
                 <AlertTriangle className="size-5 text-red-600" />
               </div>
               <div>
-                <h4 className="text-[#0f172a] font-semibold text-[16px]">Xóa sản phẩm</h4>
+                <h4 className="text-[#0f172a] font-semibold text-[16px]">
+                  Xóa sản phẩm
+                </h4>
                 <p className="text-[#64748b] text-[14px] mt-1">
-                  Bạn có chắc muốn xóa <span className="font-medium text-[#0f172a]">&ldquo;{deletingProduct.name}&rdquo;</span>? Hành động này không thể hoàn tác.
+                  Bạn có chắc muốn xóa{" "}
+                  <span className="font-medium text-[#0f172a]">
+                    &ldquo;{deletingProduct.name}&rdquo;
+                  </span>
+                  ? Hành động này không thể hoàn tác.
                 </p>
               </div>
             </div>

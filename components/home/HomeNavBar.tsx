@@ -1,18 +1,25 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { useRouter, usePathname } from 'next/navigation';
-import { useAuthStore, useCartStore } from '@/lib/store';
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { useRouter, usePathname } from "next/navigation";
+import { useAuthStore, useCartStore } from "@/lib/store";
 
-import { ShoppingCart, User, Settings, ClipboardList, Cpu, LogOut } from 'lucide-react';
+import {
+  ShoppingCart,
+  User,
+  Settings,
+  ClipboardList,
+  Cpu,
+  LogOut,
+} from "lucide-react";
 
 const navLinks = [
-  { label: 'Build PC', href: '/builds' },
-  { label: 'Linh Kiện', href: '/explore' },
-  { label: 'PC build sẵn', href: '/prebuilt' },
-  { label: 'Khuyến Mãi', href: '/promotions' },
-  { label: 'Hỗ trợ', href: '/support' },
+  { label: "Build PC", href: "/builds" },
+  { label: "Linh Kiện", href: "/explore" },
+  { label: "PC build sẵn", href: "/prebuilt" },
+  { label: "Khuyến Mãi", href: "/promotions" },
+  { label: "Hỗ trợ", href: "/support" },
 ];
 
 export default function HomeNavBar() {
@@ -20,7 +27,7 @@ export default function HomeNavBar() {
   const { items, fetchCart } = useCartStore();
   const router = useRouter();
   const pathname = usePathname();
-  
+
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const [isLogoutModalOpen, setIsLogoutModalOpen] = useState(false);
   const [isScrolled, setIsScrolled] = useState(false);
@@ -36,9 +43,9 @@ export default function HomeNavBar() {
         setIsScrolled(false);
       }
     };
-    window.addEventListener('scroll', handleScroll);
+    window.addEventListener("scroll", handleScroll);
     handleScroll();
-    return () => window.removeEventListener('scroll', handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
   // Hydrate once on mount — reads localStorage, validates JWT expiry, sets store.
@@ -58,18 +65,18 @@ export default function HomeNavBar() {
     if (!isDropdownOpen) return;
     const handler = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
-      if (!target.closest('[data-dropdown]')) {
+      if (!target.closest("[data-dropdown]")) {
         setIsDropdownOpen(false);
       }
     };
-    document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
   }, [isDropdownOpen]);
 
   const confirmLogout = () => {
     logout();
     setIsLogoutModalOpen(false);
-    router.push('/home');
+    router.push("/home");
   };
 
   return (
@@ -78,17 +85,18 @@ export default function HomeNavBar() {
         className={`
           fixed top-0 left-0 right-0 z-40
           transition-all duration-300 ease-in-out
-          ${isScrolled 
-            ? 'bg-white/80 border-b border-[#e2e8f0]/80 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.08)] backdrop-blur-[16px]' 
-            : 'bg-white/40 border-b border-[#e2e8f0]/30 backdrop-blur-[8px]'
+          ${
+            isScrolled
+              ? "bg-white/80 border-b border-[#e2e8f0]/80 shadow-[0_4px_20px_-10px_rgba(0,0,0,0.08)] backdrop-blur-[16px]"
+              : "bg-white/40 border-b border-[#e2e8f0]/30 backdrop-blur-[8px]"
           }
         `}
       >
-        <div 
+        <div
           className={`
             flex items-center justify-between max-w-[1536px] mx-auto px-8
             transition-all duration-300 ease-in-out
-            ${isScrolled ? 'py-3' : 'py-4'}
+            ${isScrolled ? "py-3" : "py-4"}
           `}
         >
           {/* Left: Logo + nav links */}
@@ -96,7 +104,7 @@ export default function HomeNavBar() {
             <Link
               href="/home"
               className="text-[#0f172a] text-[24px] tracking-[-1.2px] leading-[32px] font-bold hover:opacity-85 active:scale-95 transition-all duration-200"
-              style={{ fontFamily: 'Inter, sans-serif' }}
+              style={{ fontFamily: "Inter, sans-serif" }}
             >
               PCMaster
             </Link>
@@ -110,20 +118,21 @@ export default function HomeNavBar() {
                     href={link.href}
                     className={`
                       group relative text-[15px] tracking-[-0.4px] font-semibold transition-colors whitespace-nowrap pb-1 pt-0.5
-                      ${isActive ? 'text-[#0058be]' : 'text-[#475569] hover:text-[#0058be]'}
+                      ${isActive ? "text-[#0058be]" : "text-[#475569] hover:text-[#0058be]"}
                     `}
-                    style={{ fontFamily: 'Inter, sans-serif' }}
+                    style={{ fontFamily: "Inter, sans-serif" }}
                   >
                     {link.label}
                     {/* Active/Hover line slide animation */}
-                    <span 
+                    <span
                       className={`
                         absolute bottom-0 left-0 right-0 h-[2px] bg-[#0058be] rounded-full transition-all duration-300 origin-left
-                        ${isActive 
-                          ? 'scale-x-100 opacity-100' 
-                          : 'scale-x-0 opacity-0 group-hover:scale-x-100 group-hover:opacity-100'
+                        ${
+                          isActive
+                            ? "scale-x-100 opacity-100"
+                            : "scale-x-0 opacity-0 group-hover:scale-x-100 group-hover:opacity-100"
                         }
-                      `} 
+                      `}
                     />
                   </Link>
                 );
@@ -145,7 +154,7 @@ export default function HomeNavBar() {
               <ShoppingCart className="size-5 transition-transform duration-300 group-hover:rotate-6 group-hover:scale-110" />
               {cartCount > 0 && (
                 <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] bg-[#0058be] text-white text-[9px] font-bold rounded-full flex items-center justify-center px-1 shadow-sm transition-all duration-300">
-                  {cartCount > 99 ? '99+' : cartCount}
+                  {cartCount > 99 ? "99+" : cartCount}
                 </span>
               )}
             </Link>
@@ -175,8 +184,12 @@ export default function HomeNavBar() {
                   <div className="absolute right-0 mt-2 w-64 bg-white border border-[#e2e8f0] rounded-[12px] shadow-xl py-2 flex flex-col z-50 overflow-hidden animate-dropdown origin-top-right">
                     {/* User info header */}
                     <div className="px-4 py-3 border-b border-[#f1f5f9] bg-[#f8fafc]">
-                      <p className="text-[14px] font-semibold text-[#0f172a]">{user.username}</p>
-                      <p className="text-[12px] text-[#64748b] truncate">{user.email}</p>
+                      <p className="text-[14px] font-semibold text-[#0f172a]">
+                        {user.username}
+                      </p>
+                      <p className="text-[12px] text-[#64748b] truncate">
+                        {user.email}
+                      </p>
                     </div>
 
                     {/* Menu items */}
@@ -211,7 +224,10 @@ export default function HomeNavBar() {
                     <div className="border-t border-[#f1f5f9] mt-1 p-1">
                       <button
                         type="button"
-                        onClick={() => { setIsDropdownOpen(false); setIsLogoutModalOpen(true); }}
+                        onClick={() => {
+                          setIsDropdownOpen(false);
+                          setIsLogoutModalOpen(true);
+                        }}
                         className="flex items-center gap-3 w-full text-left px-3 py-2 text-[14px] text-red-600 hover:bg-[#fef2f2] transition-all rounded-[6px] cursor-pointer"
                       >
                         <LogOut className="size-4" />
@@ -253,7 +269,9 @@ export default function HomeNavBar() {
               <div className="p-2 bg-red-50 rounded-full">
                 <LogOut className="size-6" />
               </div>
-              <h3 className="text-[#0f172a] text-[18px] font-bold">Xác nhận đăng xuất</h3>
+              <h3 className="text-[#0f172a] text-[18px] font-bold">
+                Xác nhận đăng xuất
+              </h3>
             </div>
             <p className="text-[#475569] text-[14px] leading-relaxed">
               Bạn có chắc chắn muốn đăng xuất khỏi hệ thống?

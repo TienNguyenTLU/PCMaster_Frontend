@@ -1,6 +1,6 @@
-import { LucideIcon, ArrowRight } from 'lucide-react';
-import Link from 'next/link';
-import { getCategoryLabel } from '@/lib/api';
+import { LucideIcon, ArrowRight } from "lucide-react";
+import Link from "next/link";
+import { getCategoryLabel } from "@/lib/api";
 
 interface CategoryCardProps {
   id: string | number;
@@ -8,7 +8,11 @@ interface CategoryCardProps {
   Icon: LucideIcon;
 }
 
-export default function HomeCategoryCard({ id, name, Icon }: CategoryCardProps) {
+export default function HomeCategoryCard({
+  id,
+  name,
+  Icon,
+}: CategoryCardProps) {
   return (
     <Link
       href={`/explore?category=${id}`}
@@ -23,11 +27,11 @@ export default function HomeCategoryCard({ id, name, Icon }: CategoryCardProps) 
       <div className="flex flex-col items-center gap-1 min-h-[46px] justify-center">
         <h3
           className="text-[#191c1e] text-[15px] sm:text-[16px] font-semibold tracking-[-0.3px] leading-tight group-hover:text-[#0058be] transition-colors"
-          style={{ fontFamily: 'Inter, sans-serif' }}
+          style={{ fontFamily: "Inter, sans-serif" }}
         >
           {getCategoryLabel(name)}
         </h3>
-        
+
         {/* Subtle hover reveal element */}
         <span className="flex items-center gap-1 text-[11px] font-semibold text-[#0058be] opacity-0 translate-y-1 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300">
           Khám phá ngay
