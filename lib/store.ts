@@ -7,7 +7,7 @@ export interface User {
   id: string;
   email: string;
   username: string;
-  role: 'ADMIN' | 'CUSTOMER';
+  role: 'ADMIN' | 'CUSTOMER' | 'STAFF';
 }
 
 interface AuthStore {
@@ -69,7 +69,7 @@ function userFromPayload(payload: JwtPayload): User {
     // email is not in the JWT claims — we get it from the login response
     // and store it separately in a lightweight way below
     email: '',
-    role: payload.role as 'ADMIN' | 'CUSTOMER',
+    role: payload.role as 'ADMIN' | 'CUSTOMER' | 'STAFF',
   };
 }
 

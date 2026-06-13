@@ -25,7 +25,7 @@ export default function AuthPageLayout({ children }: { children: React.ReactNode
 
         {/* Content grid */}
         <div
-          className="relative z-10 grid grid-cols-12 gap-12 max-w-[1280px] w-full items-center"
+          className="relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 max-w-[1280px] w-full items-center"
         >
           <AuthLeftPanel />
           {children}

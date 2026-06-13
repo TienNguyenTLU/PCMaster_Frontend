@@ -33,7 +33,9 @@ export default function IssueSlipDetailModal({ slip, onClose, onDispatch, dispat
             <h2 className="text-[#0f172a] text-[18px] font-semibold tracking-[-0.3px]">
               Mã phiếu: {slip.code}
             </h2>
-            <p className="text-[12px] text-[#64748b] mt-0.5">Chi tiết yêu cầu phiếu xuất kho bán lẻ</p>
+            <p className="text-[12px] text-[#64748b] mt-0.5">
+              {slip.orderId ? 'Chi tiết yêu cầu phiếu xuất kho bán lẻ' : 'Chi tiết phiếu xuất kho trực tiếp'}
+            </p>
           </div>
           <div className="flex items-center gap-3">
             {isPending ? (
@@ -59,35 +61,48 @@ export default function IssueSlipDetailModal({ slip, onClose, onDispatch, dispat
           
           {/* Slip Metadata Card */}
           <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[8px] p-4 grid grid-cols-1 md:grid-cols-2 gap-4 text-[13px]">
-            <div className="flex items-start gap-2.5">
-              <User className="size-4 text-[#0058be] shrink-0 mt-0.5" />
-              <div>
-                <p className="text-[10px] font-bold text-[#64748b] uppercase tracking-[0.5px]">Người nhận hàng</p>
-                <p className="font-semibold text-[#0f172a] mt-0.5">{slip.recipientName ?? '—'}</p>
-                <p className="text-[11.5px] text-[#64748b] mt-0.5">{slip.recipientPhone ?? '—'}</p>
-              </div>
-            </div>
+            {slip.orderId ? (
+              <>
+                <div className="flex items-start gap-2.5">
+                  <User className="size-4 text-[#0058be] shrink-0 mt-0.5" />
+                  <div>
+                    <p className="text-[10px] font-bold text-[#64748b] uppercase tracking-[0.5px]">Người nhận hàng</p>
+                    <p className="font-semibold text-[#0f172a] mt-0.5">{slip.recipientName ?? '—'}</p>
+                    <p className="text-[11.5px] text-[#64748b] mt-0.5">{slip.recipientPhone ?? '—'}</p>
+                  </div>
+                </div>
 
-            <div className="flex items-start gap-2.5">
-              {slip.deliveryType === 'HOME_DELIVERY' ? (
-                <Home className="size-4 text-[#0058be] shrink-0 mt-0.5" />
-              ) : (
-                <Store className="size-4 text-amber-600 shrink-0 mt-0.5" />
-              )}
-              <div>
-                <p className="text-[10px] font-bold text-[#64748b] uppercase tracking-[0.5px]">Hình thức nhận</p>
-                <p className="font-semibold text-[#0f172a] mt-0.5">
-                  {slip.deliveryType === 'HOME_DELIVERY' ? 'Giao hàng tận nơi' : 'Nhận tại cửa hàng'}
-                </p>
-              </div>
-            </div>
+                <div className="flex items-start gap-2.5">
+                  {slip.deliveryType === 'HOME_DELIVERY' ? (
+                    <Home className="size-4 text-[#0058be] shrink-0 mt-0.5" />
+                  ) : (
+                    <Store className="size-4 text-amber-600 shrink-0 mt-0.5" />
+                  )}
+                  <div>
+                    <p className="text-[10px] font-bold text-[#64748b] uppercase tracking-[0.5px]">Hình thức nhận</p>
+                    <p className="font-semibold text-[#0f172a] mt-0.5">
+                      {slip.deliveryType === 'HOME_DELIVERY' ? 'Giao hàng tận nơi' : 'Nhận tại cửa hàng'}
+                    </p>
+                  </div>
+                </div>
 
-            {slip.deliveryType === 'HOME_DELIVERY' && slip.shippingAddress && (
-              <div className="col-span-1 md:col-span-2 flex items-start gap-2.5 border-t border-[#e2e8f0] pt-3">
-                <MapPin className="size-4 text-[#94a3b8] shrink-0 mt-0.5" />
+                {slip.deliveryType === 'HOME_DELIVERY' && slip.shippingAddress && (
+                  <div className="col-span-1 md:col-span-2 flex items-start gap-2.5 border-t border-[#e2e8f0] pt-3">
+                    <MapPin className="size-4 text-[#94a3b8] shrink-0 mt-0.5" />
+                    <div>
+                      <p className="text-[10px] font-bold text-[#64748b] uppercase tracking-[0.5px]">Địa chỉ giao hàng</p>
+                      <p className="text-[#475569] font-medium leading-relaxed mt-0.5">{slip.shippingAddress}</p>
+                    </div>
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="col-span-1 md:col-span-2 flex items-start gap-2.5">
+                <User className="size-4 text-[#0058be] shrink-0 mt-0.5" />
                 <div>
-                  <p className="text-[10px] font-bold text-[#64748b] uppercase tracking-[0.5px]">Địa chỉ giao hàng</p>
-                  <p className="text-[#475569] font-medium leading-relaxed mt-0.5">{slip.shippingAddress}</p>
+                  <p className="text-[10px] font-bold text-[#64748b] uppercase tracking-[0.5px]">Lý do xuất kho</p>
+                  <p className="font-semibold text-[#0f172a] mt-0.5">{slip.recipientName ?? '—'}</p>
+                  <p className="text-[11.5px] text-[#64748b] mt-0.5">Xuất kho trực tiếp từ hệ thống quản lý</p>
                 </div>
               </div>
             )}
@@ -95,7 +110,9 @@ export default function IssueSlipDetailModal({ slip, onClose, onDispatch, dispat
             <div className="col-span-1 md:col-span-2 flex flex-col gap-1.5 border-t border-[#e2e8f0] pt-3 text-[12px] text-[#64748b]">
               <div className="flex justify-between">
                 <span>Mã đơn hàng liên kết:</span>
-                <span className="font-semibold text-[#334155]">#{slip.orderId}</span>
+                <span className="font-semibold text-[#334155]">
+                  {slip.orderId ? `#${slip.orderId}` : 'Không có (Xuất thủ công)'}
+                </span>
               </div>
               <div className="flex justify-between">
                 <span>Ngày lập phiếu xuất:</span>

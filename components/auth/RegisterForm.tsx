@@ -13,7 +13,7 @@ export default function RegisterForm() {
   const router = useRouter();
   const { signup, isLoading, error, clearError } = useAuthStore();
 
-  const [form, setForm] = useState({ username: '', email: '', password: '' });
+  const [form, setForm] = useState({ username: '', email: '', password: '', confirmPassword: '' });
   const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleChange =
@@ -47,6 +47,12 @@ export default function RegisterForm() {
       newErrors.password = 'Mật khẩu phải chứa ít nhất 6 ký tự';
     }
 
+    if (!form.confirmPassword) {
+      newErrors.confirmPassword = 'Vui lòng xác nhận mật khẩu';
+    } else if (form.password !== form.confirmPassword) {
+      newErrors.confirmPassword = 'Mật khẩu xác nhận không khớp';
+    }
+
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
@@ -56,7 +62,7 @@ export default function RegisterForm() {
       await signup(form.username, form.email, form.password);
       // After signup the store has user.role – re-read from store state
       const { user } = useAuthStore.getState();
-      router.push(user?.role === 'ADMIN' ? '/dashboard' : '/home');
+      router.push(user?.role === 'ADMIN' || user?.role === 'STAFF' ? '/dashboard' : '/home');
     } catch {
       // error displayed from store
     }
@@ -67,10 +73,10 @@ export default function RegisterForm() {
       className="
         bg-white border border-[rgba(194,198,214,0.15)] rounded-[8px]
         shadow-[0px_40px_40px_rgba(0,0,0,0.04)]
-        col-span-5 col-start-8
+        col-span-1 lg:col-span-5 lg:col-start-8
         flex flex-col gap-[31.5px] items-start
-        p-[41px] self-center justify-self-end
-        w-[518px]
+        p-6 sm:p-[41px] self-center justify-self-center lg:justify-self-end
+        w-full max-w-[518px]
       "
     >
       {/* Card header */}
@@ -122,6 +128,17 @@ export default function RegisterForm() {
           error={errors.password}
           autoComplete="new-password"
           id="register-password"
+        />
+
+        <AuthFormField
+          label="XÁC NHẬN MẬT KHẨU"
+          type="password"
+          placeholder="••••••••"
+          value={form.confirmPassword}
+          onChange={handleChange('confirmPassword')}
+          error={errors.confirmPassword}
+          autoComplete="new-password"
+          id="register-confirm-password"
         />
 
         {/* Error message */}

@@ -1,21 +1,32 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Plus, CheckCircle, FileText, Loader2 } from 'lucide-react';
+import { CheckCircle, FileText, Loader2 } from 'lucide-react';
 import { adminAPI, Product, Supplier, PurchaseOrder, Brand } from '@/lib/api';
 
 import CreatePOModal from '@/components/dashboard/purchase-orders/CreatePOModal';
 import PreviewModal from '@/components/dashboard/purchase-orders/PreviewModal';
 import ReceiveItemsModal from '@/components/dashboard/purchase-orders/ReceiveItemsModal';
 
-export default function PurchaseOrdersPage() {
+interface PurchaseOrderListProps {
+  searchQuery: string;
+  isCreateOpen: boolean;
+  setIsCreateOpen: (open: boolean) => void;
+  reloadTrigger: number;
+}
+
+export default function PurchaseOrderList({
+  searchQuery,
+  isCreateOpen,
+  setIsCreateOpen,
+  reloadTrigger,
+}: PurchaseOrderListProps) {
   const [orders, setOrders] = useState<PurchaseOrder[]>([]);
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [allBrands, setAllBrands] = useState<Brand[]>([]);
   const [loading, setLoading] = useState(true);
 
-  const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [previewPO, setPreviewPO] = useState<PurchaseOrder | null>(null);
   const [receivingPO, setReceivingPO] = useState<PurchaseOrder | null>(null);
 
@@ -37,26 +48,22 @@ export default function PurchaseOrdersPage() {
       adminAPI.getProducts(0, 1000).then(r => setAllProducts(r.content || []));
     }, 0);
     return () => clearTimeout(timer);
-  }, []);
+  }, [reloadTrigger]);
 
   const getSupplier = (id: number) => suppliers.find(s => Number(s.id) === id);
 
-  return (
-    <div className="flex flex-col gap-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-[#0f172a] text-[24px] font-semibold tracking-[-0.5px]">Phiếu nhập hàng</h2>
-          <p className="text-[#64748b] text-[14px] mt-1">Quản lý các đơn nhập hàng từ nhà phân phối.</p>
-        </div>
-        <button
-          onClick={() => setIsCreateOpen(true)}
-          className="bg-[#0058be] text-white px-4 py-2 rounded-[8px] text-[14px] font-medium flex items-center gap-2 hover:bg-[#0047a3] transition-colors cursor-pointer"
-        >
-          <Plus className="size-4" /> Tạo phiếu nhập
-        </button>
-      </div>
+  const filteredOrders = orders.filter(order => {
+    const supplier = getSupplier(order.supplierId);
+    const searchLower = searchQuery.toLowerCase();
+    const poCode = `po-${String(order.id).padStart(4, '0')}`;
+    return (
+      poCode.includes(searchLower) ||
+      (supplier?.name || '').toLowerCase().includes(searchLower)
+    );
+  });
 
+  return (
+    <div className="flex flex-col gap-6" style={{ fontFamily: 'Inter, sans-serif' }}>
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4">
         {[
@@ -64,7 +71,7 @@ export default function PurchaseOrdersPage() {
           { label: 'Chờ nhận hàng', value: orders.filter(o => o.status === 'DRAFT').length, color: '#f59e0b' },
           { label: 'Đã nhận hàng', value: orders.filter(o => o.status === 'RECEIVED').length, color: '#10b981' },
         ].map(stat => (
-          <div key={stat.label} className="bg-white border border-[#e2e8f0] rounded-[12px] p-5">
+          <div key={stat.label} className="bg-white border border-[#e2e8f0] rounded-[12px] p-5 shadow-sm">
             <p className="text-[#64748b] text-[13px]">{stat.label}</p>
             <p className="text-[28px] font-bold mt-1" style={{ color: stat.color }}>{stat.value}</p>
           </div>
@@ -72,16 +79,16 @@ export default function PurchaseOrdersPage() {
       </div>
 
       {/* Table */}
-      <div className="bg-white border border-[#e2e8f0] rounded-[12px] overflow-hidden">
+      <div className="bg-white border border-[#e2e8f0] rounded-[12px] overflow-hidden shadow-sm">
         <div className="overflow-x-auto min-h-[300px]">
           {loading ? (
             <div className="flex items-center justify-center h-[300px] gap-2 text-[#64748b]">
               <Loader2 className="size-5 animate-spin" /> Đang tải...
             </div>
-          ) : orders.length === 0 ? (
+          ) : filteredOrders.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-[300px] text-[#94a3b8] gap-3">
               <FileText className="size-10 opacity-40" />
-              <p>Chưa có phiếu nhập hàng nào.</p>
+              <p className="text-[14px]">Không tìm thấy phiếu nhập hàng nào.</p>
             </div>
           ) : (
             <table className="w-full text-left text-[14px]">
@@ -95,11 +102,11 @@ export default function PurchaseOrdersPage() {
                   <th className="px-6 py-4 font-medium text-right">Thao tác</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-[#e2e8f0]">
-                {orders.map(order => {
+              <tbody className="divide-y divide-[#e2e8f0] text-[#475569]">
+                {filteredOrders.map(order => {
                   const supplier = getSupplier(order.supplierId);
                   return (
-                    <tr key={order.id} className="hover:bg-[#f8fafc] transition-colors">
+                    <tr key={order.id} className="hover:bg-[#f8fafc]/50 transition-colors">
                       <td className="px-6 py-4 font-mono font-medium text-[#0f172a]">PO-{String(order.id).padStart(4, '0')}</td>
                       <td className="px-6 py-4 text-[#475569]">{supplier?.name ?? `Supplier #${order.supplierId}`}</td>
                       <td className="px-6 py-4 text-[#475569]">{new Date(order.createdAt).toLocaleDateString('vi-VN')}</td>

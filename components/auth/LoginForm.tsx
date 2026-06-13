@@ -30,10 +30,21 @@ export default function LoginForm() {
     const newErrors: Record<string, string> = {};
     if (!form.usernameOrEmail.trim()) {
       newErrors.usernameOrEmail = 'Vui lòng nhập tên đăng nhập hoặc email';
+    } else if (form.usernameOrEmail.includes('@')) {
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(form.usernameOrEmail.trim())) {
+        newErrors.usernameOrEmail = 'Địa chỉ email không đúng định dạng';
+      }
+    } else if (form.usernameOrEmail.trim().length < 3) {
+      newErrors.usernameOrEmail = 'Tên đăng nhập phải chứa ít nhất 3 ký tự';
     }
+
     if (!form.password) {
       newErrors.password = 'Vui lòng nhập mật khẩu';
+    } else if (form.password.length < 6) {
+      newErrors.password = 'Mật khẩu phải chứa ít nhất 6 ký tự';
     }
+
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
       return;
@@ -44,7 +55,7 @@ export default function LoginForm() {
       toast.success('Đăng nhập thành công!');
       // Role-based redirect
       const { user } = useAuthStore.getState();
-      router.push(user?.role === 'ADMIN' ? '/dashboard' : '/home');
+      router.push(user?.role === 'ADMIN' || user?.role === 'STAFF' ? '/dashboard' : '/home');
     } catch {
       // error shown from store
     }
@@ -55,10 +66,10 @@ export default function LoginForm() {
       className="
         bg-white border border-[rgba(194,198,214,0.15)] rounded-[8px]
         shadow-[0px_40px_40px_rgba(0,0,0,0.04)]
-        col-span-5 col-start-8
+        col-span-1 lg:col-span-5 lg:col-start-8
         flex flex-col gap-[31.5px] items-start
-        p-[41px] self-center justify-self-end
-        w-[518px]
+        p-6 sm:p-[41px] self-center justify-self-center lg:justify-self-end
+        w-full max-w-[518px]
       "
     >
       {/* Card header */}

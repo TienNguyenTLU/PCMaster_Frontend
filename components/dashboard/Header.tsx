@@ -21,6 +21,7 @@ export default function Header() {
     'purchase-orders': 'Quản lý đơn nhập hàng',
     orders: 'Quản lý đơn bán hàng',
     inventory: 'Quản lý kho hàng',
+    users: 'Quản lý người dùng',
   };
 
   const pathSegments = pathname.split('/').filter(p => p && p !== 'dashboard');
@@ -69,8 +70,10 @@ export default function Header() {
             <User className="size-4" />
           </div>
           <div className="hidden md:flex flex-col">
-            <span className="text-[#0f172a] text-[13px] font-medium leading-tight">{user?.username || 'Admin'}</span>
-            <span className="text-[#64748b] text-[11px] leading-tight">Quản trị viên</span>
+            <span className="text-[#0f172a] text-[13px] font-medium leading-tight">{user?.username || (user?.role === 'STAFF' ? 'Nhân viên' : 'Admin')}</span>
+            <span className="text-[#64748b] text-[11px] leading-tight">
+              {user?.role === 'STAFF' ? 'Nhân viên' : 'Quản trị viên'}
+            </span>
           </div>
 
           {/* Simple CSS-based Dropdown */}

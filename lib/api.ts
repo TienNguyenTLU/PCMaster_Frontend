@@ -8,7 +8,7 @@ export interface AuthResponse {
   userId: number;
   username: string;
   email: string;
-  role: 'ADMIN' | 'CUSTOMER';
+  role: 'ADMIN' | 'CUSTOMER' | 'STAFF';
 }
 
 export interface LoginRequest {
@@ -170,6 +170,24 @@ export interface PurchaseOrder {
   items: PurchaseOrderItemResponse[];
 }
 
+export interface TopProductResponse {
+  productId: number;
+  productName: string;
+  quantitySold: number;
+  totalRevenue: number;
+}
+
+export interface CategoryRevenueResponse {
+  categoryName: string;
+  revenue: number;
+}
+
+export interface PeriodRevenueResponse {
+  label: string;
+  revenue: number;
+  cost: number;
+}
+
 export interface DashboardStatsResponse {
   totalRevenue: number;
   totalProfit: number;
@@ -181,6 +199,15 @@ export interface DashboardStatsResponse {
     timeAgo: string;
     type: string;
   }[];
+  revenue30Days: number;
+  cost30Days: number;
+  ordersCount30Days: number;
+  processingOrdersCount: number;
+  topProducts: TopProductResponse[];
+  revenueByCategory: CategoryRevenueResponse[];
+  monthlyRevenue: PeriodRevenueResponse[];
+  quarterlyRevenue: PeriodRevenueResponse[];
+  yearlyRevenue: PeriodRevenueResponse[];
 }
 
 // Cart Models
@@ -267,7 +294,7 @@ export interface IssueSlipItemResponse {
 export interface IssueSlipResponse {
   id: number;
   code: string;
-  orderId: number;
+  orderId: number | null;
   status: 'PENDING' | 'COMPLETED';
   documentUrl: string | null;
   createdAt: string;
@@ -276,6 +303,7 @@ export interface IssueSlipResponse {
   recipientPhone: string | null;
   shippingAddress: string | null;
   deliveryType: string;
+  exportReason?: string;
   items: IssueSlipItemResponse[];
 }
 
@@ -532,6 +560,12 @@ export const adminAPI = {
     return data;
   },
 
+  /** Tạo phiếu xuất kho thủ công trực tiếp */
+  createManualIssueSlip: async (request: { exportReason: string; orderId?: number | null; items: { productId: number; quantity: number }[] }): Promise<IssueSlipResponse> => {
+    const { data } = await axiosInstance.post<IssueSlipResponse>('/api/admin/inventory/issue-slips/create-manual', request);
+    return data;
+  },
+
   /** Phê duyệt hoàn tất xuất kho thực tế, chuyển trạng thái đơn hàng sang ĐANG GIAO */
   dispatchIssueSlip: async (id: number): Promise<IssueSlipResponse> => {
     const { data } = await axiosInstance.post<IssueSlipResponse>(`/api/admin/inventory/issue-slips/${id}/dispatch`);
@@ -596,6 +630,24 @@ export const adminAPI = {
       url,
       categoryId,
     });
+    return data;
+  },
+
+  /** Lấy danh sách toàn bộ người dùng trong hệ thống (chỉ dành cho ADMIN) */
+  getUsers: async (): Promise<UserResponse[]> => {
+    const { data } = await axiosInstance.get<UserResponse[]>('/api/admin/users');
+    return data;
+  },
+
+  /** Tạo tài khoản nhân viên mới (chỉ dành cho ADMIN) */
+  createStaff: async (payload: CreateStaffRequest): Promise<UserResponse> => {
+    const { data } = await axiosInstance.post<UserResponse>('/api/admin/users/create-staff', payload);
+    return data;
+  },
+
+  /** Khóa hoặc kích hoạt tài khoản nhân viên/khách hàng (chỉ dành cho ADMIN) */
+  toggleUserStatus: async (id: number): Promise<UserResponse> => {
+    const { data } = await axiosInstance.put<UserResponse>(`/api/admin/users/${id}/toggle-status`);
     return data;
   },
 };
@@ -992,6 +1044,25 @@ export const profileAPI = {
     return data;
   }
 };
+
+export interface UserResponse {
+  id: number;
+  username: string;
+  email: string;
+  role: 'ADMIN' | 'CUSTOMER' | 'STAFF';
+  phone: string | null;
+  address: string | null;
+  active: boolean;
+  createdAt: string;
+}
+
+export interface CreateStaffRequest {
+  username: string;
+  email: string;
+  password: string;
+  phone?: string;
+  address?: string;
+}
 
 
 

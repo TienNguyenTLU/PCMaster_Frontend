@@ -80,35 +80,40 @@ export default function IssueSlipList({
                       <td className="px-6 py-4 font-bold text-[#0f172a]">
                         {slip.code}
                       </td>
-
                       {/* Order ID */}
                       <td className="px-6 py-4 font-semibold text-[#64748b]">
-                        #{String(slip.orderId).padStart(5, '0')}
+                        {slip.orderId ? `#${String(slip.orderId).padStart(5, '0')}` : 'Nghiệp vụ'}
                       </td>
 
-                      {/* Recipient */}
+                      {/* Recipient / Export Reason */}
                       <td className="px-6 py-4">
                         <div>
                           <p className="font-semibold text-[#0f172a]">{slip.recipientName ?? '—'}</p>
-                          <p className="text-[11px] text-[#94a3b8] mt-0.5">{slip.recipientPhone ?? '—'}</p>
+                          {slip.recipientPhone && slip.recipientPhone !== 'N/A' && (
+                            <p className="text-[11px] text-[#94a3b8] mt-0.5">{slip.recipientPhone}</p>
+                          )}
                         </div>
                       </td>
 
                       {/* Delivery Type */}
                       <td className="px-6 py-4">
-                        <span className="flex items-center gap-1.5 font-medium text-[13px] text-[#334155]">
-                          {slip.deliveryType === 'HOME_DELIVERY' ? (
-                            <>
-                              <Home className="size-3.5 text-blue-500 shrink-0" />
-                              Giao tận nhà
-                            </>
-                          ) : (
-                            <>
-                              <Store className="size-3.5 text-amber-500 shrink-0" />
-                              Tại showroom
-                            </>
-                          )}
-                        </span>
+                        {slip.orderId ? (
+                          <span className="flex items-center gap-1.5 font-medium text-[13px] text-[#334155]">
+                            {slip.deliveryType === 'HOME_DELIVERY' ? (
+                              <>
+                                <Home className="size-3.5 text-blue-500 shrink-0" />
+                                Giao tận nhà
+                              </>
+                            ) : (
+                              <>
+                                <Store className="size-3.5 text-amber-500 shrink-0" />
+                                Tại showroom
+                              </>
+                            )}
+                          </span>
+                        ) : (
+                          <span className="text-[#64748b] text-[13px] font-medium">—</span>
+                        )}
                       </td>
 
                       {/* Status */}

@@ -8,14 +8,15 @@ import {
   Tag,
   Factory, 
   ShoppingCart, 
-  FileBox, 
   Settings,
   Image,
   Warehouse,
   Cpu,
   Sparkles,
-  Ticket
+  Ticket,
+  Users
 } from 'lucide-react';
+import { useAuthStore } from '@/lib/store';
 
 const navItems = [
   { label: 'Tổng quan', href: '/dashboard', icon: LayoutDashboard },
@@ -26,13 +27,22 @@ const navItems = [
   { label: 'Thương hiệu', href: '/dashboard/brands', icon: Tag },
   { label: 'Banner quảng cáo', href: '/dashboard/banners', icon: Image },
   { label: 'Nhà cung cấp', href: '/dashboard/suppliers', icon: Factory },
-  { label: 'Đơn nhập hàng', href: '/dashboard/purchase-orders', icon: FileBox },
   { label: 'Quản lý kho', href: '/dashboard/inventory', icon: Warehouse },
   { label: 'Đơn bán hàng', href: '/dashboard/orders', icon: ShoppingCart },
+  { label: 'Quản lý người dùng', href: '/dashboard/users', icon: Users },
 ];
 
 export default function Sidebar() {
   const pathname = usePathname();
+  const { user } = useAuthStore();
+
+  const filteredNavItems = navItems.filter((item) => {
+    if (user?.role === 'STAFF') {
+      const allowedPaths = ['/dashboard', '/dashboard/inventory', '/dashboard/orders', '/dashboard/suppliers'];
+      return allowedPaths.includes(item.href);
+    }
+    return true;
+  });
 
   return (
     <aside className="fixed left-0 top-0 bottom-0 w-64 bg-[#0f172a] flex flex-col z-40 transition-transform">
@@ -43,13 +53,13 @@ export default function Sidebar() {
           className="text-white text-[24px] tracking-[-1px] font-semibold"
           style={{ fontFamily: 'Inter, sans-serif' }}
         >
-          PCMaster <span className="text-[#0b82d2] text-[14px] uppercase tracking-[1px] ml-1 font-normal">Admin</span>
+          PCMaster <span className="text-[#0b82d2] text-[14px] uppercase tracking-[1px] ml-1 font-normal">{user?.role === 'STAFF' ? 'Staff' : 'Admin'}</span>
         </Link>
       </div>
 
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto py-6 px-3 flex flex-col gap-2">
-        {navItems.map((item) => {
+        {filteredNavItems.map((item) => {
           const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href));
           
           return (
