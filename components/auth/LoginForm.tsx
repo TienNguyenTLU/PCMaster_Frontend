@@ -54,7 +54,7 @@ export default function LoginForm() {
     try {
       await login(form.usernameOrEmail, form.password);
       toast.success("Đăng nhập thành công!");
-      // Role-based redirect
+      
       const { user } = useAuthStore.getState();
       router.push(
         user?.role === "ADMIN" || user?.role === "STAFF"
@@ -62,7 +62,7 @@ export default function LoginForm() {
           : "/home",
       );
     } catch {
-      // error shown from store
+      
     }
   };
 
@@ -77,7 +77,7 @@ export default function LoginForm() {
         w-full max-w-[518px]
       "
     >
-      {/* Card header */}
+      {}
       <div className="flex flex-col gap-2 w-full">
         <h1
           className="text-[#191c1e] text-[24px] tracking-[-0.6px] leading-[32px] font-normal"
@@ -93,7 +93,7 @@ export default function LoginForm() {
         </p>
       </div>
 
-      {/* Form */}
+      {}
       <form
         onSubmit={handleSubmit}
         noValidate
@@ -121,7 +121,7 @@ export default function LoginForm() {
           id="login-password"
         />
 
-        {/* Error message */}
+        {}
         {error && (
           <p
             className="text-red-500 text-[13px] font-normal -mt-2"
@@ -131,7 +131,7 @@ export default function LoginForm() {
           </p>
         )}
 
-        {/* Submit */}
+        {}
         <button
           type="submit"
           disabled={isLoading}
@@ -153,10 +153,10 @@ export default function LoginForm() {
           )}
         </button>
 
-        {/* Social login */}
+        {}
         <AuthSocialButtons />
 
-        {/* Register link */}
+        {}
         <p
           className="text-[14px] text-center w-full"
           style={{ fontFamily: "Inter, sans-serif" }}

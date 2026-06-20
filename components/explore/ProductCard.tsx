@@ -64,7 +64,7 @@ export default function ProductCard({ product }: ProductCardProps) {
         className={`absolute inset-0 bg-white/40 backdrop-blur-[1px] z-10 transition-opacity ${product.stock === 0 ? "opacity-100" : "opacity-0 pointer-events-none"}`}
       />
 
-      {/* Image */}
+      {}
       <div className="relative bg-[#f7f9fb] h-[192px] flex items-center justify-center overflow-hidden">
         {imgSrc && !imgErr ? (
           imgSrc.startsWith("http://localhost") ? (
@@ -110,7 +110,7 @@ export default function ProductCard({ product }: ProductCardProps) {
         )}
       </div>
 
-      {/* Content */}
+      {}
       <div className="flex flex-col flex-1 p-4 gap-2.5 z-0">
         {product.brand && (
           <span className="text-[10px] font-bold text-[#0058be] uppercase tracking-[0.8px]">

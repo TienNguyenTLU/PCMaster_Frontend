@@ -68,7 +68,7 @@ export default function BuildSlot({
           : "border-[#cbd5e1]/50 bg-white hover:border-[#0058be]/30 hover:shadow-[0_8px_30px_rgba(0,88,190,0.04)] hover:-translate-y-0.5"
       }`}
     >
-      {/* Slot Icon */}
+      {}
       <div
         className={`size-12 rounded-[14px] flex items-center justify-center shrink-0 border transition-all duration-300 ${
           product
@@ -81,7 +81,7 @@ export default function BuildSlot({
         <Icon className="size-6" />
       </div>
 
-      {/* Label + product info */}
+      {}
       <div className="flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-0.5">
           <p className="text-[11px] font-bold text-[#94a3b8] uppercase tracking-[1px]">
@@ -96,7 +96,7 @@ export default function BuildSlot({
 
         {product ? (
           <div className="flex items-center gap-3">
-            {/* Thumbnail */}
+            {}
             {imgSrc ? (
               <div className="size-10 rounded-[8px] bg-[#f7f9fb] border border-[#cbd5e1]/40 overflow-hidden shrink-0 flex items-center justify-center p-0.5">
                 <img
@@ -138,7 +138,7 @@ export default function BuildSlot({
         )}
       </div>
 
-      {/* Right side: price + actions */}
+      {}
       <div className="flex items-center gap-2 shrink-0">
         {product ? (
           <>

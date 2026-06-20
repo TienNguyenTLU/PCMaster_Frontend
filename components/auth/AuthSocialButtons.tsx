@@ -53,7 +53,7 @@ export default function AuthSocialButtons() {
       }
     };
 
-    // Check if google scripts are loaded, otherwise poll
+    
     const g = (window as any).google;
     if (g && g.accounts) {
       initGoogle();
@@ -71,7 +71,7 @@ export default function AuthSocialButtons() {
 
   return (
     <div className="flex flex-col gap-4 w-full">
-      {/* Divider */}
+      {}
       <div className="relative flex items-center justify-center py-4">
         <div className="absolute inset-x-0 top-1/2 border-t border-[rgba(194,198,214,0.3)]" />
         <span
@@ -82,9 +82,9 @@ export default function AuthSocialButtons() {
         </span>
       </div>
 
-      {/* Social buttons */}
+      {}
       <div className="flex justify-center w-full">
-        {/* Custom gorgeous Google Button wrapper */}
+        {}
         <div className="relative w-full max-w-[280px] h-[48px] overflow-hidden rounded-[8px] border border-[#cbd5e1] hover:border-[#94a3b8] hover:bg-[#f8fafc] flex items-center justify-center bg-white cursor-pointer shadow-sm transition-all duration-200">
           <div className="flex items-center gap-3 select-none pointer-events-none">
             <svg className="size-5 shrink-0" viewBox="0 0 24 24">
@@ -113,7 +113,7 @@ export default function AuthSocialButtons() {
             </span>
           </div>
 
-          {/* Invisible Google official button overlay */}
+          {}
           <div
             id="google-signin-button"
             className="absolute inset-0 opacity-0 cursor-pointer [&_iframe]:w-full [&_iframe]:h-full [&_iframe]:absolute [&_iframe]:inset-0 [&_iframe]:cursor-pointer [&_div]:w-full [&_div]:h-full"

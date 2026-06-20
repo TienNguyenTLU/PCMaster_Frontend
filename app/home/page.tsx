@@ -17,27 +17,27 @@ export default function HomePage() {
       className="flex flex-col min-h-screen w-full"
       style={{ background: "linear-gradient(90deg, #f7f9fb 0%, #f7f9fb 100%)" }}
     >
-      {/* Fixed glassmorphism nav */}
+      {}
       <HomeNavBar />
 
-      {/* Main content – push down by nav height */}
+      {}
       <main className="flex flex-col items-center gap-20 pt-24 pb-12">
-        {/* Hero */}
+        {}
         <div className="w-full flex justify-center px-8">
           <HomeHero />
         </div>
 
-        {/* Featured Categories */}
+        {}
         <HomeCategoriesSection />
 
-        {/* Newly Listed Products Section */}
+        {}
         <HomeProductsSection
           title="Sản phẩm mới niêm yết"
           subtitle="Khám phá linh kiện công nghệ mới nhất vừa cập bến"
           type="new"
         />
 
-        {/* Products On Sale Section */}
+        {}
         <HomeProductsSection
           title="Đang giảm giá"
           subtitle="Ưu đãi giới hạn cho các linh kiện kiến tạo PC đỉnh cao"
@@ -45,7 +45,7 @@ export default function HomePage() {
         />
       </main>
 
-      {/* Footer – reuse auth footer (identical design) */}
+      {}
       <AuthFooter />
     </div>
   );

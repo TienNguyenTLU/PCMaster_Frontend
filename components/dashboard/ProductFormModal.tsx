@@ -27,13 +27,13 @@ import toast from "react-hot-toast";
 import { CldImage } from "next-cloudinary";
 import axiosInstance from "@/lib/axiosInstance";
 
-// ─── Spec field definitions per category slug/name ─────────────────────────
+
 type SpecFieldType = "text" | "number" | "multiselect" | "select" | "boolean";
 interface SpecField {
   key: string;
   label: string;
   type: SpecFieldType;
-  options?: string[]; // for multiselect and select
+  options?: string[]; 
   placeholder?: string;
 }
 
@@ -1307,7 +1307,7 @@ const SPECS_BY_CATEGORY: Record<string, SpecField[]> = {
   ],
 };
 
-// Match category name → component_type string
+
 function getComponentTypeFromName(catName: string): string {
   const slug = catName
     .toLowerCase()
@@ -1358,7 +1358,7 @@ function getComponentTypeFromName(catName: string): string {
   return catName.toUpperCase();
 }
 
-// Match category name → spec key
+
 function getSpecsForCategory(catName: string): SpecField[] {
   const slug = catName
     .toLowerCase()
@@ -1369,7 +1369,7 @@ function getSpecsForCategory(catName: string): SpecField[] {
   for (const key of Object.keys(SPECS_BY_CATEGORY)) {
     if (slug.includes(key) || key.includes(slug)) return SPECS_BY_CATEGORY[key];
   }
-  // Check common variants
+  
   if (
     slug.includes("graphic") ||
     slug.includes("vga") ||
@@ -1417,7 +1417,7 @@ function getSpecsForCategory(catName: string): SpecField[] {
   return [];
 }
 
-// ─── Types ──────────────────────────────────────────────────────────────────
+
 interface BasicForm {
   name: string;
   categoryId: string;
@@ -1434,7 +1434,7 @@ interface ProductFormModalProps {
   editingProduct?: Product | null;
 }
 
-// ─── Component ───────────────────────────────────────────────────────────────
+
 export default function ProductFormModal({
   isOpen,
   onClose,
@@ -1449,7 +1449,7 @@ export default function ProductFormModal({
   const [submitError, setSubmitError] = useState("");
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Step 2 & Multi-image state
+  
   const [step, setStep] = useState<number>(1);
   const [createdProduct, setCreatedProduct] = useState<Product | null>(null);
   const [uploadedImages, setUploadedImages] = useState<ProductImage[]>([]);
@@ -1457,7 +1457,7 @@ export default function ProductFormModal({
     { id: string; name: string; status: "uploading" | "done" | "error" }[]
   >([]);
 
-  // Basic fields
+  
   const [basic, setBasic] = useState<BasicForm>({
     name: "",
     categoryId: "",
@@ -1467,10 +1467,10 @@ export default function ProductFormModal({
     description: "",
   });
 
-  // Dynamic spec fields (key → value)
+  
   const [specs, setSpecs] = useState<Record<string, string>>({});
 
-  // CSV import state
+  
   const [csvImportMode, setCsvImportMode] = useState(false);
   const [csvPreview, setCsvPreview] = useState<
     { key: string; value: string }[]
@@ -1478,12 +1478,12 @@ export default function ProductFormModal({
   const [csvFileName, setCsvFileName] = useState("");
   const csvInputRef = useRef<HTMLInputElement>(null);
 
-  // Thumbnail file
+  
   const [thumbnailFile, setThumbnailFile] = useState<File | null>(null);
   const [thumbnailPreview, setThumbnailPreview] = useState<string>("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Determine active spec fields from selected category
+  
   const selectedCategoryName =
     categories.find((c) => String(c.id) === basic.categoryId)?.name ?? "";
   const specFields = getSpecsForCategory(selectedCategoryName);
@@ -1514,7 +1514,7 @@ export default function ProductFormModal({
 
     const fileList = Array.from(files);
 
-    // Add all to uploadingFiles state with unique IDs
+    
     const newUploading = fileList.map((file) => ({
       id: Math.random().toString(36).substring(2, 11),
       name: file.name,
@@ -1523,7 +1523,7 @@ export default function ProductFormModal({
 
     setUploadingFiles((prev) => [...prev, ...newUploading]);
 
-    // Upload files sequentially
+    
     for (let i = 0; i < fileList.length; i++) {
       const file = fileList[i];
       const tracking = newUploading[i];
@@ -1531,17 +1531,17 @@ export default function ProductFormModal({
       try {
         await adminAPI.uploadProductImage(createdProduct.id, file);
 
-        // Mark as done
+        
         setUploadingFiles((prev) =>
           prev.map((item) =>
             item.id === tracking.id ? { ...item, status: "done" } : item,
           ),
         );
 
-        // Refresh uploaded list
+        
         fetchUploadedImages(createdProduct.id);
       } catch {
-        // Mark as error
+        
         setUploadingFiles((prev) =>
           prev.map((item) =>
             item.id === tracking.id ? { ...item, status: "error" } : item,
@@ -1564,17 +1564,17 @@ export default function ProductFormModal({
     }
   };
 
-  // ─── CSV Parser ─────────────────────────────────────────────────────────────
+  
   const parseCSV = (text: string): { key: string; value: string }[] => {
     const lines = text.split(/\r?\n/).filter((line) => line.trim() !== "");
     const results: { key: string; value: string }[] = [];
 
     for (let i = 0; i < lines.length; i++) {
       const line = lines[i].trim();
-      // Skip header row
+      
       if (i === 0 && /^key\s*[,;\t]\s*value$/i.test(line)) continue;
 
-      // Handle quoted values: key,"value with, comma"
+      
       let key = "";
       let value = "";
 
@@ -1619,7 +1619,7 @@ export default function ProductFormModal({
       setCsvPreview(parsed);
       setCsvFileName(file.name);
 
-      // Overwrite specs entirely with CSV data
+      
       const newSpecs: Record<string, string> = {};
       for (const row of parsed) {
         newSpecs[row.key] = row.value;
@@ -1629,14 +1629,14 @@ export default function ProductFormModal({
     };
     reader.readAsText(file, "UTF-8");
 
-    // Reset input so same file can be re-selected
+    
     e.target.value = "";
   };
 
   const handleClearCsv = () => {
     setCsvPreview([]);
     setCsvFileName("");
-    // Reset specs based on editing product or empty
+    
     if (editingProduct?.specsJson) {
       try {
         const parsed = JSON.parse(editingProduct.specsJson);
@@ -1677,13 +1677,13 @@ export default function ProductFormModal({
     URL.revokeObjectURL(url);
   };
 
-  // Load refs data once
+  
   useEffect(() => {
     adminAPI.getBrands(0, 200).then((r) => setBrands(r.content || []));
     adminAPI.getCategories(0, 200).then((r) => setCategories(r.content || []));
   }, []);
 
-  // Populate when editing
+  
   useEffect(() => {
     if (!isOpen) return;
     const timer = setTimeout(() => {
@@ -1707,13 +1707,13 @@ export default function ProductFormModal({
           stock: String(editingProduct.stock),
           description: editingProduct.description ?? "",
         });
-        // Parse specsJson into state
+        
         try {
           const parsed = editingProduct.specsJson
             ? JSON.parse(editingProduct.specsJson)
             : {};
 
-          // Normalize old PSU keys for editing pre-population
+          
           const psuMappings: Record<string, string> = {
             chu_n_ch_ng_nh_n: "efficiency_rating",
             hi_u_su_t: "efficiency_rating",
@@ -1729,7 +1729,7 @@ export default function ProductFormModal({
             }
           }
 
-          // Normalize old SSD/STORAGE keys for editing pre-population
+          
           const ssdMappings: Record<string, string> = {
             k_ch_c_form_factor: "form_factor",
             "Kích thước form factor": "form_factor",
@@ -1753,7 +1753,7 @@ export default function ProductFormModal({
             }
           }
 
-          // Normalize old Case keys for editing pre-population
+          
           const caseMappings: Record<string, string> = {
             h_tr_main: "supported_mainboards",
             k_ch_th_c_case: "case_size",
@@ -1818,7 +1818,7 @@ export default function ProductFormModal({
     return () => clearTimeout(timer);
   }, [editingProduct, isOpen]);
 
-  // Removed reset specs on category change to prevent wiping data on edit load
+  
 
   const handleBasic = (field: keyof BasicForm, value: string) => {
     setBasic((p) => ({ ...p, [field]: value }));
@@ -1874,7 +1874,7 @@ export default function ProductFormModal({
       newErrors.brandId = "Vui lòng chọn thương hiệu";
     }
 
-    // Validate that all spec fields are filled (removed required constraint)
+    
 
     if (Object.keys(newErrors).length > 0) {
       setErrors(newErrors);
@@ -1885,20 +1885,20 @@ export default function ProductFormModal({
     setLoading(true);
     setSubmitError("");
 
-    // Build specsJson from spec fields
+    
     let specsObj: Record<string, unknown> = {};
 
     if (csvImportMode && csvPreview.length > 0) {
-      // CSV mode: overwrite entirely with CSV data
+      
       for (const [key, val] of Object.entries(specs)) {
         if (val === undefined || val === "") continue;
-        // Auto-detect types
+        
         if (val === "true" || val === "false") {
           specsObj[key] = val === "true";
         } else if (!isNaN(Number(val)) && val.trim() !== "") {
           specsObj[key] = Number(val);
         } else if (val.includes(",")) {
-          // Check if it looks like a multiselect (multiple comma-separated values)
+          
           const parts = val
             .split(",")
             .map((s) => s.trim())
@@ -1913,13 +1913,13 @@ export default function ProductFormModal({
         }
       }
     } else {
-      // Manual mode: use existing logic
+      
       specsObj =
         isEditing && editingProduct?.specsJson
           ? JSON.parse(editingProduct.specsJson)
           : {};
 
-      // Normalize Case specs keys in specsObj before form field values overwrite them
+      
       if (
         specsObj["component_type"] === "CASE" ||
         getComponentTypeFromName(selectedCategoryName) === "CASE"
@@ -1959,7 +1959,7 @@ export default function ProductFormModal({
         }
       }
 
-      // Normalize PSU specs keys in specsObj before form field values overwrite them
+      
       if (
         specsObj["component_type"] === "PSU" ||
         getComponentTypeFromName(selectedCategoryName) === "PSU"
@@ -1980,7 +1980,7 @@ export default function ProductFormModal({
         }
       }
 
-      // Normalize SSD specs keys in specsObj before form field values overwrite them
+      
       if (
         specsObj["component_type"] === "STORAGE" ||
         getComponentTypeFromName(selectedCategoryName) === "STORAGE"
@@ -2037,19 +2037,19 @@ export default function ProductFormModal({
       }
     }
 
-    // Auto inject brand name from the selected brandId
+    
     const selectedBrand = brands.find((b) => String(b.id) === basic.brandId);
     if (selectedBrand) {
       specsObj["brand"] = selectedBrand.name;
     }
 
-    // Auto inject component_type from selected category
+    
     if (selectedCategoryName) {
       specsObj["component_type"] =
         getComponentTypeFromName(selectedCategoryName);
     }
 
-    // Normalize wattage value suffix for PSU before saving
+    
     if (
       specsObj["component_type"] === "PSU" &&
       specsObj["wattage"] !== undefined
@@ -2064,9 +2064,9 @@ export default function ProductFormModal({
     const slug = basic.name
       .toLowerCase()
       .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "") // Remove Vietnamese tones
+      .replace(/[\u0300-\u036f]/g, "") 
       .replace(/[đĐ]/g, "d")
-      .replace(/[^a-z0-9\s]/g, "") // Remove special chars
+      .replace(/[^a-z0-9\s]/g, "") 
       .replace(/\s+/g, "_")
       .trim();
 
@@ -2082,7 +2082,7 @@ export default function ProductFormModal({
       specsJson: JSON.stringify(specsObj),
     };
 
-    // Debug log
+    
     console.group("[ProductFormModal] Submit Request");
     console.log("Mode:", isEditing ? "UPDATE" : "CREATE");
     console.log(
@@ -2102,7 +2102,7 @@ export default function ProductFormModal({
         onSuccess();
         onClose();
       } else {
-        // Build FormData
+        
         const formData = new FormData();
         formData.append(
           "data",
@@ -2138,7 +2138,7 @@ export default function ProductFormModal({
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <div className="bg-white rounded-[16px] shadow-2xl w-full max-w-2xl max-h-[92vh] overflow-y-auto mx-4 flex flex-col">
-        {/* Header */}
+        {}
         <div className="flex items-center justify-between px-6 py-4 border-b border-[#e2e8f0] sticky top-0 bg-white rounded-t-[16px] z-10">
           <div>
             <h3 className="text-[#0f172a] text-[18px] font-semibold">
@@ -2158,7 +2158,7 @@ export default function ProductFormModal({
           </button>
         </div>
 
-        {/* Step Indicator */}
+        {}
         {!isEditing && (
           <div className="flex items-center justify-center gap-2 px-6 py-3 bg-[#f8fafc] border-b border-[#e2e8f0]">
             <div
@@ -2201,7 +2201,7 @@ export default function ProductFormModal({
               </div>
             </div>
 
-            {/* Drag & Drop Upload Zone */}
+            {}
             <div className="flex flex-col gap-2">
               <label className="text-[13px] font-bold text-[#475569] uppercase tracking-wider">
                 Tải ảnh chi tiết lên
@@ -2230,7 +2230,7 @@ export default function ProductFormModal({
               </div>
             </div>
 
-            {/* Uploading Status list */}
+            {}
             {uploadingFiles.length > 0 && (
               <div className="flex flex-col gap-2 bg-[#f8fafc] border border-[#e2e8f0] rounded-[12px] p-4 max-h-[160px] overflow-y-auto">
                 <h5 className="text-[12px] font-bold text-[#475569] uppercase tracking-wider">
@@ -2266,7 +2266,7 @@ export default function ProductFormModal({
               </div>
             )}
 
-            {/* Uploaded Gallery Grid */}
+            {}
             <div className="flex flex-col gap-2">
               <h5 className="text-[13px] font-bold text-[#475569] uppercase tracking-wider">
                 Danh sách ảnh đã tải lên ({uploadedImages.length})
@@ -2300,7 +2300,7 @@ export default function ProductFormModal({
               )}
             </div>
 
-            {/* Complete Buttons */}
+            {}
             <div className="flex justify-end gap-3 pt-4 border-t border-[#e2e8f0]">
               <button
                 type="button"
@@ -2316,7 +2316,7 @@ export default function ProductFormModal({
           </div>
         ) : (
           <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-6">
-            {/* Error */}
+            {}
             {submitError && (
               <div className="flex items-center gap-2 bg-red-50 border border-red-200 text-red-700 rounded-[8px] px-4 py-3 text-[14px]">
                 <AlertCircle className="size-4 shrink-0" />
@@ -2324,13 +2324,13 @@ export default function ProductFormModal({
               </div>
             )}
 
-            {/* ── SECTION: Thông tin cơ bản ── */}
+            {}
             <section className="flex flex-col gap-4">
               <h4 className="text-[13px] font-semibold text-[#0058be] uppercase tracking-wider">
                 Thông tin cơ bản
               </h4>
 
-              {/* Name */}
+              {}
               <div className="flex flex-col gap-1.5">
                 <label className="text-[13px] font-medium text-[#374151]">
                   Tên sản phẩm <span className="text-red-500">*</span>
@@ -2353,7 +2353,7 @@ export default function ProductFormModal({
                 />
               </div>
 
-              {/* Category + Brand */}
+              {}
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1.5">
                   <label className="text-[13px] font-medium text-[#374151]">
@@ -2409,7 +2409,7 @@ export default function ProductFormModal({
                 </div>
               </div>
 
-              {/* Price + Stock */}
+              {}
               <div className="grid grid-cols-2 gap-4">
                 <div className="flex flex-col gap-1.5">
                   <label className="text-[13px] font-medium text-[#374151]">
@@ -2444,7 +2444,7 @@ export default function ProductFormModal({
                 </div>
               </div>
 
-              {/* Description */}
+              {}
               <div className="flex flex-col gap-1.5">
                 <label className="text-[13px] font-medium text-[#374151]">
                   Mô tả
@@ -2459,7 +2459,7 @@ export default function ProductFormModal({
               </div>
             </section>
 
-            {/* ── SECTION: Ảnh sản phẩm ── */}
+            {}
             <section className="flex flex-col gap-4">
               <h4 className="text-[13px] font-semibold text-[#0058be] uppercase tracking-wider">
                 Ảnh sản phẩm
@@ -2522,7 +2522,7 @@ export default function ProductFormModal({
               </div>
             </section>
 
-            {/* ── SECTION: Thông số kỹ thuật (dynamic) ── */}
+            {}
             <section className="flex flex-col gap-4">
               <div className="flex items-center justify-between">
                 <h4 className="text-[13px] font-semibold text-[#0058be] uppercase tracking-wider">
@@ -2531,7 +2531,7 @@ export default function ProductFormModal({
                 </h4>
               </div>
 
-              {/* Toggle: Manual / CSV */}
+              {}
               <div className="flex items-center gap-1 p-1 bg-[#f1f5f9] rounded-[10px] w-fit">
                 <button
                   type="button"
@@ -2560,9 +2560,9 @@ export default function ProductFormModal({
               </div>
 
               {csvImportMode ? (
-                /* ── CSV Import Mode ── */
+                
                 <div className="flex flex-col gap-4">
-                  {/* Info banner */}
+                  {}
                   <div className="flex items-start gap-2.5 bg-amber-50 border border-amber-200 rounded-[10px] px-4 py-3">
                     <Info className="size-4 text-amber-600 shrink-0 mt-0.5" />
                     <div className="text-[13px] text-amber-800">
@@ -2588,7 +2588,7 @@ export default function ProductFormModal({
                     </div>
                   </div>
 
-                  {/* Upload zone + download sample */}
+                  {}
                   <div className="flex items-center gap-3">
                     <div className="flex-1">
                       <input
@@ -2621,7 +2621,7 @@ export default function ProductFormModal({
                     </button>
                   </div>
 
-                  {/* CSV Preview Table */}
+                  {}
                   {csvPreview.length > 0 && (
                     <div className="flex flex-col gap-2">
                       <div className="flex items-center justify-between">
@@ -2676,7 +2676,7 @@ export default function ProductFormModal({
                   )}
                 </div>
               ) : (
-                /* ── Manual Mode ── */
+                
                 specFields.length > 0 && (
                   <div className="grid grid-cols-2 gap-4">
                     {specFields.map((field) => (
@@ -2792,7 +2792,7 @@ export default function ProductFormModal({
               )}
             </section>
 
-            {/* ── Actions ── */}
+            {}
             <div className="flex items-center justify-end gap-3 pt-2 border-t border-[#e2e8f0]">
               <button
                 type="button"

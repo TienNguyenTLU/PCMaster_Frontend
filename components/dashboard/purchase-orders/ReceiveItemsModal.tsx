@@ -47,7 +47,7 @@ export default function ReceiveItemsModal({
   };
 
   const handleConfirm = async () => {
-    // Validate selling prices are higher than import prices
+    
     for (const item of po.items) {
       const sp = sellingPrices[item.productId] || 0;
       const ip = item.importPrice;

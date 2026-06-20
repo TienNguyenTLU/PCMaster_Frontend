@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   CheckCircle2,
   ExternalLink,
@@ -12,6 +12,8 @@ import {
   X,
   XCircle,
   ClipboardList,
+  CreditCard,
+  Percent,
 } from "lucide-react";
 import {
   orderAPI,
@@ -19,8 +21,9 @@ import {
   OrderResponse,
   OrderStatus,
   DeliveryType,
+  Product,
 } from "@/lib/api";
-import { DELIVERY_META } from "@/lib/labelMapping";
+import { DELIVERY_META, PAYMENT_METHOD_META, PAYMENT_STATUS_META } from "@/lib/labelMapping";
 import toast from "react-hot-toast";
 import StatusBadge from "./StatusBadge";
 
@@ -55,6 +58,34 @@ export default function OrderDetailModal({
   const [confirming, setConfirming] = useState(false);
   const [updating, setUpdating] = useState(false);
   const [creatingSlip, setCreatingSlip] = useState(false);
+  const [productsMap, setProductsMap] = useState<Record<number, Product>>({});
+  const [loadingProducts, setLoadingProducts] = useState(true);
+
+  useEffect(() => {
+    async function fetchProductDetails() {
+      setLoadingProducts(true);
+      const newMap: Record<number, Product> = {};
+      try {
+        const promises = order.items.map(async (item) => {
+          if (item.productId && !newMap[item.productId]) {
+            try {
+              const prod = await adminAPI.getProductById(item.productId);
+              newMap[item.productId] = prod;
+            } catch (err) {
+              console.error(`Error loading product #${item.productId}`, err);
+            }
+          }
+        });
+        await Promise.all(promises);
+        setProductsMap(newMap);
+      } catch (err) {
+        console.error("Error loading products details:", err);
+      } finally {
+        setLoadingProducts(false);
+      }
+    }
+    fetchProductDetails();
+  }, [order.items]);
 
   const handleConfirm = async () => {
     setConfirming(true);
@@ -101,6 +132,18 @@ export default function OrderDetailModal({
   };
 
   const delivery = DELIVERY_META[order.deliveryType];
+  const isOnlinePayment = order.paymentMethod !== "COD";
+  const isPaid = order.paymentStatus === "PAID";
+  const canConfirm = !isOnlinePayment || isPaid;
+
+  const steps: { status: OrderStatus; label: string }[] = [
+    { status: "DRAFT", label: "Chờ duyệt" },
+    { status: "CONFIRMED", label: "Đã duyệt" },
+    { status: "SHIPPED", label: "Đang giao" },
+    { status: "DELIVERED", label: "Đã giao" },
+  ];
+  const activeIndex = steps.findIndex((s) => s.status === order.status);
+  const isCancelled = order.status === "CANCELLED";
 
   return (
     <div
@@ -113,7 +156,7 @@ export default function OrderDetailModal({
         className="bg-white rounded-[12px] shadow-xl w-full max-w-[680px] max-h-[90vh] flex flex-col overflow-hidden border border-[#e2e8f0]"
         style={{ fontFamily: "Inter, sans-serif" }}
       >
-        {/* Modal Header */}
+        {/* Header */}
         <div className="border-b border-[#e2e8f0] px-6 py-4 flex items-center justify-between bg-[#f8fafc]">
           <div>
             <h2 className="text-[#0f172a] text-[18px] font-semibold tracking-[-0.3px]">
@@ -134,9 +177,66 @@ export default function OrderDetailModal({
           </div>
         </div>
 
-        {/* Modal Content */}
+        {/* Content */}
         <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-5 text-[13px]">
-          {/* Customer info */}
+          {/* Stepper Timeline */}
+          <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[8px] p-4 flex flex-col gap-3">
+            <p className="text-[11px] font-bold text-[#64748b] uppercase tracking-[0.5px]">
+              Tiến trình đơn hàng
+            </p>
+            {isCancelled ? (
+              <div className="flex items-center gap-2 text-red-600 bg-red-50 border border-red-100 rounded-[8px] px-3 py-2">
+                <XCircle className="size-4 shrink-0" />
+                <span className="font-semibold text-[12px]">Đơn hàng này đã bị hủy.</span>
+              </div>
+            ) : (
+              <div className="relative flex items-center justify-between mt-2 px-2 pb-1">
+                {/* Connecting lines */}
+                <div className="absolute left-6 right-6 top-[11px] -translate-y-1/2 h-0.5 bg-[#e2e8f0] -z-0" />
+                <div
+                  className="absolute left-6 top-[11px] -translate-y-1/2 h-0.5 bg-[#0058be] transition-all duration-300 -z-0"
+                  style={{
+                    width: `${activeIndex >= 0 ? (activeIndex / (steps.length - 1)) * 100 : 0}%`,
+                    right: "auto"
+                  }}
+                />
+
+                {/* Steps */}
+                {steps.map((step, idx) => {
+                  const isCompleted = idx <= activeIndex;
+                  const isActive = idx === activeIndex;
+                  return (
+                    <div key={step.status} className="flex flex-col items-center gap-1.5 relative z-10">
+                      <div
+                        className={`size-[22px] rounded-full flex items-center justify-center text-[10px] font-bold border-2 transition-all duration-300 ${
+                          isActive
+                            ? "bg-[#0058be] text-white border-[#0058be] ring-4 ring-blue-100"
+                            : isCompleted
+                            ? "bg-[#0058be] text-white border-[#0058be]"
+                            : "bg-white text-[#94a3b8] border-[#cbd5e1]"
+                        }`}
+                      >
+                        {isCompleted ? "✓" : idx + 1}
+                      </div>
+                      <span
+                        className={`text-[11px] font-semibold transition-colors duration-300 ${
+                          isActive
+                            ? "text-[#0058be]"
+                            : isCompleted
+                            ? "text-[#334155]"
+                            : "text-[#94a3b8]"
+                        }`}
+                      >
+                        {step.label}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Customer & Shipping Details */}
           <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[8px] p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="flex items-start gap-2">
               <UserIcon className="size-4 text-[#0058be] shrink-0 mt-0.5" />
@@ -206,50 +306,127 @@ export default function OrderDetailModal({
             </div>
           </div>
 
-          {/* Items */}
+          {/* Payment Status section */}
+          <div className="bg-white border border-[#e2e8f0] rounded-[8px] p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="flex items-start gap-2">
+              <CreditCard className="size-4 text-[#0058be] shrink-0 mt-0.5" />
+              <div>
+                <p className="text-[10px] font-bold text-[#64748b] uppercase tracking-[0.5px]">
+                  Phương thức thanh toán
+                </p>
+                {order.paymentMethod && PAYMENT_METHOD_META[order.paymentMethod] ? (
+                  <span className={`inline-flex items-center mt-1.5 px-2.5 py-0.5 rounded text-[11px] font-bold ${PAYMENT_METHOD_META[order.paymentMethod].bg} ${PAYMENT_METHOD_META[order.paymentMethod].color}`}>
+                    {PAYMENT_METHOD_META[order.paymentMethod].label}
+                  </span>
+                ) : (
+                  <p className="font-semibold text-[#0f172a] mt-0.5">—</p>
+                )}
+              </div>
+            </div>
+
+            <div className="flex items-start gap-2">
+              <CheckCircle2 className="size-4 text-[#0058be] shrink-0 mt-0.5" />
+              <div>
+                <p className="text-[10px] font-bold text-[#64748b] uppercase tracking-[0.5px]">
+                  Trạng thái thanh toán
+                </p>
+                {order.paymentStatus && PAYMENT_STATUS_META[order.paymentStatus] ? (
+                  (() => {
+                    const pm = PAYMENT_STATUS_META[order.paymentStatus];
+                    return (
+                      <span className={`inline-flex items-center gap-1 mt-1.5 px-2.5 py-0.5 rounded-full text-[11px] font-bold ${pm.bg} ${pm.color}`}>
+                        <pm.Icon className="size-3" />
+                        {pm.label}
+                      </span>
+                    );
+                  })()
+                ) : (
+                  <p className="font-semibold text-[#0f172a] mt-0.5">—</p>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Products List */}
           <div>
             <p className="text-[11px] font-bold text-[#64748b] uppercase tracking-[0.8px] mb-3">
               Danh sách sản phẩm
             </p>
-            <div className="flex flex-col gap-2">
-              {order.items.map((item, i) => (
-                <div
-                  key={item.id}
-                  className="flex items-center justify-between bg-white border border-[#e2e8f0] rounded-[8px] px-4 py-3"
-                >
-                  <div className="flex items-center gap-3">
-                    <span className="size-6 flex items-center justify-center bg-[#f1f5f9] rounded-full text-[11px] font-bold text-[#475569] shrink-0">
-                      {i + 1}
-                    </span>
-                    <div>
-                      <p className="font-semibold text-[#0f172a]">
-                        Sản phẩm #{item.productId}
-                      </p>
-                      <p className="text-[11px] text-[#64748b] mt-0.5">
-                        SL: {item.quantity} ×{" "}
-                        {formatPrice(Number(item.sellingPrice))}
+            {loadingProducts ? (
+              <div className="flex items-center justify-center py-6 gap-2 text-[#64748b] bg-slate-50 border border-dashed border-slate-200 rounded-[12px]">
+                <Loader2 className="size-4 animate-spin text-[#0058be]" />
+                <span>Đang tải thông tin sản phẩm...</span>
+              </div>
+            ) : (
+              <div className="flex flex-col gap-2">
+                {order.items.map((item, i) => {
+                  const product = item.productId ? productsMap[item.productId] : null;
+                  return (
+                    <div
+                      key={item.id}
+                      className="flex items-center justify-between bg-white border border-[#e2e8f0] hover:border-[#cbd5e1] rounded-[12px] p-3 transition-all duration-200 shadow-sm"
+                    >
+                      <div className="flex items-center gap-3">
+                        <span className="size-6 flex items-center justify-center bg-[#f1f5f9] rounded-full text-[11px] font-bold text-[#475569] shrink-0">
+                          {i + 1}
+                        </span>
+                        {product?.thumbnailUrl ? (
+                          <img
+                            src={product.thumbnailUrl.startsWith("http") ? product.thumbnailUrl : `http://localhost:8080${product.thumbnailUrl}`}
+                            alt={product.name}
+                            className="size-12 rounded-[8px] object-cover border border-[#e2e8f0]"
+                          />
+                        ) : (
+                          <div className="size-12 rounded-[8px] bg-[#f8fafc] border border-[#e2e8f0] flex items-center justify-center text-[10px] text-[#94a3b8] font-bold shrink-0">
+                            No Pic
+                          </div>
+                        )}
+                        <div>
+                          <p className="font-semibold text-[#0f172a] text-[13.5px] line-clamp-1 max-w-[320px]">
+                            {product?.name ?? `Sản phẩm #${item.productId}`}
+                          </p>
+                          <div className="flex items-center gap-2 mt-1">
+                            <span className="text-[11px] text-[#475569] font-medium bg-[#f1f5f9] px-1.5 py-0.5 rounded-[4px]">
+                              SL: {item.quantity}
+                            </span>
+                            <span className="text-[11px] text-[#64748b]">
+                              × {formatPrice(Number(item.sellingPrice))}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                      <p className="font-bold text-[#0058be] text-[14px]">
+                        {formatPrice(Number(item.sellingPrice) * item.quantity)}
                       </p>
                     </div>
-                  </div>
-                  <p className="font-bold text-[#0058be]">
-                    {formatPrice(Number(item.sellingPrice) * item.quantity)}
-                  </p>
-                </div>
-              ))}
+                  );
+                })}
+              </div>
+            )}
+          </div>
+
+          {/* Pricing Breakdown */}
+          <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[8px] p-4 flex flex-col gap-2">
+            <div className="flex items-center justify-between text-slate-600 font-semibold">
+              <span>Tạm tính</span>
+              <span>{formatPrice(order.items.reduce((sum, item) => sum + Number(item.sellingPrice) * item.quantity, 0))}</span>
+            </div>
+            {order.couponCode && (
+              <div className="flex items-center justify-between text-emerald-600 font-semibold">
+                <span className="flex items-center gap-1.5">
+                  <Percent className="size-3.5" />
+                  Mã giảm giá (<strong className="uppercase">{order.couponCode}</strong>)
+                </span>
+                <span>-{formatPrice(order.couponDiscount || 0)}</span>
+              </div>
+            )}
+            <div className="border-t border-[#e2e8f0] my-1 pt-2.5 flex items-center justify-between text-[#0058be]">
+              <span className="font-bold text-[14px]">Tổng cộng thanh toán</span>
+              <span className="text-[20px] font-black">{formatPrice(Number(order.totalAmount))}</span>
             </div>
           </div>
 
-          {/* Total */}
-          <div className="flex items-center justify-between bg-[#eff6ff] border border-[#eff6ff] rounded-[8px] px-5 py-3">
-            <span className="font-semibold text-[#0058be]">
-              Tổng cộng thanh toán
-            </span>
-            <span className="text-[20px] font-bold text-[#0058be]">
-              {formatPrice(Number(order.totalAmount))}
-            </span>
-          </div>
-
-          {/* Document link */}
+          {/* Document download */}
           {order.documentUrl && (
             <a
               href={order.documentUrl}
@@ -264,22 +441,30 @@ export default function OrderDetailModal({
           )}
         </div>
 
-        {/* Action footer */}
+        {/* Footer Actions */}
         <div className="bg-[#f8fafc] border-t border-[#e2e8f0] px-6 py-4 flex items-center gap-3 flex-wrap">
           {order.status === "DRAFT" && (
-            <button
-              type="button"
-              disabled={confirming}
-              onClick={handleConfirm}
-              className="flex items-center gap-2 px-4 py-2 bg-[#0058be] hover:bg-[#0047a3] text-white text-[13px] font-semibold rounded-[8px] shadow-sm transition-colors cursor-pointer disabled:opacity-50"
-            >
-              {confirming ? (
-                <Loader2 className="size-4 animate-spin" />
-              ) : (
-                <CheckCircle2 className="size-4" />
+            <>
+              <button
+                type="button"
+                disabled={confirming || !canConfirm}
+                onClick={handleConfirm}
+                className="flex items-center gap-2 px-4 py-2 bg-[#0058be] hover:bg-[#0047a3] text-white text-[13px] font-semibold rounded-[8px] shadow-sm transition-colors cursor-pointer disabled:opacity-50"
+                title={!canConfirm ? "Chỉ có thể duyệt đơn online khi đã thanh toán thành công" : undefined}
+              >
+                {confirming ? (
+                  <Loader2 className="size-4 animate-spin" />
+                ) : (
+                  <CheckCircle2 className="size-4" />
+                )}
+                Duyệt đơn hàng
+              </button>
+              {!canConfirm && (
+                <span className="text-red-500 text-[12px] font-semibold bg-red-50 border border-red-100 rounded px-2.5 py-1">
+                  Chưa thanh toán online
+                </span>
               )}
-              Duyệt đơn hàng
-            </button>
+            </>
           )}
           {order.status === "CONFIRMED" && (
             <button

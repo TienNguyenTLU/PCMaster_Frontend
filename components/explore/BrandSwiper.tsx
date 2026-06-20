@@ -30,7 +30,7 @@ export default function BrandSwiper({
 
   return (
     <div className="relative group/swiper">
-      {/* Left arrow */}
+      {}
       <button
         type="button"
         onClick={() => scroll("left")}
@@ -40,13 +40,13 @@ export default function BrandSwiper({
         <ChevronLeft className="size-3.5 text-[#475569]" />
       </button>
 
-      {/* Scrollable track */}
+      {}
       <div
         ref={scrollRef}
         className="flex gap-2 overflow-x-auto scroll-smooth pb-1"
         style={{ scrollbarWidth: "none", msOverflowStyle: "none" }}
       >
-        {/* "All brands" chip */}
+        {}
         <button
           type="button"
           onClick={() => onToggle("")}
@@ -101,7 +101,7 @@ export default function BrandSwiper({
         })}
       </div>
 
-      {/* Right arrow */}
+      {}
       <button
         type="button"
         onClick={() => scroll("right")}

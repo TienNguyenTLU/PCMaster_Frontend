@@ -30,7 +30,7 @@ export default function DashboardLayout({
         toast.error("Bạn không có quyền truy cập trang quản lý (Dashboard)!");
         router.replace("/home");
       } else if (user.role === "STAFF") {
-        // Staff is only allowed to access specific paths
+        
         const allowedRoutes = [
           "/dashboard/inventory",
           "/dashboard/orders",
@@ -60,7 +60,7 @@ export default function DashboardLayout({
   const isAuthorized =
     user && (user.role === "ADMIN" || user.role === "STAFF") && isRouteAllowed;
 
-  // Display fullscreen loader during hydration or if unauthorized to prevent flash of content
+  
   if (!isHydrated || !user || !isAuthorized) {
     return (
       <div className="min-h-screen bg-[#f8fafc] flex items-center justify-center">

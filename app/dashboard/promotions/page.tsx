@@ -124,17 +124,13 @@ export default function PromotionsPage() {
 
   return (
     <div className="flex flex-col gap-6 animate-in fade-in duration-300">
-      {/* Page Header */}
+      {}
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-[#0f172a] text-[24px] font-semibold tracking-[-0.5px] flex items-center gap-2">
             <Sparkles className="size-6 text-[#0058be]" />
-            Khuyến mãi giảm giá
+            Khuyến mãi
           </h2>
-          <p className="text-[#64748b] text-[14px] mt-1">
-            Tạo trang khuyến mãi hạ cánh và gán chiết khấu giảm giá cho sản
-            phẩm.
-          </p>
         </div>
         <button
           onClick={handleCreate}
@@ -145,7 +141,7 @@ export default function PromotionsPage() {
         </button>
       </div>
 
-      {/* Toolbar */}
+      {}
       <div className="flex items-center justify-between bg-white p-4 rounded-[12px] border border-[#e2e8f0]">
         <div className="flex items-center gap-3">
           <div className="relative">
@@ -161,7 +157,7 @@ export default function PromotionsPage() {
         </div>
       </div>
 
-      {/* Grid view of Promotions */}
+      {}
       {loading ? (
         <div className="flex items-center justify-center min-h-[300px] text-[#64748b] bg-white rounded-[12px] border border-[#e2e8f0]">
           <Loader2 className="size-6 animate-spin mr-2 text-[#0058be]" /> Đang
@@ -190,7 +186,7 @@ export default function PromotionsPage() {
                 key={p.id}
                 className="bg-white rounded-[16px] border border-[#e2e8f0] overflow-hidden flex flex-col hover:shadow-lg hover:border-[#0058be]/30 transition-all duration-300 group"
               >
-                {/* Banner Area */}
+                {}
                 <div className="h-40 bg-[#f8fafc] relative overflow-hidden flex items-center justify-center border-b border-[#e2e8f0]">
                   {bannerSrc ? (
                     <img
@@ -215,7 +211,7 @@ export default function PromotionsPage() {
                   </div>
                 </div>
 
-                {/* Content */}
+                {}
                 <div className="p-5 flex flex-col gap-3 flex-1">
                   <h3 className="font-semibold text-[16px] text-[#0f172a] line-clamp-1 group-hover:text-[#0058be] transition-colors">
                     {p.name}
@@ -242,7 +238,7 @@ export default function PromotionsPage() {
                     {p.description || "Không có mô tả cho chương trình này."}
                   </p>
 
-                  {/* Action Buttons */}
+                  {}
                   <div className="flex items-center justify-end gap-2 border-t pt-4 mt-auto">
                     <button
                       onClick={() => handleEdit(p)}
@@ -315,7 +311,7 @@ function PromotionFormModal({
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Fetch categories for product filtering
+  
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -328,7 +324,7 @@ function PromotionFormModal({
     fetchCategories();
   }, []);
 
-  // Auto-generate slug from name
+  
   useEffect(() => {
     if (!promotion) {
       const generated = formData.name
@@ -427,12 +423,12 @@ function PromotionFormModal({
     }
   };
 
-  // Filter by stock > 0, or already selected in this promotion
+  
   const stockFilteredProducts = allProducts.filter(
     (p) => p.stock > 0 || formData.productIds.includes(Number(p.id)),
   );
 
-  // Filter by category and search query
+  
   const filteredProducts = stockFilteredProducts.filter((p) => {
     const matchesCategory =
       !selectedCategory || String(p.categoryId) === String(selectedCategory);
@@ -463,7 +459,7 @@ function PromotionFormModal({
           onSubmit={handleSubmit}
           className="flex flex-col lg:flex-row max-h-[80vh] overflow-y-auto"
         >
-          {/* Left panel: Info Form */}
+          {}
           <div className="flex-1 p-6 flex flex-col gap-4 border-b lg:border-b-0 lg:border-r border-[#e2e8f0]">
             <div className="flex flex-col gap-1">
               <label className="text-[13px] font-semibold text-[#475569]">
@@ -578,7 +574,7 @@ function PromotionFormModal({
               </div>
             </div>
 
-            {/* Cloudinary Banner Upload */}
+            {}
             <div className="flex flex-col gap-1.5">
               <label className="text-[13px] font-semibold text-[#475569]">
                 Ảnh Banner quảng cáo
@@ -631,7 +627,7 @@ function PromotionFormModal({
             </div>
           </div>
 
-          {/* Right panel: Product Selector */}
+          {}
           <div className="w-full lg:w-[420px] p-6 flex flex-col gap-4">
             <div>
               <h4 className="text-[14px] font-bold text-[#0f172a]">
@@ -642,7 +638,7 @@ function PromotionFormModal({
               </p>
             </div>
 
-            {/* Category Filter Dropdown */}
+            {}
             <div className="flex flex-col gap-1">
               <label className="text-[11px] font-bold text-[#475569]">
                 Lọc theo danh mục
@@ -668,7 +664,7 @@ function PromotionFormModal({
               </div>
             </div>
 
-            {/* Search Box */}
+            {}
             <div className="relative">
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-[#94a3b8]" />
               <input
@@ -680,7 +676,7 @@ function PromotionFormModal({
               />
             </div>
 
-            {/* List with Checkboxes */}
+            {}
             <div className="flex-1 min-h-[220px] max-h-[340px] border border-[#e2e8f0] rounded-[10px] overflow-y-auto p-2 bg-[#f8fafc] flex flex-col gap-1">
               {filteredProducts.length === 0 ? (
                 <div className="text-[12px] text-[#94a3b8] italic text-center py-10">
@@ -723,7 +719,7 @@ function PromotionFormModal({
               )}
             </div>
 
-            {/* Selected Count Badge */}
+            {}
             <div className="flex items-center justify-between text-[13px] font-semibold text-[#475569] border-t pt-3">
               <span>Đã chọn:</span>
               <span className="bg-[#eff6ff] text-[#0058be] border border-blue-100 px-3 py-0.5 rounded-full font-bold">
@@ -731,7 +727,7 @@ function PromotionFormModal({
               </span>
             </div>
 
-            {/* Submission buttons */}
+            {}
             <div className="flex justify-end gap-3 mt-auto pt-3 border-t">
               <button
                 type="button"

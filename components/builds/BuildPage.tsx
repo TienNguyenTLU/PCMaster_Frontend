@@ -40,7 +40,7 @@ import BuildSlot from "./BuildSlot";
 import BuildPickerModal from "./BuildPickerModal";
 import toast from "react-hot-toast";
 
-// Subcomponents
+
 import SummaryPanel from "./SummaryPanel";
 import BottleneckReport from "./BottleneckReport";
 import SmartBuildDropdown from "./SmartBuildDropdown";
@@ -49,7 +49,7 @@ import SaveBuildModal from "./SaveBuildModal";
 import ConfirmSelectionModal from "./ConfirmSelectionModal";
 import DeleteBuildModal from "./DeleteBuildModal";
 
-// ─── Slot definitions ────────────────────────────────────────────────────────
+
 
 export interface SlotDef {
   key: string;
@@ -138,7 +138,7 @@ function normalizeHardwareName(name: string, type: "cpu" | "gpu"): string {
   if (!name) return "";
   let cleanName = name.trim();
 
-  // Generic terms to remove case-insensitively
+  
   const commonPrefixes = [
     "card màn hình",
     "card đồ họa",
@@ -159,16 +159,16 @@ function normalizeHardwareName(name: string, type: "cpu" | "gpu"): string {
 
   let lowerName = cleanName.toLowerCase();
 
-  // Remove common prefixes/words
+  
   commonPrefixes.forEach((prefix) => {
     const regex = new RegExp(`(^|\\b)${prefix}(\\b|\\s|\\-|\\:)`, "gi");
     cleanName = cleanName.replace(regex, " ");
   });
 
-  // Clean up extra spaces
+  
   cleanName = cleanName.replace(/\s+/g, " ").trim();
 
-  // Specific regex mapping for CPU
+  
   if (type === "cpu") {
     const intelMatch = cleanName.match(/i\d[- ]\d+\w*/i);
     const ryzenMatch =
@@ -183,7 +183,7 @@ function normalizeHardwareName(name: string, type: "cpu" | "gpu"): string {
     }
   }
 
-  // Specific regex mapping for GPU
+  
   if (type === "gpu") {
     const rtxMatch = cleanName.match(
       /(rtx|gtx|gt)\s*\d+\s*(ti super|ti|super)?/i,
@@ -202,8 +202,8 @@ function normalizeHardwareName(name: string, type: "cpu" | "gpu"): string {
 }
 
 function getRamCapacityAndBus(ramProduct: Product | null) {
-  let capacity = 16; // default fallback
-  let busSpeed = 3200; // default fallback
+  let capacity = 16; 
+  let busSpeed = 3200; 
 
   if (!ramProduct) return { capacity, busSpeed };
 
@@ -314,7 +314,7 @@ export const isCaseCompatibleWithMb = (
   return isSupportedStrMatch(String(supported));
 };
 
-// ─── Main Component ──────────────────────────────────────────────────────────
+
 
 export default function BuildPage() {
   const { user } = useAuthStore();
@@ -328,7 +328,7 @@ export default function BuildPage() {
   const [addingToCart, setAddingToCart] = useState(false);
   const { addItem } = useCartStore();
 
-  // Smart Build AI States
+  
   const [showSmartBuildDropdown, setShowSmartBuildDropdown] = useState(false);
   const [smartBuildNeed, setSmartBuildNeed] = useState("gaming");
   const [smartBuildBudget, setSmartBuildBudget] = useState("20-30");
@@ -379,7 +379,7 @@ export default function BuildPage() {
     const selectedBudget = budgetMap[smartBuildBudget] || smartBuildBudget;
 
     try {
-      // Step 1: Fetch all categories
+      
       setSmartBuildStatus("Đang tải thông tin danh mục linh kiện...");
       await new Promise((resolve) => setTimeout(resolve, 300));
       const categoriesResponse = await adminAPI.getCategories(0, 100);
@@ -405,7 +405,7 @@ export default function BuildPage() {
       const monitorId = findIdBySlug("monitor");
       const fanId = findIdBySlug("fan");
 
-      // Step 2: Fetch products for all required categories in parallel
+      
       setSmartBuildStatus(
         "Đang tải danh sách linh kiện khả dụng từ cửa hàng...",
       );
@@ -478,7 +478,7 @@ export default function BuildPage() {
         return;
       }
 
-      // Step 3: Determine budget allocations
+      
       setSmartBuildStatus("Đang cân đối ngân sách cho từng linh kiện...");
       await new Promise((resolve) => setTimeout(resolve, 300));
       let targetBudget = 25000000;
@@ -502,7 +502,7 @@ export default function BuildPage() {
       const ramBudget = targetBudget * ramShare;
       const vgaBudget = targetBudget * vgaShare;
 
-      // Helper to parse specs
+      
       const getSpecs = (p: Product) => {
         if (!p || !p.specsJson) return {};
         try {
@@ -512,7 +512,7 @@ export default function BuildPage() {
         }
       };
 
-      // Helper to check static bottleneck heuristics
+      
       const checkStaticBottleneck = (
         cpuName: string,
         gpuName: string,
@@ -558,13 +558,13 @@ export default function BuildPage() {
           gpuL.includes("3060") ||
           gpuL.includes("7600");
 
-        if (isCpuH && !isGpuH && !isGpuM) return 2; // GPU bottleneck (CPU is too strong for GPU)
-        if (!isCpuH && !isCpuM && isGpuH) return 1; // CPU bottleneck (GPU is too strong for CPU)
-        if (!isCpuH && !isCpuM && isGpuM) return 1; // CPU bottleneck (GPU is too strong for CPU)
-        return 0; // Balanced
+        if (isCpuH && !isGpuH && !isGpuM) return 2; 
+        if (!isCpuH && !isCpuM && isGpuH) return 1; 
+        if (!isCpuH && !isCpuM && isGpuM) return 1; 
+        return 0; 
       };
 
-      // Helper to query bottleneck from API or static
+      
       const queryBottleneck = async (
         cpu: Product,
         gpu: Product,
@@ -610,13 +610,13 @@ export default function BuildPage() {
         return checkStaticBottleneck(cpu.name, gpu.name);
       };
 
-      // Step 4: Sort candidates by price ascending
+      
       const sortedCpus = [...cpus].sort((a, b) => a.price - b.price);
       const sortedMbs = [...mainboards].sort((a, b) => a.price - b.price);
       const sortedRams = [...rams].sort((a, b) => a.price - b.price);
       const sortedVgas = [...vgas].sort((a, b) => a.price - b.price);
 
-      // Helper to find index of product closest to a target price
+      
       const findClosestIndex = (
         arr: Product[],
         targetPrice: number,
@@ -633,7 +633,7 @@ export default function BuildPage() {
         return closestIdx;
       };
 
-      // Helper to find CPU and a compatible Mainboard closest to targets
+      
       const findCompatibleCpuAndMainboard = (
         startCpuIdx: number,
         targetMbBudget: number,
@@ -681,7 +681,7 @@ export default function BuildPage() {
         return null;
       };
 
-      // Find compatible RAM matching motherboard RAM type
+      
       const getCompatibleRam = (
         mbProduct: Product,
         targetRamBudget: number,
@@ -699,7 +699,7 @@ export default function BuildPage() {
         )[0];
       };
 
-      // Core selections setup
+      
       setSmartBuildStatus(
         "Đang ghép nối CPU và Mainboard tương thích socket...",
       );
@@ -737,7 +737,7 @@ export default function BuildPage() {
       let currentVgaIdx = findClosestIndex(sortedVgas, vgaBudget);
       let currVga = sortedVgas.length > 0 ? sortedVgas[currentVgaIdx] : null;
 
-      // Iterative Bottleneck Feedback Loop (maximum 6 steps)
+      
       let loopCount = 0;
       const maxIterations = 6;
       let bestConfig = {
@@ -778,7 +778,7 @@ export default function BuildPage() {
             vga: currVga,
             bottleneck: 0,
           };
-          break; // Balanced!
+          break; 
         }
 
         if (bestConfig.bottleneck === 999 || bestConfig.bottleneck > 0) {
@@ -791,9 +791,9 @@ export default function BuildPage() {
           };
         }
 
-        // Adjust components based on bottleneck feedback
+        
         if (bottleneckVal === 1 && currVga) {
-          // CPU Bottleneck (CPU too weak for VGA): Upgrade CPU or Downgrade VGA
+          
           setSmartBuildStatus(
             "Nghẽn CPU! Đang điều chỉnh cấu hình nâng CPU hoặc hạ VGA...",
           );
@@ -818,7 +818,7 @@ export default function BuildPage() {
             currVga = sortedVgas[currentVgaIdx];
           }
         } else if (bottleneckVal === 2 && currVga) {
-          // GPU Bottleneck (VGA too weak for CPU): Upgrade VGA or Downgrade CPU
+          
           setSmartBuildStatus(
             "Nghẽn GPU! Đang điều chỉnh cấu hình nâng VGA hoặc hạ CPU...",
           );
@@ -843,7 +843,7 @@ export default function BuildPage() {
             }
           }
         } else if (bottleneckVal === 3) {
-          // RAM Bottleneck: Try upgrading RAM
+          
           setSmartBuildStatus(
             "Nghẽn RAM! Đang tìm RAM chất lượng hoặc bus cao hơn...",
           );
@@ -880,7 +880,7 @@ export default function BuildPage() {
         return;
       }
 
-      // Step 5: Select remaining parts based on the leftover budget
+      
       setSmartBuildStatus(
         "Đang phân bổ các linh kiện phụ (SSD, Vỏ máy, Tản nhiệt)...",
       );
@@ -892,7 +892,7 @@ export default function BuildPage() {
         (finalVga ? finalVga.price : 0);
       const leftoverBudget = targetBudget - corePrice;
 
-      // Select PSU using AI recommended PSU API
+      
       setSmartBuildStatus(
         "Đang truy vấn AI để lấy đề xuất công suất PSU tối ưu...",
       );
@@ -921,10 +921,10 @@ export default function BuildPage() {
       });
       const selectedPsu =
         compatiblePsus.length > 0
-          ? [...compatiblePsus].sort((a, b) => a.price - b.price)[0] // Pick cheapest compatible PSU
-          : psus.sort((a, b) => b.price - a.price)[0]; // Fallback to strongest PSU
+          ? [...compatiblePsus].sort((a, b) => a.price - b.price)[0] 
+          : psus.sort((a, b) => b.price - a.price)[0]; 
 
-      // Select Case with Mainboard size compatibility check
+      
       const mbFormFactor = getSpecs(finalMb).form_factor || "ATX";
       const compatibleCases = cases.filter((c) =>
         isCaseCompatibleWithMb(c, mbFormFactor),
@@ -934,7 +934,7 @@ export default function BuildPage() {
           ? [...compatibleCases].sort((a, b) => a.price - b.price)[0]
           : cases[0];
 
-      // Select Storage (SSD)
+      
       const selectedStorage =
         storages.length > 0
           ? [...storages].sort(
@@ -944,7 +944,7 @@ export default function BuildPage() {
             )[0]
           : null;
 
-      // Select Cooler with supported sockets check & liquid cooler preference for high-end CPU
+      
       const mbSocket = getSpecs(finalMb).socket || "";
       const cpuSocket = getSpecs(finalCpu).socket || mbSocket;
       const compatibleCoolers = coolers.filter((col) => {
@@ -972,7 +972,7 @@ export default function BuildPage() {
         return isSocketMatch(String(sockets));
       });
 
-      // High-end CPU should use liquid cooler (tản nhiệt nước)
+      
       const cpuNameLower = finalCpu.name.toLowerCase();
       const isHighEndCpu =
         cpuNameLower.includes("i9") ||
@@ -1013,7 +1013,7 @@ export default function BuildPage() {
           ? [...candidateCoolers].sort((a, b) => a.price - b.price)[0]
           : coolers[0];
 
-      // Populate BuildState
+      
       const newBuild: BuildState = Object.fromEntries(
         SLOTS.map((s) => [s.key, null]),
       );
@@ -1026,7 +1026,7 @@ export default function BuildPage() {
       if (selectedStorage) newBuild.storage = selectedStorage;
       if (selectedCooler) newBuild.cooler = selectedCooler;
 
-      // Select additional fans/monitors if budget allows
+      
       const finalPriceBeforeOptional = Object.values(newBuild).reduce(
         (sum, p) => sum + (p?.price ?? 0),
         0,
@@ -1039,11 +1039,11 @@ export default function BuildPage() {
         newBuild.fan = fans.sort((a, b) => a.price - b.price)[0];
       }
 
-      // Step 6: Final PSU Capacity Check & Swap
+      
       setSmartBuildStatus("Đang kiểm tra công suất nguồn PSU cuối cùng...");
       await new Promise((resolve) => setTimeout(resolve, 500));
 
-      const finalPsuWattageNeeded = psuWattageNeeded; // Use the wattage recommended by AI in Step 5
+      const finalPsuWattageNeeded = psuWattageNeeded; 
 
       const currentPsu = newBuild.psu;
       const currentPsuSpecs = currentPsu ? getSpecs(currentPsu) : {};
@@ -1085,7 +1085,7 @@ export default function BuildPage() {
 
       setBuild(newBuild);
 
-      // Call chatbot API to generate beautiful expert note for these exact components
+      
       setSmartBuildStatus(
         "Đang gửi cấu hình tới Trợ lý AI để lấy nhận xét chuyên gia...",
       );
@@ -1104,7 +1104,7 @@ Hãy viết nhận xét ngắn gọn khoảng 3-4 câu bằng tiếng Việt gi�
         const response = await chatbotAPI.chat(promptMessage, [], "consult");
         const advice = response.message;
 
-        // Typewriter streaming effect
+        
         let index = 0;
         setAiBuildNote("");
         const interval = setInterval(() => {
@@ -1139,27 +1139,27 @@ Hãy viết nhận xét ngắn gọn khoảng 3-4 câu bằng tiếng Việt gi�
     }
   };
 
-  // Tab State
+  
   const [activeTab, setActiveTab] = useState<"builder" | "my-builds">(
     "builder",
   );
 
-  // Custom configuration list
+  
   const [myBuilds, setMyBuilds] = useState<PcBuildResponse[]>([]);
   const [loadingMyBuilds, setLoadingMyBuilds] = useState(false);
 
-  // Bottleneck Predictor State
+  
   const [bottleneckResult, setBottleneckResult] = useState<any>(null);
   const [loadingBottleneck, setLoadingBottleneck] = useState(false);
   const [bottleneckError, setBottleneckError] = useState<string | null>(null);
 
-  // AI Advice States
+  
   const [cpuAdvice, setCpuAdvice] = useState<string | null>(null);
   const [aiPsuWattage, setAiPsuWattage] = useState<number | null>(null);
   const [aiPsuExplanation, setAiPsuExplanation] = useState<string | null>(null);
   const [loadingPsu, setLoadingPsu] = useState(false);
 
-  // Confirmation Modal States
+  
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [pendingSelection, setPendingSelection] = useState<{
     slotKey: string;
@@ -1167,21 +1167,21 @@ Hãy viết nhận xét ngắn gọn khoảng 3-4 câu bằng tiếng Việt gi�
     incompatibleSlots: string[];
   } | null>(null);
 
-  // Delete Confirmation Modal States
+  
   const [showDeleteConfirmModal, setShowDeleteConfirmModal] = useState(false);
   const [pendingDeleteBuildId, setPendingDeleteBuildId] = useState<
     number | null
   >(null);
 
-  // Sync tab query parameter on load
+  
   useEffect(() => {
     if (tabParam === "my-builds") {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
+      
       setActiveTab("my-builds");
     }
   }, [tabParam]);
 
-  // Load draft from Chatbot AI (localStorage) on mount and on custom event
+  
   useEffect(() => {
     const loadDraft = async () => {
       const draftStr = localStorage.getItem("pcMaster_build_draft");
@@ -1194,7 +1194,7 @@ Hãy viết nhận xét ngắn gọn khoảng 3-4 câu bằng tiếng Việt gi�
             const draftItem = draft[slotKey];
             if (draftItem && draftItem.id) {
               try {
-                // Fetch full product details so we get specsJson, category, brand, etc.
+                
                 const fullProduct = await adminAPI.getProductById(draftItem.id);
                 newBuildUpdates[slotKey] = fullProduct;
               } catch (err) {
@@ -1203,7 +1203,7 @@ Hãy viết nhận xét ngắn gọn khoảng 3-4 câu bằng tiếng Việt gi�
                   draftItem.id,
                   err,
                 );
-                // Fallback to the DTO if fetch fails
+                
                 newBuildUpdates[slotKey] = draftItem;
               }
             }
@@ -1224,10 +1224,10 @@ Hãy viết nhận xét ngắn gọn khoảng 3-4 câu bằng tiếng Việt gi�
       }
     };
 
-    // Load draft immediately
+    
     loadDraft();
 
-    // Listen for changes (in case Chatbot is used while already on the build page)
+    
     const handleDraftUpdated = () => {
       loadDraft();
     };
@@ -1238,7 +1238,7 @@ Hãy viết nhận xét ngắn gọn khoảng 3-4 câu bằng tiếng Việt gi�
     };
   }, []);
 
-  // Calculate hardware bottleneck automatically
+  
   useEffect(() => {
     const calculateBottleneck = async () => {
       const cpu = build.cpu;
@@ -1254,11 +1254,11 @@ Hãy viết nhận xét ngắn gọn khoảng 3-4 câu bằng tiếng Việt gi�
       setLoadingBottleneck(true);
       setBottleneckError(null);
 
-      // 1. Normalize hardware names
+      
       const cpuName = normalizeHardwareName(cpu.name, "cpu");
       const gpuName = normalizeHardwareName(vga.name, "gpu");
 
-      // 2. Parse RAM capacity and speed
+      
       const { capacity: ramCapacity, busSpeed: ramBusSpeed } =
         getRamCapacityAndBus(ram);
 
@@ -1300,7 +1300,7 @@ Hãy viết nhận xét ngắn gọn khoảng 3-4 câu bằng tiếng Việt gi�
     calculateBottleneck();
   }, [build.cpu, build.vga, build.ram]);
 
-  // Call AI CPU Advice when CPU changes
+  
   useEffect(() => {
     const fetchCpuAdvice = async () => {
       if (!build.cpu) {
@@ -1318,7 +1318,7 @@ Hãy viết nhận xét ngắn gọn khoảng 3-4 câu bằng tiếng Việt gi�
     fetchCpuAdvice();
   }, [build.cpu]);
 
-  // Call AI PSU Recommendation when CPU, GPU, or RAM changes
+  
   useEffect(() => {
     const fetchPsuRecommendation = async () => {
       const cpu = build.cpu;
@@ -1342,7 +1342,7 @@ Hãy viết nhận xét ngắn gọn khoảng 3-4 câu bằng tiếng Việt gi�
         setAiPsuExplanation(data.explanation);
       } catch (err) {
         console.error("Error fetching PSU recommendation:", err);
-        // Fallback calculation on client side as a last resort
+        
         const cpuSpecs = getProductSpecs(cpu);
         const vgaSpecs = getProductSpecs(vga);
         const totalTdp =
@@ -1359,13 +1359,13 @@ Hãy viết nhận xét ngắn gọn khoảng 3-4 câu bằng tiếng Việt gi�
     fetchPsuRecommendation();
   }, [build.cpu, build.vga, build.ram]);
 
-  // Save Modal state
+  
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [buildName, setBuildName] = useState("");
   const [savingBuild, setSavingBuild] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
 
-  // Helper to parse specsJson
+  
   const getProductSpecs = (p?: Product | null) => {
     if (!p || !p.specsJson) return {};
     try {
@@ -1375,7 +1375,7 @@ Hãy viết nhận xét ngắn gọn khoảng 3-4 câu bằng tiếng Việt gi�
     }
   };
 
-  // Dynamic slots based on motherboard M.2 slots
+  
   const extraStorageSlots: SlotDef[] = [];
   const mb = build.mainboard;
   const mbSpecs = mb ? getProductSpecs(mb) : {};
@@ -1397,7 +1397,7 @@ Hãy viết nhận xét ngắn gọn khoảng 3-4 câu bằng tiếng Việt gi�
     0,
   );
 
-  // Clean up dynamic slots if motherboard changes and reduces M.2 slots
+  
   useEffect(() => {
     const mbSpecsObj = build.mainboard ? getProductSpecs(build.mainboard) : {};
     const currentM2Slots = Number(mbSpecsObj.m2_slots) || 0;
@@ -1420,7 +1420,7 @@ Hãy viết nhận xét ngắn gọn khoảng 3-4 câu bằng tiếng Việt gi�
     }
   }, [build.mainboard]);
 
-  // Fetch saved builds when active tab changes to 'my-builds'
+  
   const fetchMyBuilds = async () => {
     if (!user) return;
     setLoadingMyBuilds(true);
@@ -1436,10 +1436,10 @@ Hãy viết nhận xét ngắn gọn khoảng 3-4 câu bằng tiếng Việt gi�
 
   useEffect(() => {
     if (activeTab === "my-builds" && user) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
+      
       fetchMyBuilds();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    
   }, [activeTab, user]);
 
   const handleSelect = (slotKey: string, product: Product) => {
@@ -1622,7 +1622,7 @@ Hãy viết nhận xét ngắn gọn khoảng 3-4 câu bằng tiếng Việt gi�
       return;
     }
 
-    // Set product and remove incompatible ones
+    
     setBuild((prev) => {
       const nextBuild = { ...prev, [slotKey]: product };
       incompatibleSlots.forEach((s) => {
@@ -1692,7 +1692,7 @@ Hãy viết nhận xét ngắn gọn khoảng 3-4 câu bằng tiếng Việt gi�
     }
   };
 
-  // Compatibility Notes Calculator
+  
   const getCompatibilityNotes = (): {
     type: "info" | "warning";
     text: string;
@@ -1715,7 +1715,7 @@ Hãy viết nhận xét ngắn gọn khoảng 3-4 câu bằng tiếng Việt gi�
     const ramType = ramSpecs.ram_type;
     const mbFormFactor = mbSpecs.form_factor;
 
-    // CPU Socket Hint
+    
     if (cpu && cpuSocket) {
       if (!mb) {
         notes.push({
@@ -1730,7 +1730,7 @@ Hãy viết nhận xét ngắn gọn khoảng 3-4 câu bằng tiếng Việt gi�
       }
     }
 
-    // Mainboard Hints
+    
     if (mb) {
       if (mbSocket && !cpu) {
         notes.push({
@@ -1765,7 +1765,7 @@ Hãy viết nhận xét ngắn gọn khoảng 3-4 câu bằng tiếng Việt gi�
       }
     }
 
-    // RAM Hint
+    
     if (ram && ramType && !mb) {
       notes.push({
         type: "info",
@@ -1773,7 +1773,7 @@ Hãy viết nhận xét ngắn gọn khoảng 3-4 câu bằng tiếng Việt gi�
       });
     }
 
-    // AI CPU Motherboard advice
+    
     if (cpuAdvice) {
       notes.push({
         type: "info",
@@ -1807,10 +1807,10 @@ Hãy viết nhận xét ngắn gọn khoảng 3-4 câu bằng tiếng Việt gi�
 
     setSavingBuild(true);
     try {
-      // 1. Create PcBuild entity
+      
       const savedBuild = await buildAPI.create(buildName);
 
-      // 2. Map slot keys to backend ComponentType
+      
       const slotToTypeMap: Record<string, string> = {
         cpu: "CPU",
         mainboard: "MAINBOARD",
@@ -1833,9 +1833,9 @@ Hãy viết nhận xét ngắn gọn khoảng 3-4 câu bằng tiếng Việt gi�
             componentType,
           };
         })
-        .filter((item) => !!item.componentType); // ignore monitor and fan since they are not in the core backend enum
+        .filter((item) => !!item.componentType); 
 
-      // 3. Add components sequentially
+      
       for (const item of selectedItems) {
         await buildAPI.addItem(
           savedBuild.id,
@@ -1846,7 +1846,7 @@ Hãy viết nhận xét ngắn gọn khoảng 3-4 câu bằng tiếng Việt gi�
 
       toast.success("Lưu cấu hình PC thành công!");
       setShowSaveModal(false);
-      // If they are saved, fetch list again
+      
       fetchMyBuilds();
     } catch (err) {
       console.error(err);
@@ -1908,7 +1908,7 @@ Hãy viết nhận xét ngắn gọn khoảng 3-4 câu bằng tiếng Việt gi�
   };
 
   const handleDeleteBuildClick = (buildId: number, e: React.MouseEvent) => {
-    e.stopPropagation(); // prevent loading saved build
+    e.stopPropagation(); 
     setPendingDeleteBuildId(buildId);
     setShowDeleteConfirmModal(true);
   };
@@ -1946,7 +1946,7 @@ Hãy viết nhận xét ngắn gọn khoảng 3-4 câu bằng tiếng Việt gi�
         background: "linear-gradient(180deg, #f7f9fb 0%, #f0f4f8 100%)",
       }}
     >
-      {/* Page Header */}
+      {}
       <div className="w-full bg-white/80 backdrop-blur-md border-b border-[#e2e8f0]/80 sticky top-0 z-30 shadow-sm">
         <div className="max-w-[1400px] mx-auto px-8 py-3.5 flex items-center justify-between">
           <div className="flex items-center gap-6">
@@ -1961,7 +1961,7 @@ Hãy viết nhận xét ngắn gọn khoảng 3-4 câu bằng tiếng Việt gi�
                 Xây dựng cấu hình PC
               </h1>
             </div>
-            {/* Toggle button to switch between Design and Saved Configurations */}
+            {}
             {activeTab === "builder" ? (
               <div className="flex items-center gap-3">
                 <button
@@ -2020,15 +2020,15 @@ Hãy viết nhận xét ngắn gọn khoảng 3-4 câu bằng tiếng Việt gi�
         </div>
       </div>
 
-      {/* Main Layout */}
+      {}
       <div className="max-w-[1400px] mx-auto w-full px-8 py-8 flex-1">
         {activeTab === "builder" ? (
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-8 items-start">
-            {/* Left: Slot list */}
+            {}
             <div className="flex flex-col gap-3">
-              {/* Intro banner removed as requested */}
+              {}
 
-              {/* AI Smart Build Note Card */}
+              {}
               {aiBuildNote && (
                 <div className="bg-white border border-violet-100 rounded-[24px] p-6 flex flex-col gap-4 shadow-sm mb-3">
                   <div className="flex items-center justify-between border-b border-[#f1f5f9] pb-3">
@@ -2050,7 +2050,7 @@ Hãy viết nhận xét ngắn gọn khoảng 3-4 câu bằng tiếng Việt gi�
                 </div>
               )}
 
-              {/* AI Bottleneck Analysis Widget */}
+              {}
               <BottleneckReport
                 build={build}
                 bottleneckResult={bottleneckResult}
@@ -2058,7 +2058,7 @@ Hãy viết nhận xét ngắn gọn khoảng 3-4 câu bằng tiếng Việt gi�
                 bottleneckError={bottleneckError}
               />
 
-              {/* Compatibility Notes Widget */}
+              {}
               {showCompatNotes && (
                 <div className="bg-white border border-[#e8ecf2] rounded-[24px] p-6 flex flex-col gap-4 shadow-sm mb-3">
                   <div className="flex items-center gap-2.5 text-[#0058be] font-extrabold text-[14px] uppercase tracking-[0.5px]">
@@ -2084,7 +2084,7 @@ Hãy viết nhận xét ngắn gọn khoảng 3-4 câu bằng tiếng Việt gi�
                 </div>
               )}
 
-              {/* Group: Core */}
+              {}
               <p className="text-[11px] font-black text-[#94a3b8] uppercase tracking-[1.5px] px-1 mt-2">
                 🔧 Linh kiện cốt lõi
               </p>
@@ -2103,7 +2103,7 @@ Hãy viết nhận xét ngắn gọn khoảng 3-4 câu bằng tiếng Việt gi�
                 ))}
               </div>
 
-              {/* Group: Optional */}
+              {}
               <p className="text-[11px] font-black text-[#94a3b8] uppercase tracking-[1.5px] px-1 mt-4">
                 ✨ Linh kiện tùy chọn
               </p>
@@ -2135,7 +2135,7 @@ Hãy viết nhận xét ngắn gọn khoảng 3-4 câu bằng tiếng Việt gi�
               </div>
             </div>
 
-            {/* Right: Summary */}
+            {}
             <SummaryPanel
               build={build}
               totalPrice={totalPrice}
@@ -2159,7 +2159,7 @@ Hãy viết nhận xét ngắn gọn khoảng 3-4 câu bằng tiếng Việt gi�
         )}
       </div>
 
-      {/* Picker Modal */}
+      {}
       {activeSlot && (
         <BuildPickerModal
           slotKey={activeSlot}
@@ -2173,7 +2173,7 @@ Hãy viết nhận xét ngắn gọn khoảng 3-4 câu bằng tiếng Việt gi�
         />
       )}
 
-      {/* Save Modal dialog */}
+      {}
       <SaveBuildModal
         showSaveModal={showSaveModal}
         setShowSaveModal={setShowSaveModal}
@@ -2185,7 +2185,7 @@ Hãy viết nhận xét ngắn gọn khoảng 3-4 câu bằng tiếng Việt gi�
         handleSaveConfirm={handleSaveConfirm}
       />
 
-      {/* Compatibility Confirmation Modal */}
+      {}
       <ConfirmSelectionModal
         showConfirmModal={showConfirmModal}
         pendingSelection={pendingSelection}
@@ -2194,7 +2194,7 @@ Hãy viết nhận xét ngắn gọn khoảng 3-4 câu bằng tiếng Việt gi�
         build={build}
       />
 
-      {/* Delete Saved Build Confirmation Modal */}
+      {}
       <DeleteBuildModal
         showDeleteConfirmModal={showDeleteConfirmModal}
         pendingDeleteBuildId={pendingDeleteBuildId}
@@ -2205,7 +2205,7 @@ Hãy viết nhận xét ngắn gọn khoảng 3-4 câu bằng tiếng Việt gi�
   );
 }
 
-// ─── AI Smart Build Helper Functions ─────────────────────────────────────────
+
 
 const mapCategoryToSlotKey = (slug?: string | null): string | null => {
   if (!slug) return null;

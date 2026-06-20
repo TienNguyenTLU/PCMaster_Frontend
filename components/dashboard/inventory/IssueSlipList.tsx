@@ -51,7 +51,7 @@ export default function IssueSlipList({
   searchQuery,
   statusFilter,
 }: IssueSlipListProps) {
-  // Apply filtering locally for search & status
+  
   const filteredSlips = slips.filter((slip) => {
     const matchesSearch =
       slip.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -99,18 +99,18 @@ export default function IssueSlipList({
                       key={slip.id}
                       className="hover:bg-[#f8fafc]/50 transition-colors"
                     >
-                      {/* Code */}
+                      {}
                       <td className="px-6 py-4 font-bold text-[#0f172a]">
                         {slip.code}
                       </td>
-                      {/* Order ID */}
+                      {}
                       <td className="px-6 py-4 font-semibold text-[#64748b]">
                         {slip.orderId
                           ? `#${String(slip.orderId).padStart(5, "0")}`
                           : "Nghiệp vụ"}
                       </td>
 
-                      {/* Recipient / Export Reason */}
+                      {}
                       <td className="px-6 py-4">
                         <div>
                           <p className="font-semibold text-[#0f172a]">
@@ -125,7 +125,7 @@ export default function IssueSlipList({
                         </div>
                       </td>
 
-                      {/* Delivery Type */}
+                      {}
                       <td className="px-6 py-4">
                         {slip.orderId ? (
                           <span className="flex items-center gap-1.5 font-medium text-[13px] text-[#334155]">
@@ -148,7 +148,7 @@ export default function IssueSlipList({
                         )}
                       </td>
 
-                      {/* Status */}
+                      {}
                       <td className="px-6 py-4 text-center">
                         {isPending ? (
                           <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-[11px] font-semibold bg-amber-50 text-amber-700 border border-amber-200">
@@ -161,12 +161,12 @@ export default function IssueSlipList({
                         )}
                       </td>
 
-                      {/* Created At */}
+                      {}
                       <td className="px-6 py-4 text-[#64748b] text-[12px]">
                         {formatDate(slip.createdAt)}
                       </td>
 
-                      {/* Action buttons */}
+                      {}
                       <td className="px-6 py-4 text-right">
                         <div className="flex items-center justify-end gap-2">
                           <button
@@ -210,7 +210,7 @@ export default function IssueSlipList({
         </div>
       </div>
 
-      {/* Pagination Controls */}
+      {}
       {totalPages > 1 && (
         <div className="flex items-center justify-between bg-white border border-[#e2e8f0] rounded-[12px] px-6 py-4 shadow-sm">
           <span className="text-[13px] text-[#64748b] font-medium">

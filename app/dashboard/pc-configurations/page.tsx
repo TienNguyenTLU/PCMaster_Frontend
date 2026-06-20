@@ -10,7 +10,7 @@ import {
   Loader2,
   Cpu,
 } from "lucide-react";
-import { adminAPI, Product } from "@/lib/api";
+import { adminAPI, Product, Brand } from "@/lib/api";
 import { CldImage } from "next-cloudinary";
 import PcConfigurationModal from "@/components/dashboard/PcConfigurationModal";
 import toast from "react-hot-toast";
@@ -18,25 +18,28 @@ import toast from "react-hot-toast";
 export default function PcConfigurationsPage() {
   const [allProducts, setAllProducts] = useState<Product[]>([]);
 
-  // Pagination & Loading state
+  
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [page, setPage] = useState(0);
   const PAGE_SIZE = 7;
 
-  // Filter state
+  
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [brandsList, setBrandsList] = useState<Brand[]>([]);
+  const [selectedBrand, setSelectedBrand] = useState("");
+  const [stockStatus, setStockStatus] = useState("");
 
-  // Modal state
+  
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
-  // Delete confirm state
+  
   const [deletingProduct, setDeletingProduct] = useState<Product | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
 
-  // Debounce search term
+  
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearch(searchTerm);
@@ -54,7 +57,7 @@ export default function PcConfigurationsPage() {
       let currentPage = 0;
       let totalPages = 1;
 
-      // Fetch all products so we can filter and detail components locally
+      
       while (currentPage < totalPages) {
         const response = await adminAPI.getProducts(currentPage, 1000);
         const content = response.content || [];
@@ -65,12 +68,12 @@ export default function PcConfigurationsPage() {
         currentPage++;
       }
 
-      // Filter only for PC_SYSTEM category products
-      // We look at the category slug "pc-system"
+      
+      
       const pcSystems = all.filter((p) => p.category?.slug === "pc-system");
 
-      // For each PC System, fetch its detailed components if not loaded fully
-      // The getProductById endpoint returns the pcComponents list
+      
+      
       const detailedPcSystems = await Promise.all(
         pcSystems.map(async (pc) => {
           try {
@@ -91,14 +94,24 @@ export default function PcConfigurationsPage() {
 
   useEffect(() => {
     fetchProducts();
+    adminAPI.getBrands(0, 100).then((res) => setBrandsList(res.content || []));
   }, []);
 
-  // Compute filtered and paginated products
+  
   const filteredProducts = allProducts.filter((p) => {
     const matchSearch = debouncedSearch
       ? p.name.toLowerCase().includes(debouncedSearch.toLowerCase())
       : true;
-    return matchSearch;
+    const matchBrand = selectedBrand
+      ? String(p.brand?.id ?? p.brandId) === selectedBrand
+      : true;
+    const matchStock =
+      stockStatus === "in-stock"
+        ? p.stock > 0
+        : stockStatus === "out-of-stock"
+        ? p.stock === 0
+        : true;
+    return matchSearch && matchBrand && matchStock;
   });
 
   const totalElements = filteredProducts.length;
@@ -139,16 +152,12 @@ export default function PcConfigurationsPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Page Header */}
+      {}
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-[#0f172a] text-[24px] font-semibold tracking-[-0.5px]">
-            Cấu hình PC lắp sẵn
+            Cấu hình PC
           </h2>
-          <p className="text-[#64748b] text-[14px] mt-1">
-            Quản lý cấu hình, lắp ráp sản phẩm PC nguyên bộ từ linh kiện tồn
-            kho.
-          </p>
         </div>
         <button
           onClick={handleAddClick}
@@ -159,7 +168,7 @@ export default function PcConfigurationsPage() {
         </button>
       </div>
 
-      {/* Toolbar */}
+      {}
       <div className="flex flex-col md:flex-row items-center justify-between bg-white p-4 rounded-[12px] border border-[#e2e8f0] gap-4">
         <div className="relative w-full md:w-auto">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-[#94a3b8]" />
@@ -171,9 +180,40 @@ export default function PcConfigurationsPage() {
             className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[8px] pl-9 pr-4 py-2 text-[14px] focus:outline-none focus:border-[#0058be] focus:ring-1 focus:ring-[#0058be] transition-all w-full md:w-[300px]"
           />
         </div>
+
+        <div className="flex items-center gap-3 w-full md:w-auto">
+          <select
+            value={selectedBrand}
+            onChange={(e) => {
+              setSelectedBrand(e.target.value);
+              setPage(0);
+            }}
+            className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[8px] px-3 py-2 text-[14px] focus:outline-none focus:border-[#0058be] transition-all cursor-pointer"
+          >
+            <option value="">Tất cả thương hiệu</option>
+            {brandsList.map((b) => (
+              <option key={b.id} value={b.id}>
+                {b.name}
+              </option>
+            ))}
+          </select>
+
+          <select
+            value={stockStatus}
+            onChange={(e) => {
+              setStockStatus(e.target.value);
+              setPage(0);
+            }}
+            className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[8px] px-3 py-2 text-[14px] focus:outline-none focus:border-[#0058be] transition-all cursor-pointer"
+          >
+            <option value="">Tất cả trạng thái</option>
+            <option value="in-stock">Còn hàng</option>
+            <option value="out-of-stock">Hết hàng</option>
+          </select>
+        </div>
       </div>
 
-      {/* Table Area */}
+      {}
       <div className="bg-white border border-[#e2e8f0] rounded-[12px] overflow-hidden">
         <div className="overflow-x-auto min-h-[300px]">
           {loading ? (
@@ -311,7 +351,7 @@ export default function PcConfigurationsPage() {
           )}
         </div>
 
-        {/* Pagination */}
+        {}
         {!loading && !error && currentProducts.length > 0 && (
           <div className="px-6 py-4 border-t border-[#e2e8f0] flex items-center justify-between text-[13px] text-[#64748b]">
             <span>
@@ -341,7 +381,7 @@ export default function PcConfigurationsPage() {
         )}
       </div>
 
-      {/* Add / Edit PC Assembly Configuration Modal */}
+      {}
       <PcConfigurationModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
@@ -349,7 +389,7 @@ export default function PcConfigurationsPage() {
         editingProduct={editingProduct}
       />
 
-      {/* Delete Confirm Dialog */}
+      {}
       {deletingProduct && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"

@@ -115,17 +115,13 @@ export default function CouponsPage() {
 
   return (
     <div className="flex flex-col gap-6 animate-in fade-in duration-300">
-      {/* Page Header */}
+      {}
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-[#0f172a] text-[24px] font-semibold tracking-[-0.5px] flex items-center gap-2">
             <Ticket className="size-6 text-[#0058be]" />
-            Mã giảm giá (Coupons)
+            Mã giảm giá (Coupon)
           </h2>
-          <p className="text-[#64748b] text-[14px] mt-1">
-            Quản lý và tạo mã giảm giá chiết khấu trực tiếp vào hóa đơn của
-            khách hàng.
-          </p>
         </div>
         <button
           onClick={handleCreate}
@@ -136,7 +132,7 @@ export default function CouponsPage() {
         </button>
       </div>
 
-      {/* Toolbar */}
+      {}
       <div className="flex items-center justify-between bg-white p-4 rounded-[12px] border border-[#e2e8f0]">
         <div className="flex items-center gap-3">
           <div className="relative">
@@ -152,7 +148,7 @@ export default function CouponsPage() {
         </div>
       </div>
 
-      {/* Table view of Coupons */}
+      {}
       <div className="bg-white border border-[#e2e8f0] rounded-[12px] overflow-hidden">
         <div className="overflow-x-auto min-h-[300px]">
           {loading ? (
@@ -373,7 +369,7 @@ function CouponFormModal({
         </div>
 
         <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-4">
-          {/* Coupon Code */}
+          {}
           <div className="flex flex-col gap-1">
             <label className="text-[13px] font-semibold text-[#475569]">
               Mã code Coupon *
@@ -408,7 +404,7 @@ function CouponFormModal({
             )}
           </div>
 
-          {/* Discount Type */}
+          {}
           <div className="flex flex-col gap-1">
             <label className="text-[13px] font-semibold text-[#475569]">
               Hình thức chiết khấu
@@ -452,7 +448,7 @@ function CouponFormModal({
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            {/* Discount Value */}
+            {}
             <div className="flex flex-col gap-1">
               <label className="text-[13px] font-semibold text-[#475569]">
                 Giá trị giảm * (
@@ -478,7 +474,7 @@ function CouponFormModal({
               )}
             </div>
 
-            {/* Max Discount Amount */}
+            {}
             {formData.discountType === "PERCENTAGE" && (
               <div className="flex flex-col gap-1">
                 <label className="text-[13px] font-semibold text-[#475569]">
@@ -500,7 +496,7 @@ function CouponFormModal({
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            {/* Min Order Amount */}
+            {}
             <div className="flex flex-col gap-1">
               <label className="text-[13px] font-semibold text-[#475569]">
                 Đơn tối thiểu áp dụng (₫)
@@ -518,7 +514,7 @@ function CouponFormModal({
               />
             </div>
 
-            {/* Usage Limit */}
+            {}
             <div className="flex flex-col gap-1">
               <label className="text-[13px] font-semibold text-[#475569]">
                 Tổng giới hạn lượt dùng (0 = Vô hạn)
@@ -538,7 +534,7 @@ function CouponFormModal({
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            {/* Start Date */}
+            {}
             <div className="flex flex-col gap-1">
               <label className="text-[13px] font-semibold text-[#475569]">
                 Ngày bắt đầu hiệu lực
@@ -553,7 +549,7 @@ function CouponFormModal({
               />
             </div>
 
-            {/* End Date */}
+            {}
             <div className="flex flex-col gap-1">
               <label className="text-[13px] font-semibold text-[#475569]">
                 Ngày hết hạn
@@ -569,7 +565,7 @@ function CouponFormModal({
             </div>
           </div>
 
-          {/* Active status */}
+          {}
           <div className="flex items-center gap-2 mt-2">
             <input
               type="checkbox"
@@ -588,7 +584,7 @@ function CouponFormModal({
             </label>
           </div>
 
-          {/* Buttons */}
+          {}
           <div className="flex justify-end gap-3 mt-4 border-t pt-4">
             <button
               type="button"

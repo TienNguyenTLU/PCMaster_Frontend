@@ -70,7 +70,7 @@ export default function SummaryPanel({
 
   return (
     <div className="sticky top-24 flex flex-col gap-4">
-      {/* Price card */}
+      {}
       <div className="bg-white rounded-[24px] border border-[#e8ecf2] p-6 flex flex-col gap-5 shadow-sm hover:shadow-md transition-shadow duration-300">
         <div>
           <p className="text-[11px] font-bold text-[#0058be] uppercase tracking-[1.5px] mb-1.5">
@@ -119,7 +119,7 @@ export default function SummaryPanel({
           )}
         </div>
 
-        {/* Progress bar */}
+        {}
         <div className="h-2 bg-[#f1f5f9] rounded-full overflow-hidden border border-[#cbd5e1]/10">
           <div
             className="h-full bg-gradient-to-r from-[#0058be] to-[#2563eb] rounded-full transition-all duration-500"
@@ -127,7 +127,7 @@ export default function SummaryPanel({
           />
         </div>
 
-        {/* Warnings */}
+        {}
         {missingRequired.length > 0 && (
           <div className="bg-rose-50/50 border border-rose-100 rounded-[16px] p-4">
             <p className="text-[12px] font-bold text-rose-700 flex items-center gap-1.5 mb-2">
@@ -148,7 +148,7 @@ export default function SummaryPanel({
           </div>
         )}
 
-        {/* CTA */}
+        {}
         <button
           type="button"
           disabled={selectedCount === 0 || adding}
@@ -167,7 +167,7 @@ export default function SummaryPanel({
         </button>
       </div>
 
-      {/* Component list summary */}
+      {}
       {selectedCount > 0 && (
         <div className="bg-white rounded-[24px] border border-[#e8ecf2] p-5 flex flex-col gap-3.5 shadow-sm hover:shadow-md transition-shadow duration-300">
           <p className="text-[12px] font-extrabold text-[#475569] uppercase tracking-[1px] border-b border-[#f1f5f9] pb-2">

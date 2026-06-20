@@ -7,7 +7,7 @@ const axiosInstance = axios.create({
   baseURL: API_BASE_URL,
 });
 
-// ─── Request interceptor — attach Bearer token from localStorage ─────────────
+
 axiosInstance.interceptors.request.use(
   (config) => {
     if (typeof window !== "undefined") {
@@ -21,20 +21,20 @@ axiosInstance.interceptors.request.use(
   (error) => Promise.reject(error),
 );
 
-// ─── Response interceptor — handle 401 globally ──────────────────────────────
+
 axiosInstance.interceptors.response.use(
   (response) => response,
   async (error) => {
     if (error.response?.status === 401 && typeof window !== "undefined") {
       const hadToken = !!localStorage.getItem("authToken");
 
-      // Import forceLogout lazily to avoid circular dependency at module init
+      
       const { forceLogout } = await import("@/lib/store");
       forceLogout();
 
       if (hadToken) {
         toast.error("Phiên đăng nhập đã hết hạn, vui lòng đăng nhập lại.");
-        // Small delay so toast is visible before navigation
+        
         setTimeout(() => {
           window.location.href = "/auth/login";
         }, 300);

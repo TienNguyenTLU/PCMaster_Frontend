@@ -26,7 +26,7 @@ import { ChatMessage, RecommendedProduct } from "@/lib/types/chatbot";
 import { useCartStore } from "@/lib/store";
 import toast from "react-hot-toast";
 
-// ─── Hằng số & dữ liệu tĩnh ──────────────────────────────────────────────────
+
 const WELCOME_CONSULT_MESSAGE: ChatMessage = {
   role: "assistant",
   content:
@@ -53,7 +53,7 @@ const QUICK_PROMPTS = [
   },
 ];
 
-// ─── Main Component ───────────────────────────────────────────────────────────
+
 export default function ChatbotWidget() {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
@@ -61,7 +61,7 @@ export default function ChatbotWidget() {
   const [isLoading, setIsLoading] = useState(false);
   const [addingId, setAddingId] = useState<number | null>(null);
 
-  // Message history
+  
   const [messages, setMessages] = useState<ChatMessage[]>([
     WELCOME_CONSULT_MESSAGE,
   ]);
@@ -70,19 +70,19 @@ export default function ChatbotWidget() {
   const inputRef = useRef<HTMLInputElement>(null);
   const { addItem } = useCartStore();
 
-  // Tự động cuộn xuống khi có tin nhắn mới
+  
   useEffect(() => {
     chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, isLoading]);
 
-  // Focus input khi mở widget
+  
   useEffect(() => {
     if (isOpen) {
       setTimeout(() => inputRef.current?.focus(), 150);
     }
   }, [isOpen]);
 
-  // Gửi tin nhắn lên backend RAG
+  
   const handleSendMessage = useCallback(
     async (textToSend: string) => {
       if (!textToSend.trim() || isLoading) return;
@@ -97,7 +97,7 @@ export default function ChatbotWidget() {
       setInput("");
       setIsLoading(true);
 
-      // Chuẩn bị lịch sử hội thoại (bỏ tin chào đầu tiên)
+      
       const historyPayload = messages
         .slice(1)
         .map((msg) => ({ role: msg.role, content: msg.content }));
@@ -133,7 +133,7 @@ export default function ChatbotWidget() {
     [isLoading, messages, setMessages],
   );
 
-  // Thêm sản phẩm vào giỏ hàng từ card đề xuất
+  
   const handleAddToCart = useCallback(
     async (e: React.MouseEvent, product: RecommendedProduct) => {
       e.preventDefault();
@@ -152,7 +152,7 @@ export default function ChatbotWidget() {
     [addingId, addItem],
   );
 
-  // Reset cuộc trò chuyện
+  
   const handleReset = useCallback(() => {
     setMessages([WELCOME_CONSULT_MESSAGE]);
     setInput("");
@@ -160,14 +160,14 @@ export default function ChatbotWidget() {
 
   return (
     <>
-      {/* ── Floating Action Button ─────────────────────────────────────────── */}
+      {}
       <button
         onClick={() => setIsOpen((prev) => !prev)}
         className="fixed bottom-6 right-6 z-50 group"
         aria-label="Trợ lý AI PCMaster"
       >
         <div className="relative p-4 rounded-2xl bg-white border border-gray-200 shadow-lg shadow-gray-200/60 hover:shadow-xl hover:shadow-blue-100 hover:border-blue-300 hover:scale-105 active:scale-95 transition-all duration-300">
-          {/* Glow effect */}
+          {}
           <div className="absolute inset-0 rounded-2xl bg-blue-50 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
           {isOpen ? (
@@ -175,7 +175,7 @@ export default function ChatbotWidget() {
           ) : (
             <div className="relative">
               <Bot className="size-6 text-[#0058be] relative z-10 group-hover:text-blue-600 transition-colors" />
-              {/* Online indicator pulse */}
+              {}
               <span className="absolute -top-1 -right-1 flex size-3">
                 <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
                 <span className="relative inline-flex rounded-full size-3 bg-emerald-500" />
@@ -185,10 +185,10 @@ export default function ChatbotWidget() {
         </div>
       </button>
 
-      {/* ── Chat Panel ────────────────────────────────────────────────────── */}
+      {}
       {isOpen && (
         <div className="fixed bottom-24 right-6 w-96 h-[580px] z-50 flex flex-col rounded-2xl overflow-hidden shadow-2xl shadow-gray-300/50 border border-gray-200 animate-chat-in bg-white">
-          {/* Header */}
+          {}
           <div className="px-5 py-4 bg-gradient-to-r from-[#0058be] to-[#0070e0] flex items-center justify-between flex-shrink-0">
             <div className="flex items-center gap-3">
               <div className="relative p-2.5 rounded-xl bg-white/20 border border-white/25">
@@ -219,7 +219,7 @@ export default function ChatbotWidget() {
             </div>
           </div>
 
-          {/* Messages Area */}
+          {}
           <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4 bg-gray-50 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-transparent">
             {messages.map((msg, index) => (
               <MessageBubble
@@ -230,7 +230,7 @@ export default function ChatbotWidget() {
               />
             ))}
 
-            {/* Typing indicator */}
+            {}
             {isLoading && (
               <div className="flex items-start gap-2">
                 <div className="p-1.5 rounded-lg bg-blue-50 border border-blue-100 flex-shrink-0">
@@ -246,7 +246,7 @@ export default function ChatbotWidget() {
             <div ref={chatEndRef} />
           </div>
 
-          {/* Quick Prompts */}
+          {}
           {!isLoading && messages.length <= 2 && (
             <div className="px-4 py-3 bg-white border-t border-gray-100 flex flex-wrap gap-2 flex-shrink-0">
               {QUICK_PROMPTS.map((prompt, i) => (
@@ -262,7 +262,7 @@ export default function ChatbotWidget() {
             </div>
           )}
 
-          {/* Input Form */}
+          {}
           <form
             onSubmit={(e) => {
               e.preventDefault();
@@ -290,7 +290,7 @@ export default function ChatbotWidget() {
         </div>
       )}
 
-      {/* ── CSS Animations ────────────────────────────────────────────────── */}
+      {}
       <style>
         {`
         @keyframes chat-in {
@@ -304,7 +304,7 @@ export default function ChatbotWidget() {
   );
 }
 
-// ─── MessageBubble Component ─────────────────────────────────────────────────
+
 interface MessageBubbleProps {
   message: ChatMessage;
   addingId: number | null;
@@ -318,18 +318,18 @@ function MessageBubble({ message, addingId, onAddToCart }: MessageBubbleProps) {
     <div
       className={`flex flex-col ${isUser ? "items-end" : "items-start"} gap-2`}
     >
-      {/* Avatar + Bubble row */}
+      {}
       <div
         className={`flex items-start gap-2 max-w-[88%] ${isUser ? "flex-row-reverse" : "flex-row"}`}
       >
-        {/* Avatar */}
+        {}
         {!isUser && (
           <div className="p-1.5 rounded-lg bg-blue-50 border border-blue-100 flex-shrink-0 mt-0.5">
             <Bot className="size-3.5 text-[#0058be]" />
           </div>
         )}
 
-        {/* Message Bubble */}
+        {}
         <div
           className={`px-4 py-3 rounded-2xl text-xs leading-relaxed ${
             isUser
@@ -341,7 +341,7 @@ function MessageBubble({ message, addingId, onAddToCart }: MessageBubbleProps) {
         </div>
       </div>
 
-      {/* Product Recommendation Slider */}
+      {}
       {!isUser && message.products && message.products.length > 0 && (
         <ProductSlider
           products={message.products}
@@ -353,7 +353,7 @@ function MessageBubble({ message, addingId, onAddToCart }: MessageBubbleProps) {
   );
 }
 
-// ─── Markdown Renderer ────────────────────────────────────────────────────────
+
 function MarkdownText({ text, isUser }: { text: string; isUser: boolean }) {
   const html = text
     .replace(/\n\n/g, '</p><p class="mt-2">')
@@ -374,7 +374,7 @@ function MarkdownText({ text, isUser }: { text: string; isUser: boolean }) {
   return <div dangerouslySetInnerHTML={{ __html: `<p>${html}</p>` }} />;
 }
 
-// ─── Product Slider ───────────────────────────────────────────────────────────
+
 interface ProductSliderProps {
   products: RecommendedProduct[];
   addingId: number | null;
@@ -429,7 +429,7 @@ function ProductSlider({
       </div>
 
       <div className="relative group/slider">
-        {/* Left arrow */}
+        {}
         {showLeft && (
           <button
             type="button"
@@ -440,7 +440,7 @@ function ProductSlider({
           </button>
         )}
 
-        {/* Right arrow */}
+        {}
         {showRight && (
           <button
             type="button"
@@ -451,7 +451,7 @@ function ProductSlider({
           </button>
         )}
 
-        {/* Product cards */}
+        {}
         <div
           ref={containerRef}
           className="flex overflow-x-auto gap-3 pb-2 scrollbar-none snap-x snap-mandatory"
@@ -472,7 +472,7 @@ function ProductSlider({
                 key={product.id}
                 className="flex-shrink-0 w-44 snap-start bg-white border border-gray-200 rounded-xl overflow-hidden hover:border-blue-300 hover:shadow-md hover:shadow-blue-50 transition-all duration-300 flex flex-col"
               >
-                {/* Product image */}
+                {}
                 <Link
                   href={`/explore/${product.id}`}
                   className="block h-24 bg-gray-50 relative overflow-hidden group"
@@ -489,7 +489,7 @@ function ProductSlider({
                       <span className="text-[9px] mt-1">Chưa có ảnh</span>
                     </div>
                   )}
-                  {/* Sale badge */}
+                  {}
                   {isSale && (
                     <span className="absolute top-1.5 left-1.5 bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded">
                       -{product.discountPercent}%
@@ -497,7 +497,7 @@ function ProductSlider({
                   )}
                 </Link>
 
-                {/* Product info */}
+                {}
                 <div className="p-3 flex-1 flex flex-col justify-between gap-1.5">
                   <Link
                     href={`/explore/${product.id}`}

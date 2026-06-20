@@ -22,21 +22,21 @@ import {
 } from "lucide-react";
 
 const COLORS = [
-  "#0058be", // Blue
-  "#10b981", // Emerald
-  "#f59e0b", // Amber
-  "#8b5cf6", // Violet
-  "#ec4899", // Pink
-  "#14b8a6", // Teal
-  "#ef4444", // Red
-  "#64748b", // Slate
+  "#0058be", 
+  "#10b981", 
+  "#f59e0b", 
+  "#8b5cf6", 
+  "#ec4899", 
+  "#14b8a6", 
+  "#ef4444", 
+  "#64748b", 
 ];
 
 export default function DashboardOverview() {
   const [stats, setStats] = useState<DashboardStatsResponse | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Tab control for Period Chart
+  
   const [periodTab, setPeriodTab] = useState<"MONTH" | "QUARTER" | "YEAR">(
     "MONTH",
   );
@@ -67,7 +67,7 @@ export default function DashboardOverview() {
     );
   }
 
-  // Formatting helpers
+  
   const formatVND = (value: number) => {
     return new Intl.NumberFormat("vi-VN", {
       style: "currency",
@@ -75,7 +75,7 @@ export default function DashboardOverview() {
     }).format(value);
   };
 
-  // 1. STAT CARDS (Top row)
+  
   const statCards = [
     {
       title: "Doanh thu (30 ngày)",
@@ -116,7 +116,7 @@ export default function DashboardOverview() {
     },
   ];
 
-  // 2. PERIOD CHART DATA
+  
   let chartData: PeriodRevenueResponse[] = [];
   if (periodTab === "MONTH") {
     chartData = stats?.monthlyRevenue || [];
@@ -126,23 +126,23 @@ export default function DashboardOverview() {
     chartData = stats?.yearlyRevenue || [];
   }
 
-  // Find max value in chart data to scale the height of bars
+  
   const maxVal = chartData.reduce((max, item) => {
     const val = Math.max(item.revenue, item.cost);
     return val > max ? val : max;
   }, 1);
 
-  // 3. CATEGORY DONUT CHART DATA
+  
   const categoryData = stats?.revenueByCategory || [];
   const totalCatRevenue =
     categoryData.reduce((sum, item) => sum + item.revenue, 0) || 1;
 
-  // Accumulated offset helper for drawing SVG slices
+  
   let accumulatedOffset = 0;
 
   return (
     <div className="flex flex-col gap-6">
-      {/* 1. Stats Row */}
+      {}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
         {statCards.map((stat, i) => (
           <div
@@ -156,10 +156,10 @@ export default function DashboardOverview() {
               <div className="p-2 bg-[#f8fafc] rounded-[8px]">{stat.icon}</div>
             </div>
             <div className="flex flex-col">
-              <span className="text-[#0f172a] text-[20px] font-black tracking-[-0.5px] truncate">
+              <span className="text-[#0f172a] text-[20px] font-normal tracking-[-0.5px] truncate">
                 {stat.value}
               </span>
-              <span className="text-[#94a3b8] text-[12px] mt-0.5 font-medium truncate">
+              <span className="text-[#94a3b8] text-[12px] mt-0.5 font-normal truncate">
                 {stat.subtitle}
               </span>
             </div>
@@ -167,9 +167,9 @@ export default function DashboardOverview() {
         ))}
       </div>
 
-      {/* 2. Charts & Stats Grid */}
+      {}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        {/* Doanh thu theo chu kỳ (Bar Chart) */}
+        {}
         <div className="xl:col-span-2 bg-white border border-[#e2e8f0] rounded-[12px] p-6 shadow-sm flex flex-col min-h-[440px]">
           <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
             <h3 className="text-[#0f172a] text-[16px] font-bold flex items-center gap-2">
@@ -177,11 +177,11 @@ export default function DashboardOverview() {
               Doanh thu & Chi phí theo chu kỳ
             </h3>
 
-            {/* Period switcher */}
+            {}
             <div className="flex bg-[#f1f5f9] p-1 rounded-[8px] border border-[#e2e8f0]">
               <button
                 onClick={() => setPeriodTab("MONTH")}
-                className={`px-3 py-1 text-[12px] font-semibold rounded-[6px] transition-colors cursor-pointer ${
+                className={`px-3 py-1 text-[12px] font-normal rounded-[6px] transition-colors cursor-pointer ${
                   periodTab === "MONTH"
                     ? "bg-white text-[#0f172a] shadow-sm"
                     : "text-[#64748b] hover:text-[#0f172a]"
@@ -191,7 +191,7 @@ export default function DashboardOverview() {
               </button>
               <button
                 onClick={() => setPeriodTab("QUARTER")}
-                className={`px-3 py-1 text-[12px] font-semibold rounded-[6px] transition-colors cursor-pointer ${
+                className={`px-3 py-1 text-[12px] font-normal rounded-[6px] transition-colors cursor-pointer ${
                   periodTab === "QUARTER"
                     ? "bg-white text-[#0f172a] shadow-sm"
                     : "text-[#64748b] hover:text-[#0f172a]"
@@ -201,7 +201,7 @@ export default function DashboardOverview() {
               </button>
               <button
                 onClick={() => setPeriodTab("YEAR")}
-                className={`px-3 py-1 text-[12px] font-semibold rounded-[6px] transition-colors cursor-pointer ${
+                className={`px-3 py-1 text-[12px] font-normal rounded-[6px] transition-colors cursor-pointer ${
                   periodTab === "YEAR"
                     ? "bg-white text-[#0f172a] shadow-sm"
                     : "text-[#64748b] hover:text-[#0f172a]"
@@ -212,7 +212,7 @@ export default function DashboardOverview() {
             </div>
           </div>
 
-          {/* Bar Chart drawing using SVG/HTML */}
+          {}
           <div className="flex-1 flex flex-col justify-end min-h-[300px]">
             {chartData.length === 0 ? (
               <div className="flex-1 flex flex-col items-center justify-center text-[#94a3b8]">
@@ -223,7 +223,7 @@ export default function DashboardOverview() {
               </div>
             ) : (
               <div className="flex-1 flex flex-col justify-between">
-                {/* Visual Chart Bars */}
+                {}
                 <div className="flex-1 flex items-end justify-between px-2 gap-4 h-[240px] pt-4">
                   {chartData.map((item, i) => {
                     const revHeight = `${Math.max(5, (item.revenue / maxVal) * 90)}%`;
@@ -234,11 +234,11 @@ export default function DashboardOverview() {
                         key={i}
                         className="flex-1 flex flex-col items-center gap-2 group max-w-[80px]"
                       >
-                        {/* Two side-by-side bars */}
+                        {}
                         <div className="w-full flex items-end justify-center gap-1 h-[200px] relative">
-                          {/* Tooltip */}
+                          {}
                           <div className="absolute bottom-full mb-2 bg-[#0f172a] text-white text-[11px] p-2 rounded-[6px] shadow-lg pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity z-10 w-[160px] flex flex-col gap-0.5">
-                            <span className="font-bold border-b border-white/20 pb-1 mb-1">
+                            <span className="font-normal border-b border-white/20 pb-1 mb-1">
                               {item.label}
                             </span>
                             <span className="text-blue-300">
@@ -247,26 +247,26 @@ export default function DashboardOverview() {
                             <span className="text-amber-400">
                               Vốn gốc: {formatVND(item.cost)}
                             </span>
-                            <span className="text-emerald-300 font-bold">
+                            <span className="text-emerald-300 font-normal">
                               Lợi nhuận: {formatVND(item.revenue - item.cost)}
                             </span>
                           </div>
 
-                          {/* Revenue bar (Blue) */}
+                          {}
                           <div
                             className="w-[12px] bg-[#0058be] rounded-t-[4px] transition-all duration-300 group-hover:bg-[#0047a3] cursor-pointer"
                             style={{ height: revHeight }}
                           />
-                          {/* Cost bar (Orange/Amber) */}
+                          {}
                           <div
                             className="w-[12px] bg-[#f59e0b] rounded-t-[4px] transition-all duration-300 group-hover:bg-[#d97706] cursor-pointer"
                             style={{ height: costHeight }}
                           />
                         </div>
 
-                        {/* Label */}
+                        {}
                         <span
-                          className="text-[11px] font-semibold text-[#64748b] text-center truncate w-full"
+                          className="text-[11px] font-normal text-[#64748b] text-center truncate w-full"
                           title={item.label}
                         >
                           {item.label
@@ -279,17 +279,17 @@ export default function DashboardOverview() {
                   })}
                 </div>
 
-                {/* Chart Legends */}
+                {}
                 <div className="border-t border-[#e2e8f0] pt-4 mt-4 flex items-center justify-center gap-6">
                   <div className="flex items-center gap-2">
                     <div className="size-3 bg-[#0058be] rounded-[3px]" />
-                    <span className="text-[12px] font-semibold text-[#475569]">
+                    <span className="text-[12px] font-normal text-[#475569]">
                       Doanh thu
                     </span>
                   </div>
                   <div className="flex items-center gap-2">
                     <div className="size-3 bg-[#f59e0b] rounded-[3px]" />
-                    <span className="text-[12px] font-semibold text-[#475569]">
+                    <span className="text-[12px] font-normal text-[#475569]">
                       Vốn gốc (Giá mua)
                     </span>
                   </div>
@@ -299,7 +299,7 @@ export default function DashboardOverview() {
           </div>
         </div>
 
-        {/* Biểu đồ tròn: Doanh thu theo loại linh kiện */}
+        {}
         <div className="bg-white border border-[#e2e8f0] rounded-[12px] p-6 shadow-sm flex flex-col min-h-[440px]">
           <h3 className="text-[#0f172a] text-[16px] font-bold mb-6 flex items-center gap-2">
             <PieChart className="size-5 text-[#10b981]" />
@@ -313,25 +313,25 @@ export default function DashboardOverview() {
             </div>
           ) : (
             <div className="flex-1 flex flex-col justify-around gap-4">
-              {/* Donut SVG Drawing */}
+              {}
               <div className="flex justify-center relative">
                 <svg
-                  width="160"
-                  height="160"
-                  viewBox="0 0 160 160"
+                  width="200"
+                  height="200"
+                  viewBox="0 0 200 200"
                   className="transform -rotate-90"
                 >
                   <circle
-                    cx="80"
-                    cy="80"
-                    r="50"
+                    cx="100"
+                    cy="100"
+                    r="75"
                     fill="transparent"
                     stroke="#f1f5f9"
                     strokeWidth="20"
                   />
                   {categoryData.map((item, idx) => {
                     const percent = (item.revenue / totalCatRevenue) * 100;
-                    const strokeLength = (percent / 100) * 314.159;
+                    const strokeLength = (percent / 100) * 471.239;
                     const offset = accumulatedOffset;
                     accumulatedOffset += strokeLength;
                     const color = COLORS[idx % COLORS.length];
@@ -339,13 +339,13 @@ export default function DashboardOverview() {
                     return (
                       <circle
                         key={idx}
-                        cx="80"
-                        cy="80"
-                        r="50"
+                        cx="100"
+                        cy="100"
+                        r="75"
                         fill="transparent"
                         stroke={color}
                         strokeWidth="20"
-                        strokeDasharray={`${strokeLength} ${314.159 - strokeLength}`}
+                        strokeDasharray={`${strokeLength} ${471.239 - strokeLength}`}
                         strokeDashoffset={-offset}
                         className="transition-all duration-300 hover:stroke-[24px]"
                       />
@@ -353,18 +353,17 @@ export default function DashboardOverview() {
                   })}
                 </svg>
 
-                {/* Donut inner text */}
                 <div className="absolute inset-0 flex flex-col items-center justify-center">
-                  <span className="text-[11px] font-semibold text-[#94a3b8] uppercase tracking-[0.5px]">
+                  <span className="text-[11px] font-normal text-[#94a3b8] uppercase tracking-[0.5px]">
                     Doanh số
                   </span>
-                  <span className="text-[14px] font-black text-[#0f172a]">
+                  <span className="text-[14px] font-normal text-[#0f172a]">
                     {formatVND(totalCatRevenue)}
                   </span>
                 </div>
               </div>
 
-              {/* Legends list */}
+              {}
               <div className="flex flex-col gap-2 max-h-[160px] overflow-y-auto pr-1">
                 {categoryData.map((item, idx) => {
                   const percent = (
@@ -384,13 +383,13 @@ export default function DashboardOverview() {
                           style={{ backgroundColor: color }}
                         />
                         <span
-                          className="font-semibold text-[#475569] truncate"
+                          className="font-normal text-[#475569] truncate"
                           title={item.categoryName}
                         >
                           {item.categoryName}
                         </span>
                       </div>
-                      <div className="flex items-center gap-2 font-bold text-[#0f172a]">
+                      <div className="flex items-center gap-2 font-normal text-[#0f172a]">
                         <span>{percent}%</span>
                         <span className="text-[#94a3b8] text-[11px] font-normal">
                           ({formatVND(item.revenue)})
@@ -405,9 +404,9 @@ export default function DashboardOverview() {
         </div>
       </div>
 
-      {/* 3. Table Rows */}
+      {}
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-6">
-        {/* Top 5 sản phẩm bán chạy (30 ngày) */}
+        {}
         <div className="xl:col-span-2 bg-white border border-[#e2e8f0] rounded-[12px] p-6 shadow-sm flex flex-col">
           <h3 className="text-[#0f172a] text-[16px] font-bold mb-4 flex items-center gap-2">
             <TrendingUp className="size-5 text-[#8b5cf6]" />
@@ -423,7 +422,7 @@ export default function DashboardOverview() {
               </div>
             ) : (
               <table className="w-full text-left text-[13px] whitespace-nowrap">
-                <thead className="bg-[#f8fafc] text-[#64748b] font-bold border-b border-[#e2e8f0]">
+                <thead className="bg-[#f8fafc] text-[#64748b] font-normal border-b border-[#e2e8f0]">
                   <tr>
                     <th className="px-4 py-3">Mã SP</th>
                     <th className="px-4 py-3">Tên sản phẩm</th>
@@ -437,19 +436,19 @@ export default function DashboardOverview() {
                       key={p.productId}
                       className="hover:bg-[#f8fafc] transition-colors"
                     >
-                      <td className="px-4 py-3.5 font-semibold text-[#0f172a]">
+                      <td className="px-4 py-3.5 font-normal text-[#0f172a]">
                         #{p.productId}
                       </td>
                       <td
-                        className="px-4 py-3.5 font-bold text-[#0f172a] max-w-[280px] truncate"
+                        className="px-4 py-3.5 font-normal text-[#0f172a] max-w-[280px] truncate"
                         title={p.productName}
                       >
                         {p.productName}
                       </td>
-                      <td className="px-4 py-3.5 text-center font-black text-[#0058be]">
+                      <td className="px-4 py-3.5 text-center font-normal text-[#0058be]">
                         {p.quantitySold} cái
                       </td>
-                      <td className="px-4 py-3.5 text-right font-black text-emerald-600">
+                      <td className="px-4 py-3.5 text-right font-normal text-emerald-600">
                         {formatVND(p.totalRevenue)}
                       </td>
                     </tr>
@@ -460,7 +459,7 @@ export default function DashboardOverview() {
           </div>
         </div>
 
-        {/* Hoạt động gần đây */}
+        {}
         <div className="bg-white border border-[#e2e8f0] rounded-[12px] p-6 shadow-sm flex flex-col">
           <h3 className="text-[#0f172a] text-[16px] font-bold mb-4 flex items-center gap-2">
             <Clock className="size-5 text-amber-500" />
@@ -483,10 +482,10 @@ export default function DashboardOverview() {
                       <ShoppingBag className="size-4" />
                     </div>
                     <div className="min-w-0 flex-1">
-                      <p className="text-[#0f172a] text-[13px] font-bold leading-snug truncate">
+                      <p className="text-[#0f172a] text-[13px] font-normal leading-snug truncate">
                         {activity.title}
                       </p>
-                      <span className="text-[#94a3b8] text-[11px] font-semibold mt-1 block">
+                      <span className="text-[#94a3b8] text-[11px] font-normal mt-1 block">
                         {activity.timeAgo}
                       </span>
                     </div>

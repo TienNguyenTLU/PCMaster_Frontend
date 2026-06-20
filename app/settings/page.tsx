@@ -26,18 +26,18 @@ export default function SettingsPage() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
 
-  // Form fields state
+  
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
 
-  // Active settings tab
+  
   const [activeSubTab, setActiveSubTab] = useState<
     "profile" | "security" | "notifications"
   >("profile");
 
-  // Hydrate auth and fetch profile
+  
   useEffect(() => {
     if (!isHydrated) return;
 
@@ -47,7 +47,7 @@ export default function SettingsPage() {
       return;
     }
 
-    // Fetch latest user profile from API
+    
     profileAPI
       .getProfile()
       .then((data: UserProfile) => {
@@ -79,7 +79,7 @@ export default function SettingsPage() {
         address: address.trim() || null,
       });
 
-      // Update auth store with the new username
+      
       useAuthStore.setState({
         user: {
           ...user!,
@@ -121,7 +121,7 @@ export default function SettingsPage() {
 
       <main className="flex-1 pt-[100px] pb-16 px-4 md:px-8 max-w-[1400px] w-full mx-auto">
         <div className="flex flex-col gap-6">
-          {/* Page Title */}
+          {}
           <div>
             <h1 className="text-2xl md:text-3xl font-black text-[#0f172a] tracking-tight">
               Cài đặt hệ thống
@@ -131,9 +131,9 @@ export default function SettingsPage() {
             </p>
           </div>
 
-          {/* Grid Layout */}
+          {}
           <div className="grid grid-cols-1 lg:grid-cols-[280px_1fr] gap-8 items-start">
-            {/* Sidebar Sub-Tabs */}
+            {}
             <aside className="bg-white border border-[#e2e8f0] rounded-[20px] p-4 flex flex-col gap-1.5 shadow-sm">
               <button
                 onClick={() => setActiveSubTab("profile")}
@@ -178,7 +178,7 @@ export default function SettingsPage() {
               </button>
             </aside>
 
-            {/* Profile Settings Content Card */}
+            {}
             <div className="bg-white border border-[#e2e8f0] rounded-[24px] shadow-sm p-6 md:p-8 flex flex-col gap-6">
               <div className="border-b border-[#f1f5f9] pb-4">
                 <h2 className="text-[18px] font-bold text-[#0f172a]">
@@ -195,7 +195,7 @@ export default function SettingsPage() {
                   onSubmit={handleSubmit}
                   className="flex flex-col gap-5 max-w-[640px]"
                 >
-                  {/* Username Field */}
+                  {}
                   <div className="flex flex-col gap-1.5">
                     <label className="text-[12.5px] font-bold text-slate-700 flex items-center gap-1.5">
                       <User className="size-4 text-[#0058be]" />
@@ -210,7 +210,7 @@ export default function SettingsPage() {
                     />
                   </div>
 
-                  {/* Email Field (Disabled) */}
+                  {}
                   <div className="flex flex-col gap-1.5">
                     <label className="text-[12.5px] font-bold text-slate-700 flex items-center gap-1.5">
                       <Mail className="size-4 text-[#0058be]" />
@@ -225,7 +225,7 @@ export default function SettingsPage() {
                     />
                   </div>
 
-                  {/* Phone Field */}
+                  {}
                   <div className="flex flex-col gap-1.5">
                     <label className="text-[12.5px] font-bold text-slate-700 flex items-center gap-1.5">
                       <Phone className="size-4 text-[#0058be]" />
@@ -240,7 +240,7 @@ export default function SettingsPage() {
                     />
                   </div>
 
-                  {/* Address Field */}
+                  {}
                   <div className="flex flex-col gap-1.5">
                     <label className="text-[12.5px] font-bold text-slate-700 flex items-center gap-1.5">
                       <MapPin className="size-4 text-[#0058be]" />
@@ -255,7 +255,7 @@ export default function SettingsPage() {
                     />
                   </div>
 
-                  {/* Submit Button */}
+                  {}
                   <div className="pt-2">
                     <button
                       type="submit"

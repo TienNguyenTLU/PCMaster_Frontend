@@ -35,7 +35,7 @@ export default function BuildPickerModal({
   const [hoveredId, setHoveredId] = useState<string | number | null>(null);
   const searchRef = useRef<HTMLInputElement>(null);
 
-  // Map slot key → category name keywords to auto-filter
+  
   const slotCategoryKeywords: Record<string, string[]> = {
     cpu: ["cpu", "processor", "vi xu ly"],
     mainboard: ["mainboard", "motherboard", "board", "bo mach"],
@@ -60,7 +60,7 @@ export default function BuildPickerModal({
       .then((res) => {
         const cats = res.content || [];
 
-        // Find category IDs matching this slot
+        
         const matchedCats = cats.filter((c) => {
           const slug = c.name
             .toLowerCase()
@@ -82,10 +82,10 @@ export default function BuildPickerModal({
       })
       .catch(console.error)
       .finally(() => setLoading(false));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    
   }, [slotKey]);
 
-  // Helper to safely parse specsJson
+  
   const getProductSpecs = (p?: Product | null) => {
     if (!p || !p.specsJson) return {};
     try {
@@ -95,7 +95,7 @@ export default function BuildPickerModal({
     }
   };
 
-  // Get compatibility parameters from current build state
+  
   const selectedCpu = build.cpu;
   const selectedMainboard = build.mainboard;
   const selectedRam = build.ram;
@@ -115,7 +115,7 @@ export default function BuildPickerModal({
   const ramType = ramSpecs.ram_type;
   const mainboardFormFactor = mainboardSpecs.form_factor;
 
-  // TDP calculations for power supply filtering
+  
   const totalTdp =
     (Number(cpuSpecs.tdp_w) || 0) + (Number(vgaSpecs.tdp_w) || 0);
 
@@ -157,7 +157,7 @@ export default function BuildPickerModal({
     );
   };
 
-  // Check compatibility of a single product with current build state
+  
   const checkCompatibility = (
     p: Product,
   ): { compatible: boolean; reason?: string } => {
@@ -324,14 +324,14 @@ export default function BuildPickerModal({
     return { compatible: true };
   };
 
-  // Text search filter
+  
   const textFiltered = products.filter(
     (p) =>
       p.name.toLowerCase().includes(search.toLowerCase()) ||
       (p.brand?.name ?? "").toLowerCase().includes(search.toLowerCase()),
   );
 
-  // Check compatibility for all text filtered items
+  
   const mappedProducts = textFiltered.map((p) => {
     const compat = checkCompatibility(p);
     return {
@@ -341,11 +341,11 @@ export default function BuildPickerModal({
     };
   });
 
-  // Sort: Compatible products first, incompatible last
+  
   mappedProducts.sort((a, b) => {
     if (a.compatible && !b.compatible) return -1;
     if (!a.compatible && b.compatible) return 1;
-    return 0; // maintain relative order
+    return 0; 
   });
 
   const imgSrc = (p: Product) => {
@@ -357,15 +357,15 @@ export default function BuildPickerModal({
 
   return (
     <div className="fixed inset-y-0 right-0 z-40 flex justify-end">
-      {/* Light transparent overlay to not obstruct Left-side AI widgets */}
+      {}
       <div
         className="fixed inset-0 bg-slate-900/10 backdrop-blur-[1px] z-30 cursor-pointer"
         onClick={onClose}
       />
 
-      {/* Sidebar Panel Drawer */}
+      {}
       <div className="relative w-full max-w-[550px] h-full bg-white shadow-2xl border-l border-[#e2e8f0] flex flex-col z-40 animate-in slide-in-from-right duration-200">
-        {/* Header */}
+        {}
         <div className="flex items-center justify-between px-6 py-5 border-b border-[#f1f5f9]">
           <div>
             <p className="text-[11px] font-bold text-[#0058be] uppercase tracking-[1.2px]">
@@ -387,7 +387,7 @@ export default function BuildPickerModal({
           </button>
         </div>
 
-        {/* Search */}
+        {}
         <div className="px-6 py-4 border-b border-[#f1f5f9]">
           <div className="flex items-center gap-3 bg-[#f8fafc] border border-[#e2e8f0] rounded-[12px] px-4 py-2.5 focus-within:border-[#0058be] transition-colors">
             <Search className="size-4 text-[#94a3b8] shrink-0" />
@@ -410,7 +410,7 @@ export default function BuildPickerModal({
           </div>
         </div>
 
-        {/* Product List */}
+        {}
         <div
           className="flex-1 overflow-y-auto px-4 py-3"
           style={{ scrollbarWidth: "thin" }}
@@ -452,7 +452,7 @@ export default function BuildPickerModal({
                     }`}
                   >
                     <div className="w-full flex items-center gap-4">
-                      {/* Thumbnail */}
+                      {}
                       <div className="size-[72px] rounded-[12px] bg-[#f7f9fb] flex items-center justify-center shrink-0 overflow-hidden border border-slate-100">
                         {src ? (
                           <img
@@ -465,7 +465,7 @@ export default function BuildPickerModal({
                         )}
                       </div>
 
-                      {/* Info */}
+                      {}
                       <div className="flex-1 min-w-0">
                         {p.brand && (
                           <p className="text-[10px] font-bold text-[#0058be] uppercase tracking-[1px] mb-0.5">
@@ -484,7 +484,7 @@ export default function BuildPickerModal({
                         </p>
                       </div>
 
-                      {/* Price + check */}
+                      {}
                       <div className="text-right shrink-0 flex flex-col items-end gap-2">
                         <p className="text-[16px] font-bold text-[#0058be]">
                           {p.price.toLocaleString("vi-VN")}
@@ -500,7 +500,7 @@ export default function BuildPickerModal({
                       </div>
                     </div>
 
-                    {/* Compatibility Warning Badge inside container */}
+                    {}
                     {!compatible && (
                       <div className="w-full mt-1.5 flex items-start gap-1.5 bg-rose-50 border border-rose-100/60 text-rose-700 px-3 py-2 rounded-[10px] text-[11px] font-semibold">
                         <AlertTriangle className="size-3.5 shrink-0 text-red-500 mt-0.5" />
@@ -514,7 +514,7 @@ export default function BuildPickerModal({
           )}
         </div>
 
-        {/* Footer count */}
+        {}
         {!loading && (
           <div className="px-6 py-3 border-t border-[#f1f5f9] bg-[#f8fafc]">
             <p className="text-[12px] text-[#94a3b8] font-medium text-center sm:text-left">

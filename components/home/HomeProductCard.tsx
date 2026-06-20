@@ -39,7 +39,7 @@ export default function HomeProductCard({
     }
   }
 
-  // Calculate simulated discount original price if badgeType is 'sale'
+  
   const originalPrice =
     badgeType === "sale"
       ? Math.round((product.price * 1.15) / 10000) * 10000
@@ -50,12 +50,12 @@ export default function HomeProductCard({
       href={`/explore/${product.id}`}
       className="group bg-white rounded-[20px] border border-[#e8ecf2] hover:border-[#0058be] hover:shadow-[0_12px_32px_rgba(0,88,190,0.08)] hover:-translate-y-1 transition-all duration-300 flex flex-col overflow-hidden relative w-full"
     >
-      {/* Grey overlay if out of stock */}
+      {}
       {product.stock === 0 && (
         <div className="absolute inset-0 bg-white/40 backdrop-blur-[1px] z-10 pointer-events-none transition-opacity" />
       )}
 
-      {/* Image Area */}
+      {}
       <div className="relative bg-[#f7f9fb] h-[200px] flex items-center justify-center overflow-hidden">
         {imgSrc ? (
           <img
@@ -72,7 +72,7 @@ export default function HomeProductCard({
           </div>
         )}
 
-        {/* Badges */}
+        {}
         {product.stock === 0 ? (
           <span className="absolute top-3.5 left-3.5 bg-red-100 text-red-600 text-[10px] font-bold px-2.5 py-1 rounded-full z-20">
             Hết hàng
@@ -87,7 +87,7 @@ export default function HomeProductCard({
           </span>
         ) : null}
 
-        {/* Stock warning */}
+        {}
         {product.stock > 0 && product.stock <= 5 && (
           <span className="absolute top-3.5 right-3.5 bg-amber-100 text-amber-700 text-[10px] font-bold px-2 py-0.5 rounded-full z-20">
             Chỉ còn {product.stock}
@@ -95,7 +95,7 @@ export default function HomeProductCard({
         )}
       </div>
 
-      {/* Content Area */}
+      {}
       <div className="flex flex-col flex-1 p-5 gap-3">
         {product.brand && (
           <span className="text-[10px] font-bold text-[#0058be] uppercase tracking-[1px] leading-none">
@@ -114,7 +114,7 @@ export default function HomeProductCard({
           {product.name}
         </h3>
 
-        {/* Price Area */}
+        {}
         <div className="flex items-baseline justify-between mt-2 pt-3 border-t border-[#f1f5f9] relative z-20">
           <div className="flex flex-col gap-0.5">
             {originalPrice && (

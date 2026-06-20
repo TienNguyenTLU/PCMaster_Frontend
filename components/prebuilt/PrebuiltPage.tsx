@@ -15,7 +15,7 @@ const SORT_OPTIONS = [
   { value: "name_asc", label: "Tên A–Z" },
 ];
 
-// ─── Collapsible filter section ───────────────────────────────────────────────
+
 function FilterSection({
   title,
   children,
@@ -43,7 +43,7 @@ function FilterSection({
   );
 }
 
-// ─── Main Page Component ──────────────────────────────────────────────────────
+
 export default function PrebuiltPage() {
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -64,7 +64,7 @@ export default function PrebuiltPage() {
   const PAGE_SIZE = 12;
   const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // ── Load Categories and Brands ──────────────────────────────────────────────
+  
   useEffect(() => {
     Promise.all([
       adminAPI.getCategories(0, 200),
@@ -75,7 +75,7 @@ export default function PrebuiltPage() {
     });
   }, []);
 
-  // ── Fetch pre-built PC products ─────────────────────────────────────────────
+  
   const fetchPrebuiltPCs = useCallback(async () => {
     setLoading(true);
     try {
@@ -89,7 +89,7 @@ export default function PrebuiltPage() {
 
       const res = await adminAPI.getProducts(
         0,
-        500, // fetch all prebuilts at once to paginate client side perfectly
+        500, 
         search || undefined,
         catIdStr,
         undefined,
@@ -109,7 +109,7 @@ export default function PrebuiltPage() {
     }
   }, [categories, fetchPrebuiltPCs]);
 
-  // Reset page on filter changes
+  
   useEffect(() => {
     const timer = setTimeout(() => {
       setPage(0);
@@ -124,23 +124,23 @@ export default function PrebuiltPage() {
     sortBy,
   ]);
 
-  // Client-side filtering & sorting
+  
   const filtered = products
     .filter((p) => {
-      // Stock filter
+      
       if (!showOutOfStock && p.stock === 0) return false;
 
-      // Price filter
+      
       if (p.price < priceRange[0] || p.price > priceRange[1]) return false;
 
-      // Brand filter
+      
       if (
         selectedBrands.length > 0 &&
         !selectedBrands.includes(String(p.brandId))
       )
         return false;
 
-      // Usage Need filter
+      
       if (selectedNeeds.length > 0) {
         try {
           const specs = p.specsJson ? JSON.parse(p.specsJson) : {};
@@ -187,10 +187,10 @@ export default function PrebuiltPage() {
     setPage(0);
   };
 
-  // ── Sidebar Filters JSX ────────────────────────────────────────────────────
+  
   const sidebar = (
     <aside className="flex flex-col gap-0.5">
-      {/* Header */}
+      {}
       <div className="flex items-center justify-between mb-3 border-b border-[#f1f5f9] pb-3">
         <div className="flex items-center gap-2">
           <SlidersHorizontal className="size-3.5 text-[#0058be]" />
@@ -211,7 +211,7 @@ export default function PrebuiltPage() {
         )}
       </div>
 
-      {/* Brands check-list */}
+      {}
       <FilterSection title="Thương hiệu">
         <div
           className="flex flex-col gap-2 max-h-[180px] overflow-y-auto pr-1"
@@ -260,7 +260,7 @@ export default function PrebuiltPage() {
         </div>
       </FilterSection>
 
-      {/* Usage Needs check-list */}
+      {}
       <FilterSection title="Nhu cầu sử dụng">
         <div className="flex flex-col gap-2">
           {["Gaming", "Đồ họa", "Văn phòng", "Lập trình"].map((need) => {
@@ -306,7 +306,7 @@ export default function PrebuiltPage() {
         </div>
       </FilterSection>
 
-      {/* Price Range dual-slider */}
+      {}
       <FilterSection title="Khoảng giá">
         <DualRangeSlider
           min={0}
@@ -326,7 +326,7 @@ export default function PrebuiltPage() {
         background: "linear-gradient(180deg, #f7f9fb 0%, #f0f4fa 100%)",
       }}
     >
-      {/* Breadcrumb section */}
+      {}
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-5 pb-1">
         <div className="flex items-center gap-1.5 text-[13px] text-[#64748b]">
           <Link href="/home" className="hover:text-[#0058be] transition-colors">
@@ -337,9 +337,9 @@ export default function PrebuiltPage() {
         </div>
       </div>
 
-      {/* Main page layout */}
+      {}
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-7">
-        {/* Search and Sort row */}
+        {}
         <div className="flex items-center gap-3 mb-5">
           <div className="flex-1 relative">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-[#94a3b8]" />
@@ -395,7 +395,7 @@ export default function PrebuiltPage() {
           </button>
         </div>
 
-        {/* BrandSwiper Swiper layout */}
+        {}
         <div className="mb-5 bg-white border border-[#e2e8f0] rounded-[16px] p-2.5 shadow-sm">
           <BrandSwiper
             brands={brands}
@@ -415,7 +415,7 @@ export default function PrebuiltPage() {
           />
         </div>
 
-        {/* Count, stock toggler, active chips */}
+        {}
         <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
           <div className="flex items-center gap-3 flex-wrap">
             <p className="text-[13px] text-[#475569]">
@@ -508,9 +508,9 @@ export default function PrebuiltPage() {
           )}
         </div>
 
-        {/* Content grid section */}
+        {}
         <div className="flex gap-5 items-start">
-          {/* Desktop Filters Sidebar */}
+          {}
           <div
             className="hidden lg:block w-[232px] shrink-0 bg-white rounded-[16px] border border-[#e8ecf2] p-4 shadow-sm sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto"
             style={{ scrollbarWidth: "thin" }}
@@ -518,7 +518,7 @@ export default function PrebuiltPage() {
             {sidebar}
           </div>
 
-          {/* Grids Display */}
+          {}
           <div className="flex-1 min-w-0">
             {loading ? (
               <div className="grid grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
@@ -552,7 +552,7 @@ export default function PrebuiltPage() {
                   ))}
                 </div>
 
-                {/* Pagination links */}
+                {}
                 {totalPages > 1 && (
                   <div className="flex items-center justify-center gap-2 mt-8">
                     <button
@@ -597,7 +597,7 @@ export default function PrebuiltPage() {
         </div>
       </div>
 
-      {/* Mobile filters drawer */}
+      {}
       {mobileSidebarOpen && (
         <div className="fixed inset-0 z-50 flex lg:hidden">
           <div

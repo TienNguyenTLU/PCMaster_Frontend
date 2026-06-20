@@ -27,7 +27,7 @@ export default function LightboxModal({
       className="fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex flex-col items-center justify-center animate-in fade-in duration-200 select-none"
       onClick={onClose}
     >
-      {/* Close Button */}
+      {}
       <button
         type="button"
         onClick={onClose}
@@ -37,7 +37,7 @@ export default function LightboxModal({
         <X className="size-6" />
       </button>
 
-      {/* Navigation Left */}
+      {}
       {allImages.length > 1 && (
         <button
           type="button"
@@ -52,7 +52,7 @@ export default function LightboxModal({
         </button>
       )}
 
-      {/* Active Image frame in lightbox */}
+      {}
       <div
         className="max-w-[85vw] max-h-[80vh] flex items-center justify-center animate-in zoom-in-95 duration-300"
         onClick={(e) => e.stopPropagation()}
@@ -64,7 +64,7 @@ export default function LightboxModal({
         />
       </div>
 
-      {/* Navigation Right */}
+      {}
       {allImages.length > 1 && (
         <button
           type="button"
@@ -79,7 +79,7 @@ export default function LightboxModal({
         </button>
       )}
 
-      {/* Image Counter */}
+      {}
       {allImages.length > 1 && (
         <div className="absolute bottom-8 bg-white/10 px-4 py-1.5 rounded-full border border-white/10 text-white text-[14px] font-medium tracking-wide">
           {selectedImgIndex + 1} / {allImages.length}

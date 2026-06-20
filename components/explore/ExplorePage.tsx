@@ -18,7 +18,7 @@ import SkeletonCard from "./SkeletonCard";
 
 export { default as ProductCard } from "./ProductCard";
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+
 type SpecFilterType =
   | "text"
   | "number"
@@ -34,7 +34,7 @@ interface SpecFilterDef {
   placeholder?: string;
 }
 
-// ─── Full SPECS_BY_CATEGORY (mirrors ProductFormModal exactly) ────────────────
+
 const SPECS_BY_CATEGORY: Record<string, SpecFilterDef[]> = {
   case: [
     {
@@ -502,7 +502,7 @@ const SORT_OPTIONS = [
   { value: "name_asc", label: "Tên A–Z" },
 ];
 
-// ─── Collapsible filter section ───────────────────────────────────────────────
+
 function FilterSection({
   title,
   children,
@@ -530,7 +530,7 @@ function FilterSection({
   );
 }
 
-// ─── Range Specification Slider Definitions ──────────────────────────────────
+
 const RANGE_SPEC_DEFS: Record<
   string,
   { min: number; max: number; step: number; suffix: string }
@@ -651,7 +651,7 @@ function SpecRangeSlider({
   );
 }
 
-// ─── Spec filter input renderer ───────────────────────────────────────────────
+
 function SpecFilterInput({
   filter,
   value,
@@ -731,7 +731,7 @@ function SpecFilterInput({
     );
   }
 
-  // multiselect / text / number treated as multiselect checkboxes based on dynamic options or static options
+  
   const options =
     filter.options && filter.options.length > 0
       ? filter.options
@@ -811,7 +811,7 @@ function SpecFilterInput({
   );
 }
 
-// ─── Main Page ────────────────────────────────────────────────────────────────
+
 export default function ExplorePage() {
   const searchParams = useSearchParams();
   const categoryParam = searchParams.get("category");
@@ -843,7 +843,7 @@ export default function ExplorePage() {
     categories.find((c) => String(c.id) === selectedCategory)?.name ?? "";
   const activeSpecFilters = getSpecFiltersForCategory(activeCategoryName);
 
-  // ── Fetch unique specs in background ───────────────────────────────────────
+  
   useEffect(() => {
     if (!selectedCategory) {
       const timer = setTimeout(() => {
@@ -851,7 +851,7 @@ export default function ExplorePage() {
       }, 0);
       return () => clearTimeout(timer);
     }
-    // Fetch up to 1000 items silently to map existing specs
+    
     adminAPI.getProducts(0, 1000, "", selectedCategory, "").then((res) => {
       const specsMap: Record<string, Set<string>> = {};
       const prods = res.content || [];
@@ -884,7 +884,7 @@ export default function ExplorePage() {
     });
   }, [selectedCategory]);
 
-  // ── Load refs ──────────────────────────────────────────────────────────────
+  
   useEffect(() => {
     Promise.all([
       adminAPI.getCategories(0, 200),
@@ -895,7 +895,7 @@ export default function ExplorePage() {
     });
   }, []);
 
-  // Synchronize category selection with URL parameters dynamically
+  
   useEffect(() => {
     if (categories.length === 0) return;
 
@@ -924,7 +924,7 @@ export default function ExplorePage() {
     return () => clearTimeout(timer);
   }, [categoryParam, categories]);
 
-  // ── Fetch products (All matching category & search to filter/paginate client-side) ─────────────────────
+  
   const fetchProducts = useCallback(async () => {
     setLoading(true);
     try {
@@ -950,7 +950,7 @@ export default function ExplorePage() {
     return () => clearTimeout(timer);
   }, [fetchProducts]);
 
-  // Reset page to 0 when any filter changes
+  
   useEffect(() => {
     const timer = setTimeout(() => {
       setPage(0);
@@ -966,23 +966,23 @@ export default function ExplorePage() {
     sortBy,
   ]);
 
-  // ── Client-side filtering (price + specs + stock) + sort ───────────────────
+  
   const filtered = products
     .filter((p) => {
-      // Stock filter
+      
       if (!showOutOfStock && p.stock === 0) return false;
 
-      // Price filter
+      
       if (p.price < priceRange[0] || p.price > priceRange[1]) return false;
 
-      // Brand filter
+      
       if (
         selectedBrands.length > 0 &&
         !selectedBrands.includes(String(p.brandId))
       )
         return false;
 
-      // Spec filters
+      
       const activeKeys = Object.entries(specFilters).filter(
         ([, v]) => v !== "",
       );
@@ -995,7 +995,7 @@ export default function ExplorePage() {
             : p.specsJson
           : {};
 
-        // Match helper for robust text and structure normalization
+        
         const matchValue = (specVal: any, wantedVal: string): boolean => {
           const cleanSpec = String(specVal)
             .toLowerCase()
@@ -1041,7 +1041,7 @@ export default function ExplorePage() {
               if (!isNaN(maxVal) && num > maxVal) return false;
             }
           } else {
-            // multiselect / text / number treated as sets of selected values
+            
             const wanted = val
               .split(",")
               .map((v) => v.trim())
@@ -1086,10 +1086,10 @@ export default function ExplorePage() {
     setPage(0);
   };
 
-  // ── Sidebar JSX (shared for desktop + mobile) ──────────────────────────────
+  
   const sidebar = (
     <aside className="flex flex-col gap-0.5">
-      {/* Header */}
+      {}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <SlidersHorizontal className="size-3.5 text-[#0058be]" />
@@ -1110,7 +1110,7 @@ export default function ExplorePage() {
         )}
       </div>
 
-      {/* Category */}
+      {}
       <FilterSection title="Danh mục">
         <div className="flex flex-col gap-0.5">
           <button
@@ -1147,7 +1147,7 @@ export default function ExplorePage() {
         </div>
       </FilterSection>
 
-      {/* Price Range */}
+      {}
       <FilterSection title="Khoảng giá">
         <DualRangeSlider
           min={0}
@@ -1158,7 +1158,7 @@ export default function ExplorePage() {
         />
       </FilterSection>
 
-      {/* Dynamic spec filters */}
+      {}
       {activeSpecFilters.length > 0 && (
         <FilterSection title={`Thông số — ${activeCategoryName}`}>
           <div className="flex flex-col gap-3.5">
@@ -1190,7 +1190,7 @@ export default function ExplorePage() {
         background: "linear-gradient(180deg, #f7f9fb 0%, #f0f4fa 100%)",
       }}
     >
-      {/* Plain Breadcrumb */}
+      {}
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 pt-5 pb-1">
         <div className="flex items-center gap-1.5 text-[13px] text-[#64748b]">
           <Link href="/home" className="hover:text-[#0058be] transition-colors">
@@ -1202,7 +1202,7 @@ export default function ExplorePage() {
       </div>
 
       <div className="max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 py-7">
-        {/* Top bar */}
+        {}
         <div className="flex items-center gap-3 mb-5">
           <div className="flex-1 relative">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-[#94a3b8]" />
@@ -1258,7 +1258,7 @@ export default function ExplorePage() {
           </button>
         </div>
 
-        {/* Brand Swiper Row */}
+        {}
         <div className="mb-5 bg-white border border-[#e2e8f0] rounded-[16px] p-2.5 shadow-sm">
           <BrandSwiper
             brands={brands}
@@ -1278,7 +1278,7 @@ export default function ExplorePage() {
           />
         </div>
 
-        {/* Result row + chips + toggle out of stock */}
+        {}
         <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
           <div className="flex items-center gap-3 flex-wrap">
             <p className="text-[13px] text-[#475569]">
@@ -1292,7 +1292,7 @@ export default function ExplorePage() {
               )}
             </p>
 
-            {/* Out of stock toggle switch */}
+            {}
             <div className="flex items-center gap-2 border-l border-[#e2e8f0] pl-3 ml-1">
               <label className="text-[12px] font-medium text-[#475569] cursor-pointer flex items-center gap-2 select-none">
                 <div className="relative inline-block w-8 h-4">
@@ -1370,9 +1370,9 @@ export default function ExplorePage() {
           )}
         </div>
 
-        {/* Layout */}
+        {}
         <div className="flex gap-5 items-start">
-          {/* Desktop sidebar */}
+          {}
           <div
             className="hidden lg:block w-[232px] shrink-0 bg-white rounded-[16px] border border-[#e8ecf2] p-4 shadow-sm sticky top-24 max-h-[calc(100vh-7rem)] overflow-y-auto"
             style={{ scrollbarWidth: "thin" }}
@@ -1380,7 +1380,7 @@ export default function ExplorePage() {
             {sidebar}
           </div>
 
-          {/* Product grid */}
+          {}
           <div className="flex-1 min-w-0">
             {loading ? (
               <div className="grid grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
@@ -1458,7 +1458,7 @@ export default function ExplorePage() {
         </div>
       </div>
 
-      {/* Mobile sidebar overlay */}
+      {}
       {mobileSidebarOpen && (
         <div className="fixed inset-0 z-50 flex lg:hidden">
           <div

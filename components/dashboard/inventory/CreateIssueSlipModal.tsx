@@ -86,7 +86,7 @@ export default function CreateIssueSlipModal({
         setLoadingOrders(true);
         try {
           const res = await orderAPI.adminListAll();
-          // Filter only CONFIRMED orders
+          
           const confirmedOrders = res.filter((o) => o.status === "CONFIRMED");
           setOrders(confirmedOrders);
         } catch (e) {
@@ -104,7 +104,7 @@ export default function CreateIssueSlipModal({
     }
   }, [reason]);
 
-  // Filter products by search query
+  
   const searchResults =
     searchQuery.trim() === ""
       ? []
@@ -114,7 +114,7 @@ export default function CreateIssueSlipModal({
               p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
               String(p.id).includes(searchQuery),
           )
-          .slice(0, 5); // Limit to top 5 results for dropdown list
+          .slice(0, 5); 
 
   const handleSelectItem = (product: Product) => {
     if (product.stock <= 0) {
@@ -132,7 +132,7 @@ export default function CreateIssueSlipModal({
       }
       return [...prev, { product, quantity: 1 }];
     });
-    setSearchQuery(""); // Reset search input
+    setSearchQuery(""); 
   };
 
   const handleUpdateQuantity = (productId: number | string, qty: number) => {
@@ -167,7 +167,7 @@ export default function CreateIssueSlipModal({
       return;
     }
 
-    // Double check stock locally before submit
+    
     for (const item of selectedItems) {
       if (item.quantity > item.product.stock) {
         toast.error(
@@ -210,7 +210,7 @@ export default function CreateIssueSlipModal({
         className="bg-white rounded-[16px] shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden border border-[#e2e8f0]"
         style={{ fontFamily: "Inter, sans-serif" }}
       >
-        {/* Header */}
+        {}
         <div className="flex items-center justify-between px-6 py-4 border-b border-[#e2e8f0] bg-[#f8fafc]">
           <div>
             <h3 className="font-semibold text-[18px] text-[#0f172a]">
@@ -228,9 +228,9 @@ export default function CreateIssueSlipModal({
           </button>
         </div>
 
-        {/* Content */}
+        {}
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
-          {/* Reason Section */}
+          {}
           <div className="space-y-3">
             <h4 className="text-[12px] font-bold text-[#64748b] uppercase tracking-[0.5px]">
               Lý do xuất kho
@@ -276,7 +276,7 @@ export default function CreateIssueSlipModal({
             </div>
           </div>
 
-          {/* Order Selection if Retail Sale */}
+          {}
           {reason === "RETAIL_SALE" && (
             <div className="space-y-3 bg-blue-50/10 border border-[#0058be]/10 rounded-[12px] p-4">
               <h4 className="text-[12px] font-bold text-[#64748b] uppercase tracking-[0.5px] flex items-center gap-2">
@@ -338,7 +338,7 @@ export default function CreateIssueSlipModal({
             </div>
           )}
 
-          {/* Product Selection if NOT Retail Sale */}
+          {}
           {reason !== "RETAIL_SALE" && (
             <div className="space-y-3">
               <h4 className="text-[12px] font-bold text-[#64748b] uppercase tracking-[0.5px]">
@@ -360,7 +360,7 @@ export default function CreateIssueSlipModal({
                   )}
                 </div>
 
-                {/* Search Results Dropdown */}
+                {}
                 {searchQuery.trim() !== "" && (
                   <div className="absolute left-0 right-0 mt-1 bg-white border border-[#e2e8f0] rounded-[10px] shadow-lg max-h-[220px] overflow-y-auto z-10 divide-y divide-[#e2e8f0]">
                     {searchResults.length === 0 ? (
@@ -422,7 +422,7 @@ export default function CreateIssueSlipModal({
             </div>
           )}
 
-          {/* Selected Products List */}
+          {}
           <div className="space-y-3">
             <h4 className="text-[12px] font-bold text-[#64748b] uppercase tracking-[0.5px] flex items-center justify-between">
               <span>Hàng xuất kho ({selectedItems.length})</span>
@@ -454,7 +454,7 @@ export default function CreateIssueSlipModal({
                     key={item.product.id}
                     className="p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 bg-white hover:bg-[#f8fafc]/30 transition-colors"
                   >
-                    {/* Product Details */}
+                    {}
                     <div className="flex items-center gap-3 min-w-0 flex-1">
                       {item.product.thumbnailUrl ? (
                         item.product.thumbnailUrl.startsWith(
@@ -495,7 +495,7 @@ export default function CreateIssueSlipModal({
                       </div>
                     </div>
 
-                    {/* Quantity Selector and Actions */}
+                    {}
                     <div className="flex items-center justify-between sm:justify-end gap-4 w-full sm:w-auto shrink-0 border-t sm:border-0 pt-2.5 sm:pt-0">
                       <div className="flex items-center gap-1.5">
                         {reason !== "RETAIL_SALE" ? (
@@ -569,7 +569,7 @@ export default function CreateIssueSlipModal({
           </div>
         </div>
 
-        {/* Footer */}
+        {}
         <div className="border-t border-[#e2e8f0] px-6 py-4 bg-[#f8fafc] flex items-center justify-end gap-3">
           <button
             type="button"

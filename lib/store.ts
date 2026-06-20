@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { authAPI, AuthResponse, cartAPI, CartItemDto } from "./api";
 
-// ─── Types ──────────────────────────────────────────────────────────────────
+
 
 export interface User {
   id: string;
@@ -13,40 +13,37 @@ export interface User {
 interface AuthStore {
   user: User | null;
   token: string | null;
-  /** True once we've checked localStorage on the client — prevents flash */
+  
   isHydrated: boolean;
   isLoading: boolean;
   error: string | null;
 
-  // Actions
+  
   login: (usernameOrEmail: string, password: string) => Promise<void>;
   signup: (username: string, email: string, password: string) => Promise<void>;
   loginWithGoogle: (idToken: string) => Promise<void>;
   logout: () => void;
   clearError: () => void;
-  /** Call once on client mount to restore session from localStorage */
+  
   hydrate: () => void;
 }
 
-// ─── JWT Utilities ───────────────────────────────────────────────────────────
+
 
 interface JwtPayload {
-  sub: string; // userId (set as subject in backend)
-  username: string; // claim added by JwtTokenProvider
-  role: string; // claim added by JwtTokenProvider
-  exp: number; // expiry in seconds
+  sub: string; 
+  username: string; 
+  role: string; 
+  exp: number; 
   iat: number;
 }
 
-/**
- * Decode the JWT payload without verifying the signature (client-side only).
- * The backend will reject the token via 401 if tampered with.
- */
+
 function decodeJwt(token: string): JwtPayload | null {
   try {
     const base64Url = token.split(".")[1];
     if (!base64Url) return null;
-    // atob is available in all modern browsers and Next.js Edge runtime
+    
     const json = atob(base64Url.replace(/-/g, "+").replace(/_/g, "/"));
     return JSON.parse(json) as JwtPayload;
   } catch {
@@ -54,28 +51,28 @@ function decodeJwt(token: string): JwtPayload | null {
   }
 }
 
-/** Returns true if the token exists and has not expired yet (10s grace window). */
+
 function isTokenAlive(token: string): boolean {
   const payload = decodeJwt(token);
   if (!payload || typeof payload.exp !== "number") return false;
   return payload.exp * 1000 > Date.now() - 10_000;
 }
 
-/** Build a User object from a decoded JWT payload. */
+
 function userFromPayload(payload: JwtPayload): User {
   return {
     id: payload.sub,
     username: payload.username,
-    // email is not in the JWT claims — we get it from the login response
-    // and store it separately in a lightweight way below
+    
+    
     email: "",
     role: payload.role as "ADMIN" | "CUSTOMER" | "STAFF",
   };
 }
 
-// ─── localStorage helpers ────────────────────────────────────────────────────
-// Only token is persisted. User info is derived from the JWT on every hydration
-// so it's always in sync with the token. Email (not in JWT) is stored separately.
+
+
+
 
 const TOKEN_KEY = "authToken";
 const EMAIL_KEY = "authEmail";
@@ -88,12 +85,12 @@ function saveSession(token: string, email: string) {
 function clearSession() {
   localStorage.removeItem(TOKEN_KEY);
   localStorage.removeItem(EMAIL_KEY);
-  // Also clear any leftover keys from the old implementation
+  
   localStorage.removeItem("user");
   localStorage.removeItem("auth-store");
 }
 
-// ─── Store ───────────────────────────────────────────────────────────────────
+
 
 export const useAuthStore = create<AuthStore>()((set) => ({
   user: null,
@@ -102,7 +99,7 @@ export const useAuthStore = create<AuthStore>()((set) => ({
   isLoading: false,
   error: null,
 
-  // ── Login ────────────────────────────────────────────────────────────────
+  
   login: async (usernameOrEmail: string, password: string) => {
     set({ isLoading: true, error: null });
     try {
@@ -111,7 +108,7 @@ export const useAuthStore = create<AuthStore>()((set) => ({
         password,
       });
 
-      // Backend returns flat fields: token, userId, username, email, role
+      
       saveSession(res.token, res.email);
 
       const user: User = {
@@ -130,7 +127,7 @@ export const useAuthStore = create<AuthStore>()((set) => ({
     }
   },
 
-  // ── Signup ───────────────────────────────────────────────────────────────
+  
   signup: async (username: string, email: string, password: string) => {
     set({ isLoading: true, error: null });
     try {
@@ -158,7 +155,7 @@ export const useAuthStore = create<AuthStore>()((set) => ({
     }
   },
 
-  // ── Login With Google ────────────────────────────────────────────────────
+  
   loginWithGoogle: async (idToken: string) => {
     set({ isLoading: true, error: null });
     try {
@@ -182,16 +179,16 @@ export const useAuthStore = create<AuthStore>()((set) => ({
     }
   },
 
-  // ── Logout ───────────────────────────────────────────────────────────────
+  
   logout: () => {
     clearSession();
     set({ user: null, token: null, error: null, isHydrated: true });
   },
 
-  // ── Clear error ──────────────────────────────────────────────────────────
+  
   clearError: () => set({ error: null }),
 
-  // ── Hydrate (call once on client mount) ──────────────────────────────────
+  
   hydrate: () => {
     if (typeof window === "undefined") return;
 
@@ -203,13 +200,13 @@ export const useAuthStore = create<AuthStore>()((set) => ({
     }
 
     if (!isTokenAlive(token)) {
-      // Token expired — wipe storage and mark as logged-out
+      
       clearSession();
       set({ user: null, token: null, isHydrated: true });
       return;
     }
 
-    // Token is valid — restore user from JWT claims + stored email
+    
     const payload = decodeJwt(token);
     if (!payload) {
       clearSession();
@@ -224,7 +221,7 @@ export const useAuthStore = create<AuthStore>()((set) => ({
   },
 }));
 
-// ─── Exported helper for axiosInstance 401 handler ──────────────────────────
+
 export function forceLogout() {
   if (typeof window !== "undefined") {
     clearSession();
@@ -232,7 +229,7 @@ export function forceLogout() {
   useAuthStore.setState({ user: null, token: null, isHydrated: true });
 }
 
-// ─── Cart Store ──────────────────────────────────────────────────────────────
+
 
 interface CartStore {
   items: CartItemDto[];

@@ -66,7 +66,7 @@ export default function RegisterForm() {
 
     try {
       await signup(form.username, form.email, form.password);
-      // After signup the store has user.role – re-read from store state
+      
       const { user } = useAuthStore.getState();
       router.push(
         user?.role === "ADMIN" || user?.role === "STAFF"
@@ -74,7 +74,7 @@ export default function RegisterForm() {
           : "/home",
       );
     } catch {
-      // error displayed from store
+      
     }
   };
 
@@ -89,7 +89,7 @@ export default function RegisterForm() {
         w-full max-w-[518px]
       "
     >
-      {/* Card header */}
+      {}
       <div className="flex flex-col gap-2 w-full">
         <h1
           className="text-[#191c1e] text-[24px] tracking-[-0.6px] leading-[32px] font-normal"
@@ -105,7 +105,7 @@ export default function RegisterForm() {
         </p>
       </div>
 
-      {/* Form */}
+      {}
       <form
         onSubmit={handleSubmit}
         noValidate
@@ -155,7 +155,7 @@ export default function RegisterForm() {
           id="register-confirm-password"
         />
 
-        {/* Error message */}
+        {}
         {error && (
           <p
             className="text-red-500 text-[13px] font-normal -mt-2"
@@ -165,7 +165,7 @@ export default function RegisterForm() {
           </p>
         )}
 
-        {/* Submit */}
+        {}
         <button
           type="submit"
           disabled={isLoading}
@@ -187,10 +187,10 @@ export default function RegisterForm() {
           )}
         </button>
 
-        {/* Social login */}
+        {}
         <AuthSocialButtons />
 
-        {/* Sign in link */}
+        {}
         <p
           className="text-[14px] text-center w-full"
           style={{ fontFamily: "Inter, sans-serif" }}

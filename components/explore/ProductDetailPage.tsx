@@ -22,7 +22,7 @@ import { useCartStore } from "@/lib/store";
 import toast from "react-hot-toast";
 import LightboxModal from "./LightboxModal";
 
-// ─── SPECS_BY_CATEGORY mirrors ExplorePage ────────────────────────────────────
+
 
 function formatSpecValue(key: string, value: unknown): string {
   if (typeof value === "boolean") return value ? "Có" : "Không";
@@ -32,13 +32,13 @@ function formatSpecValue(key: string, value: unknown): string {
   const valStr = String(value).trim();
   const valLower = valStr.toLowerCase();
 
-  // Normalize stringified booleans
+  
   if (valLower === "true" || valLower === "yes" || valLower === "có")
     return "Có";
   if (valLower === "false" || valLower === "no" || valLower === "không")
     return "Không";
 
-  // Format numeric values with appropriate units
+  
   const numericVal = parseFloat(valStr.replace(/[^0-9.]/g, ""));
   if (!isNaN(numericVal)) {
     if (key === "mtbf") {
@@ -66,7 +66,7 @@ function formatSpecValue(key: string, value: unknown): string {
   return valStr;
 }
 
-// ─── Skeleton ─────────────────────────────────────────────────────────────────
+
 function ProductDetailSkeleton() {
   return (
     <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-8 animate-pulse">
@@ -91,7 +91,7 @@ function ProductDetailSkeleton() {
   );
 }
 
-// ─── Main Component ───────────────────────────────────────────────────────────
+
 export default function ProductDetailPage() {
   const params = useParams<{ id: string }>();
   const id = params?.id;
@@ -103,7 +103,7 @@ export default function ProductDetailPage() {
   const [quantity, setQuantity] = useState(1);
   const [addingToCart, setAddingToCart] = useState(false);
 
-  // Gallery and Lightbox states
+  
   const [detailImages, setDetailImages] = useState<ProductImage[]>([]);
   const [selectedImgIndex, setSelectedImgIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
@@ -118,7 +118,7 @@ export default function ProductDetailPage() {
       .then((p) => {
         setProduct(p);
         setLoading(false);
-        // Fetch detailed product images
+        
         adminAPI
           .getProductImages(p.id)
           .then((imgs) => {
@@ -155,7 +155,7 @@ export default function ProductDetailPage() {
 
   const outOfStock = product ? product.stock === 0 : false;
 
-  // Build complete list of images: main thumbnail + detail images
+  
   const allImages = imgSrc
     ? [imgSrc, ...detailImages.map((img) => img.url)]
     : detailImages.length > 0
@@ -190,7 +190,7 @@ export default function ProductDetailPage() {
     }
   }
 
-  // ── Loading ────────────────────────────────────────────────────────────────
+  
   if (loading) {
     return (
       <div
@@ -207,7 +207,7 @@ export default function ProductDetailPage() {
     );
   }
 
-  // ── Not found ──────────────────────────────────────────────────────────────
+  
   if (notFound || !product) {
     return (
       <div
@@ -236,7 +236,7 @@ export default function ProductDetailPage() {
     );
   }
 
-  // ── Main layout ────────────────────────────────────────────────────────────
+  
   return (
     <div
       className="min-h-screen"
@@ -244,7 +244,7 @@ export default function ProductDetailPage() {
         background: "linear-gradient(180deg, #f7f9fb 0%, #f0f4fa 100%)",
       }}
     >
-      {/* Plain Breadcrumb */}
+      {}
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 pt-5 pb-1">
         <div className="flex items-center gap-1.5 text-[13px] text-[#64748b] flex-wrap">
           <Link href="/home" className="hover:text-[#0058be] transition-colors">
@@ -272,13 +272,13 @@ export default function ProductDetailPage() {
         </div>
       </div>
 
-      {/* Content */}
+      {}
       <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* ── Top section: image + info ──────────────────────────────────────── */}
+        {}
         <div className="flex flex-col lg:flex-row gap-10 mb-10">
-          {/* Interactive Image Gallery */}
+          {}
           <div className="w-full lg:w-[460px] shrink-0 flex flex-col gap-4">
-            {/* Active Large Image Frame */}
+            {}
             <div
               onClick={() => activeImageUrl && setIsLightboxOpen(true)}
               className="bg-white rounded-[24px] border border-[#e8ecf2] shadow-xs p-6 flex items-center justify-center h-[380px] relative overflow-hidden group cursor-zoom-in transition-all hover:shadow-md"
@@ -291,7 +291,7 @@ export default function ProductDetailPage() {
                 </div>
               )}
 
-              {/* Main Image Renderer */}
+              {}
               {activeImageUrl && !imgErr ? (
                 <img
                   src={activeImageUrl}
@@ -310,14 +310,14 @@ export default function ProductDetailPage() {
                 </div>
               )}
 
-              {/* Expand Badge Overlay */}
+              {}
               {activeImageUrl && !outOfStock && (
                 <div className="absolute bottom-4 right-4 size-9 bg-white/80 hover:bg-white border border-slate-100 text-[#475569] rounded-full flex items-center justify-center shadow-sm backdrop-blur-md opacity-0 group-hover:opacity-100 transition-all hover:scale-105 active:scale-95 duration-200">
                   <Maximize2 className="size-4 shrink-0" />
                 </div>
               )}
 
-              {/* Slide Navigation Left/Right inside frame */}
+              {}
               {allImages.length > 1 && !outOfStock && (
                 <>
                   <button
@@ -340,7 +340,7 @@ export default function ProductDetailPage() {
               )}
             </div>
 
-            {/* Thumbnails Row */}
+            {}
             {allImages.length > 1 && (
               <div className="flex items-center gap-3 overflow-x-auto pb-1 max-w-full scrollbar-thin">
                 {allImages.map((img, idx) => {
@@ -368,9 +368,9 @@ export default function ProductDetailPage() {
             )}
           </div>
 
-          {/* Info panel */}
+          {}
           <div className="flex-1 flex flex-col gap-5">
-            {/* Brand + category badges */}
+            {}
             <div className="flex items-center gap-2 flex-wrap">
               {product.brand && (
                 <span className="text-[11px] font-bold text-[#0058be] uppercase tracking-[0.8px] bg-[#eff6ff] px-3 py-1 rounded-full">
@@ -384,12 +384,12 @@ export default function ProductDetailPage() {
               )}
             </div>
 
-            {/* Product name */}
+            {}
             <h2 className="text-[22px] font-bold text-[#0f172a] leading-snug">
               {product.name}
             </h2>
 
-            {/* Price */}
+            {}
             <div className="flex items-baseline gap-3 flex-wrap">
               {product.discountPrice ? (
                 <>
@@ -420,7 +420,7 @@ export default function ProductDetailPage() {
               )}
             </div>
 
-            {/* Stock status */}
+            {}
             <div className="flex items-center gap-2">
               {product.stock === 0 ? (
                 <>
@@ -448,7 +448,7 @@ export default function ProductDetailPage() {
 
             <div className="h-px bg-[#f1f5f9]" />
 
-            {/* Description */}
+            {}
             {product.description && (
               <p className="text-[14px] text-[#475569] leading-relaxed line-clamp-4">
                 {product.description}
@@ -457,9 +457,9 @@ export default function ProductDetailPage() {
 
             <div className="h-px bg-[#f1f5f9]" />
 
-            {/* Quantity + Add to cart */}
+            {}
             <div className="flex items-center gap-3 flex-wrap">
-              {/* Quantity stepper */}
+              {}
               <div className="flex items-center gap-0 bg-[#f8fafc] border border-[#e2e8f0] rounded-[12px] overflow-hidden">
                 <button
                   type="button"
@@ -486,7 +486,7 @@ export default function ProductDetailPage() {
                 </button>
               </div>
 
-              {/* Add to cart button */}
+              {}
               <button
                 type="button"
                 id="add-to-cart-btn"
@@ -508,7 +508,7 @@ export default function ProductDetailPage() {
               </button>
             </div>
 
-            {/* Back link */}
+            {}
             <Link
               href="/explore"
               className="inline-flex items-center gap-1.5 text-[13px] text-[#64748b] hover:text-[#0058be] transition-colors mt-1 w-fit"
@@ -519,10 +519,10 @@ export default function ProductDetailPage() {
           </div>
         </div>
 
-        {/* ── Specs table ───────────────────────────────────────────────────── */}
+        {}
         {specEntries.length > 0 && (
           <section className="bg-white rounded-[20px] border border-[#e8ecf2] shadow-sm overflow-hidden mb-8">
-            {/* Section header */}
+            {}
             <div className="bg-gradient-to-r from-[#0047a3] to-[#0058be] px-6 py-4">
               <h3 className="text-[16px] font-bold text-white tracking-tight">
                 Thông số kỹ thuật
@@ -595,7 +595,7 @@ export default function ProductDetailPage() {
           </section>
         )}
 
-        {/* ── Description (full) ───────────────────────────────────────────── */}
+        {}
         {product.description && (
           <section className="bg-white rounded-[20px] border border-[#e8ecf2] shadow-sm overflow-hidden mb-8">
             <div className="bg-gradient-to-r from-[#0047a3] to-[#0058be] px-6 py-4">
@@ -610,7 +610,7 @@ export default function ProductDetailPage() {
             </div>
           </section>
         )}
-        {/* ── Lightbox Modal ── */}
+        {}
         <LightboxModal
           isOpen={isLightboxOpen}
           onClose={() => setIsLightboxOpen(false)}

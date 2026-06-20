@@ -23,7 +23,7 @@ export default function UsersPage() {
   const [page, setPage] = useState(0);
   const pageSize = 10;
 
-  // Search & Filter state
+  
   const [searchQuery, setSearchQuery] = useState("");
   const [roleFilter, setRoleFilter] = useState<
     "ALL" | "ADMIN" | "STAFF" | "CUSTOMER"
@@ -82,19 +82,19 @@ export default function UsersPage() {
     }
   };
 
-  // Filter users
+  
   const filteredUsers = users.filter((u) => {
-    // 1. Search Query
+    
     const searchLower = searchQuery.toLowerCase();
     const matchesSearch =
       u.username.toLowerCase().includes(searchLower) ||
       u.email.toLowerCase().includes(searchLower) ||
       (u.phone && u.phone.includes(searchLower));
 
-    // 2. Role Filter
+    
     const matchesRole = roleFilter === "ALL" || u.role === roleFilter;
 
-    // 3. Status Filter
+    
     const matchesStatus =
       statusFilter === "ALL" ||
       (statusFilter === "ACTIVE" && u.active) ||
@@ -115,7 +115,7 @@ export default function UsersPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Page Header */}
+      {}
       <div className="flex items-center justify-between">
         <div>
           <h2
@@ -124,13 +124,6 @@ export default function UsersPage() {
           >
             Quản lý người dùng
           </h2>
-          <p
-            className="text-[#64748b] text-[14px] mt-1"
-            style={{ fontFamily: "Inter, sans-serif" }}
-          >
-            Quản lý tài khoản khách hàng, nhân viên và tạo tài khoản nhân viên
-            mới.
-          </p>
         </div>
         <button
           onClick={handleCreate}
@@ -142,9 +135,9 @@ export default function UsersPage() {
         </button>
       </div>
 
-      {/* Toolbar & Filter */}
+      {}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-4 bg-white p-4 rounded-[12px] border border-[#e2e8f0]">
-        {/* Search */}
+        {}
         <div className="relative md:col-span-2">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-[#94a3b8]" />
           <input
@@ -160,7 +153,7 @@ export default function UsersPage() {
           />
         </div>
 
-        {/* Role Filter */}
+        {}
         <div className="flex items-center gap-2">
           <label
             className="text-[13px] font-semibold text-[#64748b] whitespace-nowrap"
@@ -184,7 +177,7 @@ export default function UsersPage() {
           </select>
         </div>
 
-        {/* Status Filter */}
+        {}
         <div className="flex items-center gap-2">
           <label
             className="text-[13px] font-semibold text-[#64748b] whitespace-nowrap"
@@ -208,7 +201,7 @@ export default function UsersPage() {
         </div>
       </div>
 
-      {/* Table Area */}
+      {}
       <div className="bg-white border border-[#e2e8f0] rounded-[12px] overflow-hidden shadow-sm">
         <div className="overflow-x-auto min-h-[300px]">
           {loading ? (
@@ -363,7 +356,7 @@ export default function UsersPage() {
           )}
         </div>
 
-        {/* Pagination */}
+        {}
         {!loading && !error && filteredUsers.length > 0 && (
           <div
             className="flex items-center justify-between px-6 py-4 border-t border-[#e2e8f0] bg-[#f8fafc] text-[13px] text-[#64748b]"
@@ -407,7 +400,7 @@ export default function UsersPage() {
         )}
       </div>
 
-      {/* Create Staff Modal */}
+      {}
       {isModalOpen && (
         <CreateStaffModal
           onClose={() => setIsModalOpen(false)}
@@ -492,7 +485,7 @@ function CreateStaffModal({ onClose, onSuccess }: CreateStaffModalProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 overflow-y-auto">
       <div className="bg-white rounded-[16px] shadow-2xl w-full max-w-lg flex flex-col my-auto overflow-hidden animate-in fade-in zoom-in-95 duration-150">
-        {/* Modal Header */}
+        {}
         <div className="flex items-center justify-between px-6 py-4 border-b border-[#e2e8f0]">
           <h3
             className="font-bold text-[18px] text-[#0f172a]"
@@ -508,13 +501,13 @@ function CreateStaffModal({ onClose, onSuccess }: CreateStaffModalProps) {
           </button>
         </div>
 
-        {/* Modal Body / Form */}
+        {}
         <form
           onSubmit={handleSubmit}
           className="p-6 flex flex-col gap-4 max-h-[85vh] overflow-y-auto"
           style={{ fontFamily: "Inter, sans-serif" }}
         >
-          {/* Username */}
+          {}
           <div className="flex flex-col gap-1.5">
             <label className="text-[13px] font-bold text-[#475569]">
               Tên đăng nhập (Username) *
@@ -540,7 +533,7 @@ function CreateStaffModal({ onClose, onSuccess }: CreateStaffModalProps) {
             />
           </div>
 
-          {/* Email */}
+          {}
           <div className="flex flex-col gap-1.5">
             <label className="text-[13px] font-bold text-[#475569]">
               Email *
@@ -566,7 +559,7 @@ function CreateStaffModal({ onClose, onSuccess }: CreateStaffModalProps) {
             />
           </div>
 
-          {/* Password */}
+          {}
           <div className="flex flex-col gap-1.5">
             <label className="text-[13px] font-bold text-[#475569]">
               Mật khẩu *
@@ -592,7 +585,7 @@ function CreateStaffModal({ onClose, onSuccess }: CreateStaffModalProps) {
             />
           </div>
 
-          {/* Phone */}
+          {}
           <div className="flex flex-col gap-1.5">
             <label className="text-[13px] font-bold text-[#475569]">
               Số điện thoại
@@ -618,7 +611,7 @@ function CreateStaffModal({ onClose, onSuccess }: CreateStaffModalProps) {
             />
           </div>
 
-          {/* Address */}
+          {}
           <div className="flex flex-col gap-1.5">
             <label className="text-[13px] font-bold text-[#475569]">
               Địa chỉ liên hệ
@@ -634,7 +627,7 @@ function CreateStaffModal({ onClose, onSuccess }: CreateStaffModalProps) {
             />
           </div>
 
-          {/* Actions */}
+          {}
           <div className="flex items-center justify-end gap-3 mt-4 pt-4 border-t border-[#e2e8f0]">
             <button
               type="button"

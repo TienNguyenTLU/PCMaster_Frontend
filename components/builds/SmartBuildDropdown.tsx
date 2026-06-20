@@ -55,7 +55,7 @@ export default function SmartBuildDropdown({
             </div>
           </div>
 
-          {/* Need Selection */}
+          {}
           <div className="flex flex-col gap-1.5 text-left">
             <label className="text-[11px] font-bold text-slate-700">
               1. Lựa chọn nhu cầu sử dụng:
@@ -83,7 +83,7 @@ export default function SmartBuildDropdown({
             </div>
           </div>
 
-          {/* Budget Selection */}
+          {}
           <div className="flex flex-col gap-1.5 text-left">
             <label className="text-[11px] font-bold text-slate-700">
               2. Lựa chọn khoảng giá dự kiến:
@@ -113,7 +113,7 @@ export default function SmartBuildDropdown({
             </div>
           </div>
 
-          {/* Live Status Tracker */}
+          {}
           {isGeneratingSmartBuild && smartBuildStatus && (
             <div className="bg-slate-50/60 border border-slate-100 rounded-[12px] p-3 text-[11px] font-bold text-slate-600 flex items-center gap-2 animate-pulse text-left">
               <Loader2 className="size-3.5 animate-spin text-violet-600 shrink-0" />
@@ -121,7 +121,7 @@ export default function SmartBuildDropdown({
             </div>
           )}
 
-          {/* Actions */}
+          {}
           <div className="flex justify-end gap-2 pt-3 border-t border-slate-100 mt-1">
             <button
               type="button"

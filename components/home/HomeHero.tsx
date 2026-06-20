@@ -7,7 +7,7 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Pagination, Navigation } from "swiper/modules";
 
-// Import Swiper styles
+
 import "swiper/css";
 import "swiper/css/pagination";
 import "swiper/css/navigation";
@@ -22,7 +22,7 @@ export default function HomeHero() {
     adminAPI
       .getBanners()
       .then((data) => {
-        // Sort by displayOrder ascending
+        
         const sorted = [...data].sort(
           (a, b) => a.displayOrder - b.displayOrder,
         );
@@ -33,7 +33,7 @@ export default function HomeHero() {
       });
   }, []);
 
-  // Fallback: If no banners are uploaded, render the default banner from public directory
+  
   if (banners.length === 0) {
     return (
       <section className="w-full max-w-[1400px] mx-auto rounded-[24px] overflow-hidden relative shadow-lg bg-gray-50 border border-slate-100/60 aspect-[21/8] group">
@@ -130,7 +130,7 @@ export default function HomeHero() {
         })}
       </Swiper>
 
-      {/* Slide Navigation Arrows */}
+      {}
       {banners.length > 1 && (
         <>
           <button
@@ -148,7 +148,7 @@ export default function HomeHero() {
         </>
       )}
 
-      {/* Visual Dot Indicators */}
+      {}
       {banners.length > 1 && (
         <div className="swiper-pagination-custom absolute bottom-5 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2.5 px-3.5 py-2 bg-slate-900/10 backdrop-blur-md rounded-full border border-white/10 shadow-xs" />
       )}

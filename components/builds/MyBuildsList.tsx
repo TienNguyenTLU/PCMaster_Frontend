@@ -129,7 +129,7 @@ export default function MyBuildsList({
 
               <div
                 className="flex items-center gap-4 self-stretch md:self-auto justify-between md:justify-end border-t md:border-t-0 border-slate-100 pt-4 md:pt-0 shrink-0"
-                onClick={(e) => e.stopPropagation()} // prevent double trigger
+                onClick={(e) => e.stopPropagation()} 
               >
                 <div className="md:text-right">
                   <p className="text-[10px] text-[#94a3b8] uppercase font-bold tracking-[1.5px] mb-0.5">

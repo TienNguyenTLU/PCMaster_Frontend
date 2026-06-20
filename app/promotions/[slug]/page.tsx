@@ -28,7 +28,7 @@ export default function PromotionDetailPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // Countdown state
+  
   const [timeLeft, setTimeLeft] = useState<{
     days: number;
     hours: number;
@@ -59,7 +59,7 @@ export default function PromotionDetailPage() {
     fetchPromotionDetail();
   }, [slug]);
 
-  // Countdown timer logic
+  
   useEffect(() => {
     if (!promotion) return;
 
@@ -102,7 +102,7 @@ export default function PromotionDetailPage() {
       }
     };
 
-    calculateTimeLeft(); // run once immediately
+    calculateTimeLeft(); 
     const timer = setInterval(calculateTimeLeft, 1000);
 
     return () => clearInterval(timer);
@@ -124,7 +124,7 @@ export default function PromotionDetailPage() {
           background: "linear-gradient(180deg, #f7f9fb 0%, #f0f4fa 100%)",
         }}
       >
-        {/* Navigation Breadcrumb */}
+        {}
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 pb-2">
           <div className="flex items-center gap-2 text-[12px] text-[#64748b] font-medium">
             <Link
@@ -148,7 +148,7 @@ export default function PromotionDetailPage() {
         </div>
 
         {loading ? (
-          /* Loading State */
+          
           <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-12 flex flex-col gap-8">
             <div className="h-[280px] bg-white border border-[#e8ecf2] rounded-[24px] animate-pulse flex items-center justify-center">
               <div className="flex items-center text-[#64748b] gap-2 font-medium">
@@ -177,7 +177,7 @@ export default function PromotionDetailPage() {
             </div>
           </div>
         ) : error || !promotion ? (
-          /* Error State */
+          
           <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-16 text-center">
             <div className="bg-white rounded-[24px] border border-[#e8ecf2] p-16 shadow-xs flex flex-col items-center gap-6 max-w-[500px] mx-auto">
               <div className="w-16 h-16 rounded-full bg-red-50 flex items-center justify-center">
@@ -208,11 +208,11 @@ export default function PromotionDetailPage() {
             </div>
           </div>
         ) : (
-          /* Main content detail */
+          
           <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-8 flex flex-col gap-10">
-            {/* Promotion Hero Board */}
+            {}
             <div className="relative bg-white rounded-[24px] border border-[#e8ecf2] overflow-hidden shadow-sm flex flex-col md:flex-row min-h-[300px]">
-              {/* Left Side: Campaign Cover Banner */}
+              {}
               <div className="md:w-1/2 min-h-[220px] md:min-h-auto bg-[#f8fafc] relative overflow-hidden flex items-center justify-center border-b md:border-b-0 md:border-r border-[#f1f5f9]">
                 {bannerSrc ? (
                   <img
@@ -228,18 +228,18 @@ export default function PromotionDetailPage() {
                     </span>
                   </div>
                 )}
-                {/* Discount Tag */}
+                {}
                 <div className="absolute top-6 left-6 bg-red-500 text-white font-black text-[24px] px-4.5 py-2 rounded-[16px] shadow-lg flex items-baseline gap-0.5">
                   -{promotion.discountPercent}
                   <span className="text-[14px] font-bold">%</span>
                 </div>
               </div>
 
-              {/* Right Side: Promotion Info & Countdown */}
+              {}
               <div className="md:w-1/2 p-8 flex flex-col justify-between gap-6 bg-gradient-to-br from-white to-[#fcfdfe]">
                 <div className="space-y-4">
                   <div className="flex flex-wrap items-center gap-3">
-                    {/* Status Badge */}
+                    {}
                     {timeLeft.status === "ACTIVE" ? (
                       <span className="bg-emerald-500/10 text-emerald-600 border border-emerald-500/20 text-[10px] font-extrabold px-3 py-1 rounded-full uppercase tracking-wider shadow-sm flex items-center gap-1.5 animate-pulse">
                         <span className="size-2 rounded-full bg-emerald-500" />
@@ -280,7 +280,7 @@ export default function PromotionDetailPage() {
                   </p>
                 </div>
 
-                {/* Countdown Timer Block */}
+                {}
                 <div className="bg-[#0f172a] rounded-[20px] p-5 text-white flex flex-col gap-3.5 shadow-[0_8px_30px_rgb(0,0,0,0.15)] relative overflow-hidden">
                   <div className="absolute top-0 right-0 w-24 h-24 bg-blue-500/10 rounded-full blur-xl pointer-events-none" />
 
@@ -337,7 +337,7 @@ export default function PromotionDetailPage() {
               </div>
             </div>
 
-            {/* List of discounted products */}
+            {}
             <div className="space-y-6">
               <div className="flex items-center justify-between border-b border-[#e8ecf2] pb-4">
                 <div className="flex items-center gap-2.5">
@@ -357,7 +357,7 @@ export default function PromotionDetailPage() {
               </div>
 
               {!promotion.products || promotion.products.length === 0 ? (
-                /* Empty state */
+                
                 <div className="bg-white rounded-[24px] border border-[#e8ecf2] p-16 text-center shadow-xs flex flex-col items-center gap-4">
                   <div className="w-16 h-16 rounded-full bg-[#f1f5f9] flex items-center justify-center">
                     <Sparkles className="size-8 text-[#cbd5e1]" />
@@ -379,7 +379,7 @@ export default function PromotionDetailPage() {
                   </Link>
                 </div>
               ) : (
-                /* Products list */
+                
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
                   {promotion.products.map((product) => (
                     <ProductCard key={product.id} product={product} />

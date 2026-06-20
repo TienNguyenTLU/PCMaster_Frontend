@@ -45,7 +45,7 @@ export default function PreviewModal({
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <div className="bg-[#f1f5f9] rounded-[20px] shadow-2xl w-full max-w-4xl min-h-[90vh] flex flex-col my-auto overflow-hidden">
-        {/* Sticky Header */}
+        {}
         <div className="flex items-center justify-between px-8 py-4 bg-white border-b border-[#e2e8f0] z-10">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-blue-50 rounded-lg">
@@ -87,7 +87,7 @@ export default function PreviewModal({
           </div>
         </div>
 
-        {/* Document Content */}
+        {}
         <div className="flex-1 bg-[#f1f5f9] overflow-hidden flex flex-col">
           {po.documentUrl ? (
             <div className="flex-1 w-full h-full relative bg-white flex flex-col items-center justify-center gap-4 p-12">

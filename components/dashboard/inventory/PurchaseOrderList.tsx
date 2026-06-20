@@ -70,7 +70,7 @@ export default function PurchaseOrderList({
       className="flex flex-col gap-6"
       style={{ fontFamily: "Inter, sans-serif" }}
     >
-      {/* Stats */}
+      {}
       <div className="grid grid-cols-3 gap-4">
         {[
           { label: "Tổng phiếu", value: orders.length, color: "#0058be" },
@@ -100,7 +100,7 @@ export default function PurchaseOrderList({
         ))}
       </div>
 
-      {/* Table */}
+      {}
       <div className="bg-white border border-[#e2e8f0] rounded-[12px] overflow-hidden shadow-sm">
         <div className="overflow-x-auto min-h-[300px]">
           {loading ? (
@@ -189,7 +189,7 @@ export default function PurchaseOrderList({
         </div>
       </div>
 
-      {/* Modals */}
+      {}
       {isCreateOpen && (
         <CreatePOModal
           suppliers={suppliers}

@@ -35,7 +35,7 @@ export default function ComponentCard({
           : "bg-[#f8fafc] border-[#e2e8f0]"
       }`}
     >
-      {/* Header */}
+      {}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-1.5">
           <Icon
@@ -55,7 +55,7 @@ export default function ComponentCard({
         )}
       </div>
 
-      {/* Select Product */}
+      {}
       <div className="flex items-center gap-1.5 w-full min-w-0">
         <select
           value={selectedId}
@@ -96,7 +96,7 @@ export default function ComponentCard({
         )}
       </div>
 
-      {/* Details and Quantities if selected */}
+      {}
       {selectedProd && (
         <div className="flex flex-col gap-1.5 mt-1 border-t border-slate-100 pt-1.5 animate-fade-in">
           <div className="flex items-center justify-between text-[11px]">
@@ -118,7 +118,7 @@ export default function ComponentCard({
             </span>
           </div>
 
-          {/* Quantity controls */}
+          {}
           <div className="flex items-center justify-between mt-1 bg-white p-1 rounded-[6px] border border-[#e2e8f0]">
             <span className="text-[10px] text-[#64748b] pl-1">
               Số lượng / PC:

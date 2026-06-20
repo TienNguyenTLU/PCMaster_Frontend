@@ -68,7 +68,7 @@ export default function EditPricesModal({
         className="bg-white rounded-[12px] shadow-xl w-full max-w-[500px] flex flex-col overflow-hidden border border-[#e2e8f0]"
         style={{ fontFamily: "Inter, sans-serif" }}
       >
-        {/* Modal Header */}
+        {}
         <div className="border-b border-[#e2e8f0] px-6 py-4 flex items-center justify-between bg-[#f8fafc]">
           <div>
             <h2 className="text-[#0f172a] text-[18px] font-semibold tracking-[-0.3px]">
@@ -86,13 +86,13 @@ export default function EditPricesModal({
           </button>
         </div>
 
-        {/* Modal Content */}
+        {}
         <form onSubmit={handleSubmit} className="p-6 space-y-5">
-          {/* Product brief info */}
+          {}
           <div className="flex items-center gap-3 p-3 bg-[#f8fafc] border border-[#e2e8f0] rounded-[8px]">
             <div className="size-12 rounded-[6px] bg-white border border-[#e2e8f0] overflow-hidden shrink-0 flex items-center justify-center">
               {batch.thumbnailUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
+                
                 <img
                   src={batch.thumbnailUrl}
                   alt={batch.productName}
@@ -114,9 +114,9 @@ export default function EditPricesModal({
             </div>
           </div>
 
-          {/* Inputs */}
+          {}
           <div className="space-y-4">
-            {/* Import Price (Disabled/Read-only) */}
+            {}
             <div>
               <label className="text-[12px] font-semibold text-[#64748b] block mb-1.5">
                 Giá nhập (VND) - Lô này (Không thể thay đổi)
@@ -135,7 +135,7 @@ export default function EditPricesModal({
               </div>
             </div>
 
-            {/* Selling Price Input */}
+            {}
             <div>
               <label className="text-[12px] font-semibold text-[#475569] block mb-1.5">
                 Giá bán mới (VND) - Sản phẩm
@@ -174,7 +174,7 @@ export default function EditPricesModal({
             </div>
           </div>
 
-          {/* Modal Footer */}
+          {}
           <div className="border-t border-[#e2e8f0] pt-4 flex justify-end gap-3">
             <button
               type="button"

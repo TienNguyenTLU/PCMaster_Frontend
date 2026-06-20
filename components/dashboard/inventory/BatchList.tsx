@@ -43,7 +43,7 @@ export default function BatchList({
   searchQuery,
   hideOutOfStock,
 }: BatchListProps) {
-  // Apply filtering locally for search
+  
   const filteredBatches = batches.filter((batch) => {
     const matchesSearch =
       batch.productName.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -95,17 +95,17 @@ export default function BatchList({
                       key={batch.id}
                       className="hover:bg-[#f8fafc]/50 transition-colors"
                     >
-                      {/* Batch ID */}
+                      {}
                       <td className="px-6 py-4 font-medium text-[#0f172a]">
                         #{String(batch.id).padStart(4, "0")}
                       </td>
 
-                      {/* Product Detail */}
+                      {}
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
                           <div className="size-10 rounded-[6px] bg-[#f8fafc] border border-[#e2e8f0] overflow-hidden shrink-0 flex items-center justify-center">
                             {batch.thumbnailUrl ? (
-                              // eslint-disable-next-line @next/next/no-img-element
+                              
                               <img
                                 src={batch.thumbnailUrl}
                                 alt={batch.productName}
@@ -126,17 +126,17 @@ export default function BatchList({
                         </div>
                       </td>
 
-                      {/* Import Price */}
+                      {}
                       <td className="px-6 py-4 text-right font-semibold text-[#0058be]">
                         {formatPrice(batch.importPrice)}
                       </td>
 
-                      {/* Selling Price */}
+                      {}
                       <td className="px-6 py-4 text-right font-semibold text-emerald-600">
                         {formatPrice(batch.sellingPrice)}
                       </td>
 
-                      {/* Quantity */}
+                      {}
                       <td className="px-6 py-4 text-center">
                         <div className="flex flex-col items-center">
                           <span className="font-bold text-[#0f172a]">
@@ -148,7 +148,7 @@ export default function BatchList({
                         </div>
                       </td>
 
-                      {/* Batch Status */}
+                      {}
                       <td className="px-6 py-4 text-center">
                         {isOutOfStock ? (
                           <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10.5px] font-semibold bg-red-50 text-red-600 border border-red-200">
@@ -165,12 +165,12 @@ export default function BatchList({
                         )}
                       </td>
 
-                      {/* Import Date */}
+                      {}
                       <td className="px-6 py-4 text-[#64748b] text-[12px]">
                         {formatDate(batch.importedAt)}
                       </td>
 
-                      {/* Edit Price Action */}
+                      {}
                       <td className="px-6 py-4 text-right">
                         <button
                           onClick={() => onEditClick(batch)}
@@ -189,7 +189,7 @@ export default function BatchList({
         </div>
       </div>
 
-      {/* Pagination Controls */}
+      {}
       {totalPages > 1 && (
         <div className="flex items-center justify-between bg-white border border-[#e2e8f0] rounded-[12px] px-6 py-4 shadow-sm">
           <span className="text-[13px] text-[#64748b] font-medium">

@@ -41,11 +41,11 @@ export default function GearvnImportModal({
   const [url, setUrl] = useState("");
   const [categoryId, setCategoryId] = useState("");
 
-  // Validation state
+  
   const [urlError, setUrlError] = useState("");
   const [categoryError, setCategoryError] = useState("");
 
-  // Crawl state
+  
   const [previewLoading, setPreviewLoading] = useState(false);
   const [previewData, setPreviewData] = useState<GearvnPreviewResponse | null>(
     null,
@@ -53,15 +53,15 @@ export default function GearvnImportModal({
   const [previewError, setPreviewError] = useState("");
   const [expandedPreview, setExpandedPreview] = useState(false);
 
-  // Import state
+  
   const [importing, setImporting] = useState(false);
 
-  // Fetch categories on mount
+  
   useEffect(() => {
     adminAPI.getCategories(0, 200).then((r) => setCategories(r.content || []));
   }, []);
 
-  // Reset state when modal opens
+  
   useEffect(() => {
     if (isOpen) {
       setUrl("");
@@ -101,7 +101,7 @@ export default function GearvnImportModal({
     return isValid;
   }
 
-  // Handle Preview Action
+  
   async function handlePreview() {
     if (!validate()) return;
 
@@ -129,7 +129,7 @@ export default function GearvnImportModal({
     }
   }
 
-  // Handle Import Action
+  
   async function handleImport() {
     if (!validate()) return;
 
@@ -158,7 +158,7 @@ export default function GearvnImportModal({
       onClick={(e) => e.target === e.currentTarget && onClose()}
     >
       <div className="bg-white rounded-[16px] shadow-2xl w-full max-w-3xl max-h-[92vh] overflow-y-auto mx-4 flex flex-col">
-        {/* Header */}
+        {}
         <div className="flex items-center justify-between px-6 py-4 border-b border-[#e2e8f0] sticky top-0 bg-white rounded-t-[16px] z-10">
           <div className="flex items-center gap-3">
             <div className="p-2 bg-gradient-to-br from-[#0058be]/10 to-[#00a8e8]/10 rounded-[10px]">
@@ -182,9 +182,9 @@ export default function GearvnImportModal({
           </button>
         </div>
 
-        {/* Content */}
+        {}
         <div className="p-6 flex flex-col gap-5">
-          {/* Info Banner */}
+          {}
           <div className="flex items-start gap-2.5 bg-[#e8f0fe] border border-blue-100 rounded-[10px] px-4 py-3">
             <Info className="size-4 text-[#0058be] shrink-0 mt-0.5" />
             <div className="text-[13px] text-[#1e3a5f]">
@@ -197,9 +197,9 @@ export default function GearvnImportModal({
             </div>
           </div>
 
-          {/* Form */}
+          {}
           <div className="flex flex-col gap-4 border border-[#e2e8f0] rounded-[12px] p-5 bg-slate-50/50">
-            {/* URL Input */}
+            {}
             <div className="flex flex-col gap-1.5">
               <label className="text-[13px] font-semibold text-[#334155] uppercase tracking-wider">
                 URL sản phẩm GearVN
@@ -225,7 +225,7 @@ export default function GearvnImportModal({
               )}
             </div>
 
-            {/* Category Select */}
+            {}
             <div className="flex flex-col gap-1.5">
               <label className="text-[13px] font-semibold text-[#334155] uppercase tracking-wider">
                 Danh mục lưu trữ
@@ -256,7 +256,7 @@ export default function GearvnImportModal({
               )}
             </div>
 
-            {/* Action Preview */}
+            {}
             <div className="flex justify-end pt-1">
               <button
                 type="button"
@@ -279,7 +279,7 @@ export default function GearvnImportModal({
             </div>
           </div>
 
-          {/* Preview Error */}
+          {}
           {previewError && (
             <div className="flex items-center gap-2.5 bg-red-50 border border-red-200 text-red-700 rounded-[10px] px-4 py-3 text-[13px]">
               <AlertCircle className="size-4 shrink-0" />
@@ -287,7 +287,7 @@ export default function GearvnImportModal({
             </div>
           )}
 
-          {/* Crawled Details Preview */}
+          {}
           {previewData && (
             <div className="border border-green-200 rounded-[12px] bg-green-50/10 overflow-hidden">
               <button
@@ -311,7 +311,7 @@ export default function GearvnImportModal({
 
               {expandedPreview && (
                 <div className="p-5 flex flex-col gap-5 border-t border-slate-100 bg-white">
-                  {/* Basic product card preview */}
+                  {}
                   <div className="flex gap-4">
                     {previewData.thumbnailUrl && (
                       <div className="w-24 h-24 bg-white border border-[#e2e8f0] rounded-[8px] overflow-hidden flex items-center justify-center shrink-0 p-1">
@@ -350,7 +350,7 @@ export default function GearvnImportModal({
                     </div>
                   </div>
 
-                  {/* Specs Map */}
+                  {}
                   {Object.keys(previewData.specs).length > 0 && (
                     <div className="flex flex-col gap-2">
                       <h5 className="text-[12px] font-bold text-[#334155] uppercase tracking-wider">
@@ -384,7 +384,7 @@ export default function GearvnImportModal({
                     </div>
                   )}
 
-                  {/* Note about description / price editing */}
+                  {}
                   <div className="flex items-start gap-2.5 bg-amber-50 border border-amber-200 rounded-[10px] px-4 py-3 text-[13px] text-amber-800">
                     <Info className="size-4 shrink-0 mt-0.5" />
                     <div>
@@ -402,7 +402,7 @@ export default function GearvnImportModal({
           )}
         </div>
 
-        {/* Footer */}
+        {}
         <div className="px-6 py-4 border-t border-[#e2e8f0] flex items-center justify-between sticky bottom-0 bg-white rounded-b-[16px]">
           <div className="text-[13px] text-[#64748b]">
             {previewData ? (

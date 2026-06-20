@@ -22,13 +22,15 @@ import {
   Phone,
   User,
   Ticket,
+  CreditCard,
+  Coins,
 } from "lucide-react";
 import { useCartStore } from "@/lib/store";
 import { useAuthStore } from "@/lib/store";
-import { orderAPI, OrderRequest, DeliveryType, couponAPI } from "@/lib/api";
+import { orderAPI, OrderRequest, DeliveryType, couponAPI, PaymentMethod } from "@/lib/api";
 import toast from "react-hot-toast";
 
-// ─── Helpers ──────────────────────────────────────────────────────────────────
+
 function formatPrice(price: number): string {
   return price.toLocaleString("vi-VN") + "₫";
 }
@@ -39,7 +41,7 @@ function getImageSrc(url: string | null | undefined): string | null {
   return `http://localhost:8080${url}`;
 }
 
-// ─── Order Success Modal ──────────────────────────────────────────────────────
+
 function OrderSuccessModal({
   orderId,
   total,
@@ -54,7 +56,7 @@ function OrderSuccessModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4">
       <div className="bg-white rounded-[24px] shadow-2xl w-full max-w-[420px] overflow-hidden">
-        {/* Header gradient */}
+        {}
         <div className="bg-gradient-to-br from-emerald-400 to-emerald-600 p-8 flex flex-col items-center">
           <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center mb-4">
             <CheckCircle2 className="size-9 text-white" />
@@ -115,7 +117,7 @@ function OrderSuccessModal({
   );
 }
 
-// ─── Clear Cart Confirm Modal ─────────────────────────────────────────────────
+
 function ClearCartModal({
   onConfirm,
   onCancel,
@@ -162,7 +164,7 @@ function ClearCartModal({
   );
 }
 
-// ─── Cart Item Row ────────────────────────────────────────────────────────────
+
 function CartItemRow({
   item,
   onRemove,
@@ -205,7 +207,7 @@ function CartItemRow({
           : "border-[#e8ecf2] hover:border-[#0058be]/30 hover:shadow-sm"
       }`}
     >
-      {/* Product image */}
+      {}
       <Link
         href={`/explore/${item.productId}`}
         className="shrink-0 w-[88px] h-[88px] bg-[#f7f9fb] rounded-[12px] flex items-center justify-center overflow-hidden border border-[#f1f5f9] hover:border-[#0058be]/40 transition-colors"
@@ -222,7 +224,7 @@ function CartItemRow({
         )}
       </Link>
 
-      {/* Info */}
+      {}
       <div className="flex-1 min-w-0 flex flex-col gap-1.5">
         <Link
           href={`/explore/${item.productId}`}
@@ -231,7 +233,7 @@ function CartItemRow({
           {item.productName}
         </Link>
 
-        {/* Stock warning */}
+        {}
         {isOutOfStock && (
           <div className="flex items-center gap-1.5 text-[11px] font-semibold text-red-500">
             <AlertCircle className="size-3.5 shrink-0" />
@@ -245,9 +247,9 @@ function CartItemRow({
           </div>
         )}
 
-        {/* Bottom row: qty controls + price */}
+        {}
         <div className="flex items-center justify-between gap-3 mt-auto pt-1.5 flex-wrap">
-          {/* Quantity stepper */}
+          {}
           <div className="flex items-center gap-0 bg-[#f8fafc] border border-[#e2e8f0] rounded-[10px] overflow-hidden">
             <button
               type="button"
@@ -278,7 +280,7 @@ function CartItemRow({
             </button>
           </div>
 
-          {/* Line price */}
+          {}
           <div className="flex items-center gap-3">
             {hasDiscount ? (
               <div className="flex flex-col items-end">
@@ -310,7 +312,7 @@ function CartItemRow({
   );
 }
 
-// ─── Empty Cart ───────────────────────────────────────────────────────────────
+
 function EmptyCart() {
   return (
     <div className="flex flex-col items-center justify-center py-20 gap-5">
@@ -341,7 +343,7 @@ function EmptyCart() {
   );
 }
 
-// ─── Skeleton ─────────────────────────────────────────────────────────────────
+
 function CartSkeleton() {
   return (
     <div className="flex flex-col gap-3 animate-pulse">
@@ -365,7 +367,7 @@ function CartSkeleton() {
   );
 }
 
-// ─── Main Cart Page ───────────────────────────────────────────────────────────
+
 export default function CartPage() {
   const { user, isHydrated, hydrate } = useAuthStore();
   const { items, isLoading, fetchCart, removeItem, updateQuantity, clearCart } =
@@ -383,23 +385,24 @@ export default function CartPage() {
     deliveryType: DeliveryType;
   } | null>(null);
 
-  // Delivery option state
+  
   const [deliveryType, setDeliveryType] =
     useState<DeliveryType>("SHOWROOM_PICKUP");
   const [recipientName, setRecipientName] = useState("");
   const [recipientPhone, setRecipientPhone] = useState("");
   const [shippingAddress, setShippingAddress] = useState("");
+  const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("COD");
 
-  // Coupon state
+  
   const [couponCodeInput, setCouponCodeInput] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState<any | null>(null);
   const [isValidatingCoupon, setIsValidatingCoupon] = useState(false);
   const [couponError, setCouponError] = useState("");
 
-  // Hydrate auth + fetch cart on mount
+  
   useEffect(() => {
     hydrate();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []); 
 
   useEffect(() => {
     if (isHydrated && user) {
@@ -407,7 +410,7 @@ export default function CartPage() {
     }
   }, [isHydrated, user, fetchCart]);
 
-  // Computed totals
+  
   const subtotal = items.reduce((sum, item) => {
     const price =
       item.productDiscountPrice !== null &&
@@ -536,14 +539,20 @@ export default function CartPage() {
         shippingAddress:
           deliveryType === "HOME_DELIVERY" ? shippingAddress.trim() : undefined,
         couponCode: appliedCoupon ? appliedCoupon.code : undefined,
+        paymentMethod,
       };
       const order = await orderAPI.create(request);
-      await clearCart();
-      setOrderSuccess({
-        id: order.id,
-        total: Number(order.totalAmount),
-        deliveryType,
-      });
+      if (paymentMethod === "VNPAY") {
+        const { paymentUrl } = await orderAPI.getPaymentUrl(order.id);
+        window.location.href = paymentUrl;
+      } else {
+        await clearCart();
+        setOrderSuccess({
+          id: order.id,
+          total: Number(order.totalAmount),
+          deliveryType,
+        });
+      }
     } catch (err: unknown) {
       const message =
         err instanceof Error
@@ -555,7 +564,7 @@ export default function CartPage() {
     }
   }
 
-  // ── Unauthenticated state ──────────────────────────────────────────────────
+  
   if (isHydrated && !user) {
     return (
       <div
@@ -604,7 +613,7 @@ export default function CartPage() {
         background: "linear-gradient(180deg, #f7f9fb 0%, #f0f4fa 100%)",
       }}
     >
-      {/* ── Hero banner ──────────────────────────────────────────────────────── */}
+      {}
       <div className="bg-gradient-to-r from-[#0047a3] via-[#0058be] to-[#2170e4] text-white py-10 px-8">
         <div className="max-w-[1000px] mx-auto">
           <div className="flex items-center gap-2 text-[12px] text-blue-200 mb-3">
@@ -632,9 +641,9 @@ export default function CartPage() {
         </div>
       </div>
 
-      {/* ── Content ───────────────────────────────────────────────────────────── */}
+      {}
       <div className="max-w-[1000px] mx-auto px-4 sm:px-6 py-8">
-        {/* Loading */}
+        {}
         {isLoading && items.length === 0 ? (
           <CartSkeleton />
         ) : items.length === 0 ? (
@@ -643,9 +652,9 @@ export default function CartPage() {
           </div>
         ) : (
           <div className="flex flex-col lg:flex-row gap-6 items-start">
-            {/* ── Left: Cart items ─────────────────────────────────────────────── */}
+            {}
             <div className="flex-1 min-w-0 flex flex-col gap-4">
-              {/* Header row */}
+              {}
               <div className="flex items-center justify-between">
                 <p className="text-[13px] text-[#64748b] font-medium">
                   <span className="font-bold text-[#0f172a]">
@@ -663,7 +672,7 @@ export default function CartPage() {
                 </button>
               </div>
 
-              {/* Out-of-stock notice */}
+              {}
               {hasOutOfStock && (
                 <div className="flex items-start gap-3 bg-amber-50 border border-amber-200 rounded-[12px] px-4 py-3">
                   <AlertCircle className="size-4 text-amber-500 shrink-0 mt-0.5" />
@@ -674,7 +683,7 @@ export default function CartPage() {
                 </div>
               )}
 
-              {/* Items */}
+              {}
               <div className="flex flex-col gap-3">
                 {items.map((item) => (
                   <CartItemRow
@@ -688,7 +697,7 @@ export default function CartPage() {
                 ))}
               </div>
 
-              {/* Continue shopping */}
+              {}
               <Link
                 href="/explore"
                 className="inline-flex items-center gap-1.5 text-[13px] text-[#64748b] hover:text-[#0058be] transition-colors mt-1 w-fit"
@@ -698,10 +707,10 @@ export default function CartPage() {
               </Link>
             </div>
 
-            {/* ── Right: Order summary ─────────────────────────────────────────── */}
+            {}
             <div className="w-full lg:w-[320px] shrink-0 sticky top-[88px]">
               <div className="bg-white rounded-[20px] border border-[#e8ecf2] shadow-sm overflow-hidden">
-                {/* Summary header */}
+                {}
                 <div className="bg-gradient-to-r from-[#0047a3] to-[#0058be] px-5 py-4">
                   <h2 className="text-[15px] font-bold text-white">
                     Tóm tắt đơn hàng
@@ -709,7 +718,7 @@ export default function CartPage() {
                 </div>
 
                 <div className="p-5 flex flex-col gap-4">
-                  {/* Item breakdown */}
+                  {}
                   <div className="flex flex-col gap-2.5">
                     {items.map((item) => (
                       <div
@@ -743,7 +752,7 @@ export default function CartPage() {
 
                   <div className="h-px bg-[#f1f5f9]" />
 
-                  {/* Subtotal */}
+                  {}
                   <div className="flex items-center justify-between">
                     <span className="text-[13px] text-[#475569] font-medium">
                       Tạm tính
@@ -753,7 +762,7 @@ export default function CartPage() {
                     </span>
                   </div>
 
-                  {/* Delivery Options */}
+                  {}
                   <div className="flex flex-col gap-3">
                     <p className="text-[13px] font-bold text-[#0f172a]">
                       Hình thức nhận hàng
@@ -785,7 +794,7 @@ export default function CartPage() {
                       </button>
                     </div>
 
-                    {/* Showroom address */}
+                    {}
                     {deliveryType === "SHOWROOM_PICKUP" && (
                       <div className="flex items-start gap-2 bg-blue-50 border border-blue-100 rounded-[10px] px-3 py-2.5">
                         <MapPin className="size-3.5 text-[#0058be] shrink-0 mt-0.5" />
@@ -797,7 +806,7 @@ export default function CartPage() {
                       </div>
                     )}
 
-                    {/* Home delivery form */}
+                    {}
                     {deliveryType === "HOME_DELIVERY" && (
                       <div className="flex flex-col gap-2">
                         <div className="relative">
@@ -836,7 +845,94 @@ export default function CartPage() {
 
                   <div className="h-px bg-[#f1f5f9]" />
 
-                  {/* Coupon validation box */}
+                  {/* Phương thức thanh toán */}
+                  <div className="flex flex-col gap-3">
+                    <p className="text-[13px] font-bold text-[#0f172a]">
+                      Phương thức thanh toán
+                    </p>
+                    <div className="flex flex-col gap-2">
+                      {/* COD Option */}
+                      <label
+                        onClick={() => setPaymentMethod("COD")}
+                        className={`flex items-center gap-3 p-3 rounded-[12px] border transition-all duration-200 cursor-pointer ${
+                          paymentMethod === "COD"
+                            ? "border-[#0058be] bg-[#eff6ff]/40 shadow-sm"
+                            : "border-[#e2e8f0] bg-white hover:border-[#cbd5e1]"
+                        }`}
+                      >
+                        <div className="relative flex items-center justify-center shrink-0">
+                          <input
+                            type="radio"
+                            name="paymentMethod"
+                            checked={paymentMethod === "COD"}
+                            onChange={() => setPaymentMethod("COD")}
+                            className="sr-only"
+                          />
+                          <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition-all ${
+                            paymentMethod === "COD" ? "border-[#0058be] bg-[#0058be]" : "border-[#cbd5e1] bg-white"
+                          }`}>
+                            {paymentMethod === "COD" && (
+                              <div className="w-1.5 h-1.5 rounded-full bg-white" />
+                            )}
+                          </div>
+                        </div>
+                        
+                        <div className={`p-1.5 rounded-lg ${paymentMethod === 'COD' ? 'bg-[#0058be]/10 text-[#0058be]' : 'bg-slate-50 text-slate-500'}`}>
+                          <Coins className="size-4 shrink-0" />
+                        </div>
+                        
+                        <div className="flex-1 min-w-0">
+                          <p className="text-[12px] font-bold text-[#0f172a] leading-tight">Thanh toán khi nhận hàng (COD)</p>
+                          <p className="text-[10px] text-slate-500 font-normal mt-0.5">Thanh toán tiền mặt khi nhận hàng</p>
+                        </div>
+                      </label>
+
+                      {/* VNPay Option */}
+                      <label
+                        onClick={() => setPaymentMethod("VNPAY")}
+                        className={`flex items-center gap-3 p-3 rounded-[12px] border transition-all duration-200 cursor-pointer ${
+                          paymentMethod === "VNPAY"
+                            ? "border-[#0058be] bg-[#eff6ff]/40 shadow-sm"
+                            : "border-[#e2e8f0] bg-white hover:border-[#cbd5e1]"
+                        }`}
+                      >
+                        <div className="relative flex items-center justify-center shrink-0">
+                          <input
+                            type="radio"
+                            name="paymentMethod"
+                            checked={paymentMethod === "VNPAY"}
+                            onChange={() => setPaymentMethod("VNPAY")}
+                            className="sr-only"
+                          />
+                          <div className={`w-4 h-4 rounded-full border flex items-center justify-center transition-all ${
+                            paymentMethod === "VNPAY" ? "border-[#0058be] bg-[#0058be]" : "border-[#cbd5e1] bg-white"
+                          }`}>
+                            {paymentMethod === "VNPAY" && (
+                              <div className="w-1.5 h-1.5 rounded-full bg-white" />
+                            )}
+                          </div>
+                        </div>
+
+                        <div className={`p-1.5 rounded-lg ${paymentMethod === 'VNPAY' ? 'bg-[#0058be]/10 text-[#0058be]' : 'bg-slate-50 text-slate-500'}`}>
+                          <CreditCard className="size-4 shrink-0" />
+                        </div>
+
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-1.5">
+                            <p className="text-[12px] font-bold text-[#0f172a] leading-tight">Ví điện tử / Thẻ VNPay QR</p>
+                            <span className="text-[8px] bg-red-500 text-white font-bold px-1.5 py-0.5 rounded uppercase tracking-wider scale-90 origin-left select-none">
+                              Online
+                            </span>
+                          </div>
+                          <p className="text-[10px] text-slate-500 font-normal mt-0.5">Thẻ ATM, Visa, QR Code...</p>
+                        </div>
+                      </label>
+                    </div>
+                  </div>
+
+                  <div className="h-px bg-[#f1f5f9]" />
+
+                  {}
                   <div className="flex flex-col gap-2">
                     <p className="text-[13px] font-bold text-[#0f172a] flex items-center gap-1.5">
                       <Ticket className="size-4 text-[#0058be]" />
@@ -905,7 +1001,7 @@ export default function CartPage() {
 
                   <div className="h-px bg-[#f1f5f9]" />
 
-                  {/* Total */}
+                  {}
                   <div className="flex items-center justify-between">
                     <span className="text-[15px] font-bold text-[#0f172a]">
                       Tổng cộng
@@ -915,14 +1011,14 @@ export default function CartPage() {
                     </span>
                   </div>
 
-                  {/* Out-of-stock note */}
+                  {}
                   {hasOutOfStock && (
                     <p className="text-[11px] text-amber-600 bg-amber-50 rounded-[8px] px-3 py-2 font-medium">
                       * Sản phẩm hết hàng sẽ bị bỏ qua khi đặt hàng
                     </p>
                   )}
 
-                  {/* Place order button */}
+                  {}
                   <button
                     id="place-order-btn"
                     type="button"
@@ -945,7 +1041,7 @@ export default function CartPage() {
                     )}
                   </button>
 
-                  {/* Login prompt for guest */}
+                  {}
                   {isHydrated && !user && (
                     <p className="text-[12px] text-[#94a3b8] text-center">
                       <Link
@@ -960,7 +1056,7 @@ export default function CartPage() {
                 </div>
               </div>
 
-              {/* Trust badges */}
+              {}
               <div className="mt-4 bg-white rounded-[16px] border border-[#e8ecf2] shadow-sm p-4 flex flex-col gap-3">
                 {[
                   { icon: "🔒", text: "Thanh toán bảo mật 100%" },
@@ -981,7 +1077,7 @@ export default function CartPage() {
         )}
       </div>
 
-      {/* ── Modals ─────────────────────────────────────────────────────────────── */}
+      {}
       {showClearModal && (
         <ClearCartModal
           onConfirm={handleClearCart}

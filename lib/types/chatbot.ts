@@ -1,6 +1,4 @@
-/**
- * TypeScript types cho hệ thống Chatbot RAG (Ollama + PGVector)
- */
+
 
 export interface RecommendedProduct {
   id: number;

@@ -40,7 +40,7 @@ export default function PromotionsListPage() {
           background: "linear-gradient(180deg, #f7f9fb 0%, #f0f4fa 100%)",
         }}
       >
-        {/* Banner Hero (Minimalist Modern Design) */}
+        {}
         <div className="bg-white border-b border-[#e2e8f0]/60 py-10 px-8">
           <div className="max-w-[1200px] mx-auto flex flex-col gap-2.5">
             <div className="flex items-center gap-2 text-[12px] text-[#64748b] font-semibold">
@@ -64,7 +64,7 @@ export default function PromotionsListPage() {
           </div>
         </div>
 
-        {/* Content list */}
+        {}
         <div className="max-w-[1200px] mx-auto px-4 sm:px-6 lg:px-8 py-12">
           {loading ? (
             <div className="flex items-center justify-center py-20 text-[#64748b]">
@@ -107,7 +107,7 @@ export default function PromotionsListPage() {
                     href={`/promotions/${p.slug}`}
                     className="bg-white rounded-[20px] border border-[#e8ecf2] overflow-hidden flex flex-col hover:shadow-xl hover:-translate-y-1 hover:border-[#0058be]/30 transition-all duration-300 group"
                   >
-                    {/* Banner Area */}
+                    {}
                     <div className="h-[200px] bg-[#f8fafc] relative overflow-hidden flex items-center justify-center border-b border-[#f1f5f9]">
                       {bannerSrc ? (
                         <img
@@ -124,19 +124,19 @@ export default function PromotionsListPage() {
                         </div>
                       )}
 
-                      {/* Discount Stamp */}
+                      {}
                       <div className="absolute bottom-4 left-4 bg-red-500 text-white font-black text-[20px] px-3.5 py-1.5 rounded-[12px] shadow-md flex items-baseline gap-0.5">
                         -{p.discountPercent}
                         <span className="text-[12px] font-bold">%</span>
                       </div>
 
-                      {/* Active tag */}
+                      {}
                       <span className="absolute top-4 right-4 bg-emerald-500 text-white text-[10px] font-extrabold px-2.5 py-1 rounded-full uppercase tracking-wider shadow-sm">
                         Đang diễn ra
                       </span>
                     </div>
 
-                    {/* Content Detail */}
+                    {}
                     <div className="p-6 flex flex-col gap-4 flex-1">
                       <h3 className="font-extrabold text-[18px] text-[#0f172a] leading-snug line-clamp-1 group-hover:text-[#0058be] transition-colors">
                         {p.name}

@@ -5,7 +5,7 @@ import { Loader2, RefreshCw, Search, Filter, Plus } from "lucide-react";
 import { adminAPI, InventoryBatchResponse, IssueSlipResponse } from "@/lib/api";
 import toast from "react-hot-toast";
 
-// Subcomponents
+
 import BatchList from "@/components/dashboard/inventory/BatchList";
 import PurchaseOrderList from "@/components/dashboard/inventory/PurchaseOrderList";
 import IssueSlipList from "@/components/dashboard/inventory/IssueSlipList";
@@ -28,27 +28,27 @@ export default function InventoryPage() {
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
-  // Batches pagination
+  
   const [batchesPage, setBatchesPage] = useState(0);
   const [batchesSize] = useState(10);
   const [batchesTotalPages, setBatchesTotalPages] = useState(0);
   const [batchesTotalElements, setBatchesTotalElements] = useState(0);
 
-  // Slips pagination
+  
   const [slipsPage, setSlipsPage] = useState(0);
   const [slipsSize] = useState(10);
   const [slipsTotalPages, setSlipsTotalPages] = useState(0);
   const [slipsTotalElements, setSlipsTotalElements] = useState(0);
 
-  // Batches filter
+  
   const [hideOutOfStock, setHideOutOfStock] = useState(false);
 
-  // Slips filter
+  
   const [statusFilter, setStatusFilter] = useState<
     "ALL" | "PENDING" | "COMPLETED"
   >("ALL");
 
-  // Modals state
+  
   const [selectedSlip, setSelectedSlip] = useState<IssueSlipResponse | null>(
     null,
   );
@@ -58,7 +58,7 @@ export default function InventoryPage() {
   const [savingPrices, setSavingPrices] = useState(false);
   const [dispatchingId, setDispatchingId] = useState<number | null>(null);
 
-  // Fetch data
+  
   const fetchData = useCallback(
     async (isRefresh = false) => {
       if (isRefresh) {
@@ -103,17 +103,17 @@ export default function InventoryPage() {
     return () => clearTimeout(timer);
   }, [fetchData]);
 
-  // Handle Dispatch Slip
+  
   const handleDispatch = async (slipId: number) => {
     setDispatchingId(slipId);
     try {
       const updatedSlip = await adminAPI.dispatchIssueSlip(slipId);
       toast.success(`Đã xuất kho thành công phiếu #${updatedSlip.code}!`);
 
-      // Update local state
+      
       setSlips((prev) => prev.map((s) => (s.id === slipId ? updatedSlip : s)));
 
-      // Update modal state if open
+      
       if (selectedSlip && selectedSlip.id === slipId) {
         setSelectedSlip(updatedSlip);
       }
@@ -126,7 +126,7 @@ export default function InventoryPage() {
     }
   };
 
-  // Handle Price Editing Save
+  
   const handleSavePrices = async (
     batchId: number,
     importPrice: number,
@@ -137,7 +137,7 @@ export default function InventoryPage() {
       await adminAPI.updateInventoryPrices(batchId, importPrice, sellingPrice);
       toast.success("Cập nhật giá thành công!");
       setEditingBatch(null);
-      fetchData(true); // reload inventory batches
+      fetchData(true); 
     } catch (e: unknown) {
       toast.error(e instanceof Error ? e.message : "Cập nhật giá thất bại");
     } finally {
@@ -150,16 +150,12 @@ export default function InventoryPage() {
       className="flex flex-col gap-6"
       style={{ fontFamily: "Inter, sans-serif" }}
     >
-      {/* Page Header */}
+      {}
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-[#0f172a] text-[24px] font-semibold tracking-[-0.5px]">
-            Quản lý kho hàng
+            Quản lý kho
           </h2>
-          <p className="text-[#64748b] text-[14px] mt-1">
-            Theo dõi tồn kho theo lô nhập (FIFO), chỉnh sửa giá bán và phê duyệt
-            các phiếu xuất kho bán lẻ.
-          </p>
         </div>
 
         <button
@@ -174,7 +170,7 @@ export default function InventoryPage() {
         </button>
       </div>
 
-      {/* Tabs Switcher */}
+      {}
       <div className="flex border-b border-[#e2e8f0] gap-8">
         <button
           onClick={() => {
@@ -226,9 +222,9 @@ export default function InventoryPage() {
         </button>
       </div>
 
-      {/* Toolbar / Search & Filters */}
+      {}
       <div className="flex flex-col md:flex-row items-center justify-between bg-white p-4 rounded-[12px] border border-[#e2e8f0] gap-4 shadow-sm">
-        {/* Search Input */}
+        {}
         <div className="relative w-full md:w-[320px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-[#94a3b8]" />
           <input
@@ -246,7 +242,7 @@ export default function InventoryPage() {
           />
         </div>
 
-        {/* Tab Specific Filters */}
+        {}
         {activeTab === "batches" ? (
           <label className="flex items-center gap-2 text-[14px] text-[#475569] font-medium select-none cursor-pointer">
             <input
@@ -299,7 +295,7 @@ export default function InventoryPage() {
         )}
       </div>
 
-      {/* Main Content Area */}
+      {}
       {loading && activeTab !== "purchase-orders" ? (
         <div className="bg-white border border-[#e2e8f0] rounded-[12px] py-24 flex flex-col items-center justify-center gap-2 shadow-sm">
           <Loader2 className="size-6 text-[#0058be] animate-spin" />
@@ -342,7 +338,7 @@ export default function InventoryPage() {
         />
       )}
 
-      {/* Modals */}
+      {}
       {selectedSlip && (
         <IssueSlipDetailModal
           slip={selectedSlip}

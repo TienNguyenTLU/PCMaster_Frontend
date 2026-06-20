@@ -51,7 +51,7 @@ export default function IssueSlipDetailModal({
         className="bg-white rounded-[12px] shadow-xl w-full max-w-[650px] max-h-[90vh] flex flex-col overflow-hidden border border-[#e2e8f0]"
         style={{ fontFamily: "Inter, sans-serif" }}
       >
-        {/* Modal Header */}
+        {}
         <div className="border-b border-[#e2e8f0] px-6 py-4 flex items-center justify-between bg-[#f8fafc]">
           <div>
             <h2 className="text-[#0f172a] text-[18px] font-semibold tracking-[-0.3px]">
@@ -82,9 +82,9 @@ export default function IssueSlipDetailModal({
           </div>
         </div>
 
-        {/* Modal Content */}
+        {}
         <div className="flex-1 overflow-y-auto p-6 space-y-6">
-          {/* Slip Metadata Card */}
+          {}
           <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[8px] p-4 grid grid-cols-1 md:grid-cols-2 gap-4 text-[13px]">
             {slip.orderId ? (
               <>
@@ -177,7 +177,7 @@ export default function IssueSlipDetailModal({
             </div>
           </div>
 
-          {/* Items List */}
+          {}
           <div>
             <h3 className="text-[11px] font-bold text-[#64748b] uppercase tracking-[0.8px] mb-2.5 flex items-center gap-1.5">
               <Layers className="size-3.5 text-[#0058be]" />
@@ -216,7 +216,7 @@ export default function IssueSlipDetailModal({
           </div>
         </div>
 
-        {/* Modal Footer Actions */}
+        {}
         <div className="bg-[#f8fafc] border-t border-[#e2e8f0] px-6 py-4 flex items-center justify-between gap-3">
           <button
             onClick={onClose}

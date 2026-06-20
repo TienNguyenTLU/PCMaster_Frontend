@@ -1,7 +1,7 @@
 import { MapPin, Phone, Mail, ChevronRight, Cpu } from "lucide-react";
 import Link from "next/link";
 
-// Robust, type-safe custom inline SVG components for brands
+
 const FacebookIcon = (props: React.SVGProps<SVGSVGElement>) => (
   <svg
     viewBox="0 0 24 24"
@@ -75,14 +75,11 @@ export default function AuthFooter() {
       className="bg-[#f8fafc] text-[#475569] border-t border-[#e2e8f0] w-full"
       style={{ fontFamily: "Inter, sans-serif" }}
     >
-      {/* Upper Main Footer Grid */}
+      {}
       <div className="max-w-[1400px] mx-auto px-8 py-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
-        {/* Brand & Address Column */}
+        {}
         <div className="flex flex-col gap-6">
           <div className="flex items-center gap-2.5">
-            <div className="p-2 bg-gradient-to-tr from-[#0058be] to-[#2563eb] rounded-[10px] text-white">
-              <Cpu className="size-6" />
-            </div>
             <span className="text-[#0f172a] text-[22px] font-black tracking-tight uppercase">
               PC<span className="text-[#0058be]">Master</span>
             </span>
@@ -114,7 +111,7 @@ export default function AuthFooter() {
           </div>
         </div>
 
-        {/* Column 2: Products */}
+        {}
         <div className="flex flex-col gap-6">
           <h4 className="text-[#0f172a] text-[12px] font-black uppercase tracking-[1.5px] border-l-2 border-[#0058be] pl-3">
             Linh Kiện Cao Cấp
@@ -144,7 +141,7 @@ export default function AuthFooter() {
           </ul>
         </div>
 
-        {/* Column 3: Customer Service */}
+        {}
         <div className="flex flex-col gap-6">
           <h4 className="text-[#0f172a] text-[12px] font-black uppercase tracking-[1.5px] border-l-2 border-[#0058be] pl-3">
             Dịch vụ & Hỗ trợ
@@ -153,7 +150,6 @@ export default function AuthFooter() {
             {[
               "Dịch vụ khách hàng",
               "Chính sách bảo hành vàng",
-              "Phương thức thanh toán",
               "Chính sách vận chuyển",
               "Bảo mật thông tin khách hàng",
               "Điều khoản sử dụng dịch vụ",
@@ -171,7 +167,7 @@ export default function AuthFooter() {
           </ul>
         </div>
 
-        {/* Column 4: Newsletter & Trust badges */}
+        {}
         <div className="flex flex-col gap-6">
           <h4 className="text-[#0f172a] text-[12px] font-black uppercase tracking-[1.5px] border-l-2 border-[#0058be] pl-3">
             Đăng Ký Nhận Tin
@@ -196,33 +192,16 @@ export default function AuthFooter() {
             </button>
           </div>
 
-          {/* Trust Payment Badge icons */}
-          <div className="flex flex-col gap-3 mt-2">
-            <span className="text-[11.5px] font-bold uppercase tracking-[1px] text-[#475569]">
-              Phương thức thanh toán
-            </span>
-            <div className="flex flex-wrap gap-2 text-[10px] font-black text-[#475569]">
-              {["VISA", "MASTERCARD", "JCB", "QR-PAY", "APPLE PAY"].map(
-                (pay, i) => (
-                  <span
-                    key={i}
-                    className="px-2 py-1 bg-white border border-[#cbd5e1] text-[#475569] rounded-[4px] font-mono tracking-wider text-[10.5px] hover:border-[#0058be] hover:text-[#0058be] transition-colors cursor-default"
-                  >
-                    {pay}
-                  </span>
-                ),
-              )}
-            </div>
-          </div>
+
         </div>
       </div>
 
-      {/* Middle Grid Divider Line */}
+      {}
       <div className="max-w-[1400px] mx-auto border-t border-[#e2e8f0] px-8"></div>
 
-      {/* Bottom Footer Row */}
+      {}
       <div className="max-w-[1400px] mx-auto px-8 py-8 flex flex-col md:flex-row justify-between items-center gap-6">
-        {/* Copyright */}
+        {}
         <p className="text-[12px] text-[#64748b] text-center md:text-left">
           © {new Date().getFullYear()}{" "}
           <span className="text-[#334155] font-semibold">
@@ -231,7 +210,7 @@ export default function AuthFooter() {
           . Bảo lưu mọi quyền.
         </p>
 
-        {/* Social Icons row */}
+        {}
         <div className="flex items-center gap-3">
           {[
             { Icon: FacebookIcon, href: "#", label: "Facebook" },

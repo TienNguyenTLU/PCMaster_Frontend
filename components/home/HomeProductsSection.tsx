@@ -41,11 +41,11 @@ export default function HomeProductsSection({
       .then((res) => {
         let list = res.content || [];
 
-        // Filter out of stock products
+        
         list = list.filter((p) => p.stock > 0);
 
         if (type === "new") {
-          // Sort by creation date desc (recently imported)
+          
           list = [...list]
             .sort((a, b) => {
               const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
@@ -54,7 +54,7 @@ export default function HomeProductsSection({
             })
             .slice(0, 4);
         } else if (type === "sale") {
-          // Only show products that have active discounts from promotions
+          
           list = list.filter(
             (p) =>
               p.discountPercent !== null &&
@@ -62,7 +62,7 @@ export default function HomeProductsSection({
               p.discountPercent > 0,
           );
 
-          // Sort by highest discount percentage first
+          
           list = [...list]
             .sort((a, b) => (b.discountPercent || 0) - (a.discountPercent || 0))
             .slice(0, 4);
@@ -78,12 +78,12 @@ export default function HomeProductsSection({
   }, [type]);
 
   if (!loading && products.length === 0) {
-    return null; // hide section if no products are found
+    return null; 
   }
 
   return (
     <section className="flex flex-col gap-8 max-w-[1536px] w-full px-8">
-      {/* Section Header */}
+      {}
       <div className="flex flex-col gap-1.5 align-left">
         <h2
           className="text-[#191c1e] text-[28px] sm:text-[32px] tracking-[-1px] font-bold leading-tight"
@@ -99,7 +99,7 @@ export default function HomeProductsSection({
         </p>
       </div>
 
-      {/* Grid of Product Cards */}
+      {}
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6 w-full">
         {loading
           ? Array.from({ length: 4 }).map((_, idx) => (

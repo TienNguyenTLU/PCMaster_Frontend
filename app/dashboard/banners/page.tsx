@@ -26,7 +26,7 @@ export default function BannersPage() {
       setLoading(true);
       setError("");
       const data = await adminAPI.getBanners();
-      // Sort by displayOrder ascending
+      
       const sorted = [...data].sort((a, b) => a.displayOrder - b.displayOrder);
       setBanners(sorted);
     } catch {
@@ -66,15 +66,12 @@ export default function BannersPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Page Header */}
+      {}
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-[#0f172a] text-[24px] font-semibold tracking-[-0.5px]">
             Banner quảng cáo
           </h2>
-          <p className="text-[#64748b] text-[14px] mt-1">
-            Quản lý các banner hiển thị trên carousel của trang chủ.
-          </p>
         </div>
         <button
           onClick={handleCreate}
@@ -85,7 +82,7 @@ export default function BannersPage() {
         </button>
       </div>
 
-      {/* Grid View */}
+      {}
       {loading ? (
         <div className="bg-white border border-[#e2e8f0] rounded-[12px] h-[350px] flex flex-col items-center justify-center text-[#64748b]">
           <Loader2 className="size-8 animate-spin text-[#0058be] mb-3" />
@@ -111,7 +108,7 @@ export default function BannersPage() {
               key={banner.id}
               className="bg-white border border-[#e2e8f0] rounded-[16px] overflow-hidden shadow-sm hover:shadow-md transition-shadow flex flex-col group relative"
             >
-              {/* Banner image wrapper */}
+              {}
               <div className="aspect-[21/9] bg-gray-50 border-b border-[#e2e8f0] relative overflow-hidden flex items-center justify-center">
                 <img
                   src={banner.imageUrl}
@@ -123,7 +120,7 @@ export default function BannersPage() {
                 </span>
               </div>
 
-              {/* Info & Actions */}
+              {}
               <div className="p-4 flex flex-col flex-1 gap-3">
                 <div className="flex-1 min-w-0">
                   <span className="text-[11px] font-bold text-[#64748b] uppercase tracking-wider">
@@ -173,7 +170,7 @@ export default function BannersPage() {
         </div>
       )}
 
-      {/* Banner Form Modal */}
+      {}
       {isModalOpen && (
         <BannerFormModal
           banner={editingBanner}
@@ -272,7 +269,7 @@ function BannerFormModal({
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/55 backdrop-blur-xs p-4">
       <div className="bg-white rounded-[16px] shadow-2xl w-full max-w-lg flex flex-col mx-4 overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-        {/* Header */}
+        {}
         <div className="flex items-center justify-between px-6 py-4 border-b border-[#e2e8f0]">
           <h3 className="font-semibold text-[18px] text-[#0f172a]">
             {banner ? "Cập nhật Banner" : "Tạo Banner Mới"}
@@ -285,12 +282,12 @@ function BannerFormModal({
           </button>
         </div>
 
-        {/* Form */}
+        {}
         <form
           onSubmit={handleSubmit}
           className="p-6 flex flex-col gap-5 overflow-y-auto"
         >
-          {/* File Upload Section */}
+          {}
           <div className="flex flex-col gap-2">
             <label className="text-[13px] font-bold text-[#475569] uppercase tracking-wider">
               Hình Ảnh Banner *
@@ -342,7 +339,7 @@ function BannerFormModal({
             </div>
           </div>
 
-          {/* displayOrder Input */}
+          {}
           <div className="flex flex-col gap-1.5">
             <label className="text-[13px] font-bold text-[#475569] uppercase tracking-wider">
               Thứ Tự Hiển Thị *
@@ -370,7 +367,7 @@ function BannerFormModal({
             />
           </div>
 
-          {/* linkUrl Input */}
+          {}
           <div className="flex flex-col gap-1.5">
             <label className="text-[13px] font-bold text-[#475569] uppercase tracking-wider">
               Liên Kết Chuyển Hướng
@@ -387,7 +384,7 @@ function BannerFormModal({
             </p>
           </div>
 
-          {/* Buttons */}
+          {}
           <div className="flex justify-end gap-3 mt-4 border-t border-[#f1f5f9] pt-4">
             <button
               type="button"

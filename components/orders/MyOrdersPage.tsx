@@ -12,30 +12,38 @@ import {
   ChevronDown,
   ChevronUp,
   Package,
+  Loader2,
+  CreditCard,
+  CheckCircle2,
 } from "lucide-react";
 import {
   orderAPI,
   OrderResponse,
   OrderStatus,
+  PaymentStatus,
   adminAPI,
   Product,
 } from "@/lib/api";
 import { useAuthStore } from "@/lib/store";
 import Link from "next/link";
 import toast from "react-hot-toast";
+import {
+  STATUS_META,
+  PAYMENT_STATUS_META,
+  PAYMENT_METHOD_META,
+} from "@/lib/labelMapping";
 
 export default function MyOrdersPage() {
   const { user, isHydrated } = useAuthStore();
   const [orders, setOrders] = useState<OrderResponse[]>([]);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<OrderStatus | "ALL">("ALL");
+  const [payingOrderId, setPayingOrderId] = useState<number | null>(null);
 
-  // Track expanded cards for order item lists
   const [expandedOrders, setExpandedOrders] = useState<Record<number, boolean>>(
     {},
   );
 
-  // Track loaded products details to show thumbnails/names correctly
   const [productsCache, setProductsCache] = useState<Record<number, Product>>(
     {},
   );
@@ -47,12 +55,10 @@ export default function MyOrdersPage() {
       const data = await orderAPI.list();
       setOrders(data || []);
 
-      // Auto expand first order if exists
       if (data && data.length > 0) {
         setExpandedOrders({ [data[0].id]: true });
       }
 
-      // Load products in the orders to display details (names, thumbnails)
       const uniqueProdIds = Array.from(
         new Set(
           data
@@ -62,7 +68,6 @@ export default function MyOrdersPage() {
         ),
       );
 
-      // Populate cache in background
       for (const prodId of uniqueProdIds) {
         try {
           const prod = await adminAPI.getProductById(prodId);
@@ -80,10 +85,15 @@ export default function MyOrdersPage() {
   }, [user]);
 
   useEffect(() => {
-    if (isHydrated && user) {
-      fetchOrders();
-    } else if (isHydrated && !user) {
-      setLoading(false);
+    if (isHydrated) {
+      const timer = setTimeout(() => {
+        if (user) {
+          fetchOrders();
+        } else {
+          setLoading(false);
+        }
+      }, 0);
+      return () => clearTimeout(timer);
     }
   }, [isHydrated, user, fetchOrders]);
 
@@ -91,49 +101,62 @@ export default function MyOrdersPage() {
     setExpandedOrders((prev) => ({ ...prev, [orderId]: !prev[orderId] }));
   };
 
+  const handleRepay = async (orderId: number) => {
+    setPayingOrderId(orderId);
+    try {
+      const response = await orderAPI.getPaymentUrl(orderId);
+      if (response && response.paymentUrl) {
+        window.location.href = response.paymentUrl;
+      } else {
+        toast.error("Không lấy được đường dẫn thanh toán, vui lòng thử lại sau.");
+      }
+    } catch (err: unknown) {
+      const errorMsg =
+        err && typeof err === "object" && "response" in err
+          ? (err as any).response?.data?.message || (err as any).message
+          : err instanceof Error
+          ? err.message
+          : "Lỗi kết nối thanh toán.";
+      toast.error(errorMsg || "Lỗi kết nối thanh toán.");
+    } finally {
+      setPayingOrderId(null);
+    }
+  };
+
   const filteredOrders = orders.filter(
     (o) => activeTab === "ALL" || o.status === activeTab,
   );
 
   const getStatusBadge = (status: OrderStatus) => {
-    switch (status) {
-      case "DRAFT":
-        return (
-          <span className="px-3 py-1 text-[11px] font-black rounded-full bg-amber-50 text-amber-600 border border-amber-100">
-            Chờ duyệt
-          </span>
-        );
-      case "CONFIRMED":
-        return (
-          <span className="px-3 py-1 text-[11px] font-black rounded-full bg-blue-50 text-blue-600 border border-blue-100">
-            Đã duyệt
-          </span>
-        );
-      case "SHIPPED":
-        return (
-          <span className="px-3 py-1 text-[11px] font-black rounded-full bg-purple-50 text-purple-600 border border-purple-100">
-            Đang giao
-          </span>
-        );
-      case "DELIVERED":
-        return (
-          <span className="px-3 py-1 text-[11px] font-black rounded-full bg-emerald-50 text-emerald-600 border border-emerald-100 font-bold">
-            Đã giao
-          </span>
-        );
-      case "CANCELLED":
-        return (
-          <span className="px-3 py-1 text-[11px] font-black rounded-full bg-red-50 text-red-600 border border-red-100">
-            Đã hủy
-          </span>
-        );
-      default:
-        return (
-          <span className="px-3 py-1 text-[11px] font-black rounded-full bg-slate-50 text-slate-600 border border-slate-100">
-            {status}
-          </span>
-        );
-    }
+    const meta = STATUS_META[status];
+    if (!meta)
+      return (
+        <span className="px-3 py-1 text-[11px] font-black rounded-full bg-slate-50 text-slate-600 border border-slate-100">
+          {status}
+        </span>
+      );
+    return (
+      <span className={`px-3 py-1 text-[11px] font-bold rounded-full ${meta.bg} ${meta.color} inline-flex items-center gap-1`}>
+        <meta.Icon className="size-3" />
+        {meta.label}
+      </span>
+    );
+  };
+
+  const getPaymentStatusBadge = (status: PaymentStatus) => {
+    const meta = PAYMENT_STATUS_META[status];
+    if (!meta)
+      return (
+        <span className="px-3 py-1 text-[11px] font-black rounded-full bg-slate-50 text-slate-600 border border-slate-100">
+          {status}
+        </span>
+      );
+    return (
+      <span className={`px-3 py-1 text-[11px] font-bold rounded-full ${meta.bg} ${meta.color} inline-flex items-center gap-1`}>
+        <meta.Icon className="size-3" />
+        {meta.label}
+      </span>
+    );
   };
 
   const getProductThumbnail = (productId: number) => {
@@ -168,7 +191,7 @@ export default function MyOrdersPage() {
         background: "linear-gradient(180deg, #f7f9fb 0%, #f0f4f8 100%)",
       }}
     >
-      {/* Header section */}
+      {/* Title */}
       <div className="w-full bg-white border-b border-[#e8ecf2] py-8 shadow-sm">
         <div className="max-w-[1000px] mx-auto px-6">
           <p className="text-[11px] font-bold text-[#0058be] uppercase tracking-[1.5px] mb-1">
@@ -187,9 +210,8 @@ export default function MyOrdersPage() {
         </div>
       </div>
 
-      {/* Main Container */}
+      {/* Main Content */}
       <div className="max-w-[1000px] mx-auto w-full px-6 py-8 flex flex-col gap-6 flex-1">
-        {/* Verification Check of Auth */}
         {!user ? (
           <div className="bg-white rounded-[24px] border border-[#e8ecf2] p-16 text-center flex flex-col items-center gap-4 shadow-sm my-8">
             <div className="p-4 bg-blue-50 text-[#0058be] rounded-full">
@@ -213,7 +235,7 @@ export default function MyOrdersPage() {
           </div>
         ) : (
           <>
-            {/* Status Filter Tabs */}
+            {/* Filter Tabs */}
             <div className="flex flex-wrap items-center bg-white p-1.5 rounded-[14px] border border-[#e8ecf2] shadow-sm gap-1 overflow-x-auto">
               {(
                 [
@@ -259,7 +281,7 @@ export default function MyOrdersPage() {
               })}
             </div>
 
-            {/* Orders list */}
+            {/* Orders List */}
             {filteredOrders.length === 0 ? (
               <div className="bg-white rounded-[24px] border border-[#e8ecf2] p-16 text-center flex flex-col items-center gap-4 shadow-sm my-4">
                 <span className="text-[48px]">📦</span>
@@ -288,7 +310,7 @@ export default function MyOrdersPage() {
                       key={order.id}
                       className="bg-white rounded-[20px] border border-[#e8ecf2] shadow-sm hover:shadow-md transition-shadow overflow-hidden flex flex-col"
                     >
-                      {/* Order Header Summary */}
+                      {/* Accordion Trigger */}
                       <div
                         onClick={() => toggleExpand(order.id)}
                         className="p-5 flex flex-wrap items-center justify-between gap-4 cursor-pointer hover:bg-slate-50/50 transition-colors select-none"
@@ -298,11 +320,12 @@ export default function MyOrdersPage() {
                             <ShoppingBag className="size-5" />
                           </div>
                           <div>
-                            <div className="flex items-center gap-2">
+                            <div className="flex flex-wrap items-center gap-2">
                               <span className="text-[14px] font-black text-[#0f172a]">
                                 Mã Đơn: #{order.id}
                               </span>
                               {getStatusBadge(order.status)}
+                              {order.paymentStatus && getPaymentStatusBadge(order.paymentStatus)}
                             </div>
                             <div className="flex items-center gap-3 mt-1 text-[11px] font-semibold text-[#94a3b8]">
                               <span className="flex items-center gap-1">
@@ -345,11 +368,12 @@ export default function MyOrdersPage() {
                         </div>
                       </div>
 
-                      {/* Collapsible Order details */}
+                      {/* Accordion Content */}
                       {isExpanded && (
                         <div className="border-t border-[#f1f5f9] bg-[#fdfefe]/40 p-5 flex flex-col gap-5 animate-dropdown origin-top">
-                          {/* Recipient and shipping address */}
+                          {/* Inner details grids */}
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-5 bg-[#f8fafc]/80 border border-slate-100 rounded-[14px] p-4 text-[12px] font-medium text-[#475569]">
+                            {/* Shipping information */}
                             <div className="flex flex-col gap-2">
                               <p className="text-[11px] font-bold text-[#0058be] uppercase tracking-[0.5px] mb-1">
                                 Thông tin nhận hàng
@@ -372,11 +396,6 @@ export default function MyOrdersPage() {
                                   </strong>
                                 </span>
                               </div>
-                            </div>
-                            <div className="flex flex-col gap-2 border-t md:border-t-0 md:border-l border-slate-100 pt-3 md:pt-0 md:pl-5">
-                              <p className="text-[11px] font-bold text-[#0058be] uppercase tracking-[0.5px] mb-1">
-                                Phương thức nhận hàng
-                              </p>
                               <div className="flex items-center gap-2">
                                 <MapPin className="size-4 text-[#94a3b8]" />
                                 <span>
@@ -388,16 +407,64 @@ export default function MyOrdersPage() {
                                 </span>
                               </div>
                               <div className="mt-1">
-                                <span className="bg-blue-50 text-[#0058be] px-2 py-0.5 rounded text-[10px] font-bold">
+                                <span className="bg-blue-50 text-[#0058be] px-2.5 py-0.5 rounded text-[10px] font-bold">
                                   {order.deliveryType === "HOME_DELIVERY"
                                     ? "Giao hàng tận nơi"
                                     : "Nhận tại Showroom"}
                                 </span>
                               </div>
                             </div>
+
+                            {/* Payment information */}
+                            <div className="flex flex-col gap-2 border-t md:border-t-0 md:border-l border-slate-100 pt-3 md:pt-0 md:pl-5">
+                              <p className="text-[11px] font-bold text-[#0058be] uppercase tracking-[0.5px] mb-1">
+                                Thanh toán
+                              </p>
+                              <div className="flex items-center gap-2">
+                                <CreditCard className="size-4 text-[#94a3b8]" />
+                                <span>
+                                  Phương thức:{" "}
+                                  <strong className="text-slate-800">
+                                    {order.paymentMethod ? PAYMENT_METHOD_META[order.paymentMethod].label : "—"}
+                                  </strong>
+                                </span>
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <CheckCircle2 className="size-4 text-[#94a3b8]" />
+                                <span>
+                                  Trạng thái:{" "}
+                                  <strong className="text-slate-800">
+                                    {order.paymentStatus ? PAYMENT_STATUS_META[order.paymentStatus].label : "—"}
+                                  </strong>
+                                </span>
+                              </div>
+
+                              {/* Repay Button if Pending VNPAY */}
+                              {order.paymentMethod === "VNPAY" && order.paymentStatus === "PENDING" && order.status !== "CANCELLED" && (
+                                <div className="mt-3">
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleRepay(order.id);
+                                    }}
+                                    disabled={payingOrderId !== null}
+                                    className="flex items-center justify-center gap-2 w-full md:w-auto bg-[#0058be] hover:bg-[#0047a3] text-white text-[12px] font-bold px-4 py-2 rounded-[8px] transition-all duration-200 active:scale-[0.98] disabled:opacity-50"
+                                  >
+                                    {payingOrderId === order.id ? (
+                                      <>
+                                        <Loader2 className="size-3.5 animate-spin" />
+                                        <span>Đang kết nối...</span>
+                                      </>
+                                    ) : (
+                                      <span>Thanh toán ngay qua VNPay</span>
+                                    )}
+                                  </button>
+                                </div>
+                              )}
+                            </div>
                           </div>
 
-                          {/* Order Items Table */}
+                          {/* Products breakdown */}
                           <div className="flex flex-col gap-3">
                             <p className="text-[11px] font-bold text-[#475569] uppercase tracking-[0.5px]">
                               Chi tiết sản phẩm đã mua:
@@ -458,7 +525,33 @@ export default function MyOrdersPage() {
                             </div>
                           </div>
 
-                          {/* Cloudinary Document Receipt Link */}
+                          {/* Pricing details and total breakdown */}
+                          <div className="bg-white border border-slate-100 rounded-[14px] p-4 flex flex-col gap-2 text-[12px] font-medium text-[#475569] shadow-sm">
+                            <div className="flex items-center justify-between text-slate-500 font-semibold">
+                              <span>Tạm tính</span>
+                              <span>
+                                {order.items.reduce((sum, item) => sum + item.sellingPrice * item.quantity, 0).toLocaleString("vi-VN")} ₫
+                              </span>
+                            </div>
+                            {order.couponCode && (
+                              <div className="flex items-center justify-between text-emerald-600 font-semibold">
+                                <span>
+                                  Khuyến mãi (Mã: <span className="uppercase font-bold">{order.couponCode}</span>)
+                                </span>
+                                <span>
+                                  -{order.couponDiscount?.toLocaleString("vi-VN")} ₫
+                                </span>
+                              </div>
+                            )}
+                            <div className="border-t border-[#f1f5f9] my-1 pt-2.5 flex items-center justify-between text-[#0058be] font-bold text-[14px]">
+                              <span>Tổng thanh toán</span>
+                              <span className="text-[18px] font-black">
+                                {order.totalAmount.toLocaleString("vi-VN")} ₫
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Issue Slip download link */}
                           {order.documentUrl && (
                             <div className="flex justify-end pt-2 border-t border-slate-100">
                               <a

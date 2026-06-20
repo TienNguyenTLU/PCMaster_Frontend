@@ -135,7 +135,7 @@ export default function HomeCategoriesSection() {
 
   return (
     <section className="flex flex-col gap-10 max-w-[1536px] w-full px-8">
-      {/* Section header */}
+      {}
       <div className="flex items-end justify-between w-full">
         <div className="flex flex-col gap-2">
           <p
@@ -152,12 +152,12 @@ export default function HomeCategoriesSection() {
           </h2>
         </div>
 
-        {/* Divider */}
+        {}
         <div className="flex-1 mx-12">
           <div className="bg-[rgba(194,198,214,0.2)] h-px w-full" />
         </div>
 
-        {/* View all */}
+        {}
         <Link
           href="/explore"
           className="flex items-center gap-2 text-[#424754] text-[14px] leading-[20px] hover:text-[#0058be] transition-colors"
@@ -168,7 +168,7 @@ export default function HomeCategoriesSection() {
         </Link>
       </div>
 
-      {/* Grid containing categories */}
+      {}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 lg:grid-cols-5 xl:grid-cols-5 gap-6">
         {loading ? (
           Array.from({ length: 6 }).map((_, idx) => (

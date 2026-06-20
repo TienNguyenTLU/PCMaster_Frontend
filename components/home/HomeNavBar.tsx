@@ -34,7 +34,7 @@ export default function HomeNavBar() {
 
   const cartCount = items.reduce((sum, item) => sum + item.quantity, 0);
 
-  // Scroll detection hook for glassmorphism layout changes
+  
   useEffect(() => {
     const handleScroll = () => {
       if (window.scrollY > 12) {
@@ -48,19 +48,19 @@ export default function HomeNavBar() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Hydrate once on mount — reads localStorage, validates JWT expiry, sets store.
+  
   useEffect(() => {
     hydrate();
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, []); 
 
-  // Fetch cart whenever user logs in
+  
   useEffect(() => {
     if (isHydrated && user) {
       fetchCart();
     }
-  }, [isHydrated, user]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isHydrated, user]); 
 
-  // Close dropdown on outside click
+  
   useEffect(() => {
     if (!isDropdownOpen) return;
     const handler = (e: MouseEvent) => {
@@ -99,14 +99,14 @@ export default function HomeNavBar() {
             ${isScrolled ? "py-3" : "py-4"}
           `}
         >
-          {/* Left: Logo + nav links */}
+          {}
           <div className="flex items-center gap-12">
             <Link
               href="/home"
-              className="text-[#0f172a] text-[24px] tracking-[-1.2px] leading-[32px] font-bold hover:opacity-85 active:scale-95 transition-all duration-200"
+              className="text-[#0f172a] text-[22px] font-black tracking-tight uppercase hover:opacity-85 active:scale-95 transition-all duration-200"
               style={{ fontFamily: "Inter, sans-serif" }}
             >
-              PCMaster
+              PC<span className="text-[#0058be]">Master</span>
             </Link>
 
             <div className="flex items-center gap-8">
@@ -123,7 +123,7 @@ export default function HomeNavBar() {
                     style={{ fontFamily: "Inter, sans-serif" }}
                   >
                     {link.label}
-                    {/* Active/Hover line slide animation */}
+                    {}
                     <span
                       className={`
                         absolute bottom-0 left-0 right-0 h-[2px] bg-[#0058be] rounded-full transition-all duration-300 origin-left
@@ -140,9 +140,9 @@ export default function HomeNavBar() {
             </div>
           </div>
 
-          {/* Right: Actions */}
+          {}
           <div className="flex items-center gap-6">
-            {/* Cart */}
+            {}
             <Link
               href="/cart"
               className="
@@ -159,12 +159,12 @@ export default function HomeNavBar() {
               )}
             </Link>
 
-            {/* ── Auth area ──────────────────────────────────────────────── */}
+            {}
             {!isHydrated ? (
-              /* Skeleton — prevents layout shift while reading localStorage */
+              
               <div className="w-[120px] h-[36px] rounded-[8px] bg-[#f2f4f6] animate-pulse" />
             ) : user ? (
-              /* Logged-in: user dropdown */
+              
               <div className="relative" data-dropdown>
                 <button
                   type="button"
@@ -182,7 +182,7 @@ export default function HomeNavBar() {
 
                 {isDropdownOpen && (
                   <div className="absolute right-0 mt-2 w-64 bg-white border border-[#e2e8f0] rounded-[12px] shadow-xl py-2 flex flex-col z-50 overflow-hidden animate-dropdown origin-top-right">
-                    {/* User info header */}
+                    {}
                     <div className="px-4 py-3 border-b border-[#f1f5f9] bg-[#f8fafc]">
                       <p className="text-[14px] font-semibold text-[#0f172a]">
                         {user.username}
@@ -192,7 +192,7 @@ export default function HomeNavBar() {
                       </p>
                     </div>
 
-                    {/* Menu items */}
+                    {}
                     <div className="p-1">
                       <Link
                         href="/settings"
@@ -220,7 +220,7 @@ export default function HomeNavBar() {
                       </Link>
                     </div>
 
-                    {/* Logout */}
+                    {}
                     <div className="border-t border-[#f1f5f9] mt-1 p-1">
                       <button
                         type="button"
@@ -238,7 +238,7 @@ export default function HomeNavBar() {
                 )}
               </div>
             ) : (
-              /* Logged-out: login / register links */
+              
               <div className="flex items-center gap-1.5 text-[14px] font-semibold">
                 <Link
                   href="/auth/login"
@@ -261,7 +261,7 @@ export default function HomeNavBar() {
         </div>
       </nav>
 
-      {/* ── Logout confirmation modal ──────────────────────────────────────── */}
+      {}
       {isLogoutModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-dropdown">
           <div className="bg-white rounded-[16px] p-6 shadow-2xl w-full max-w-[400px] flex flex-col gap-4">

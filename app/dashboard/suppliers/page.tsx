@@ -91,15 +91,12 @@ export default function SuppliersPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Page Header */}
+      {}
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-[#0f172a] text-[24px] font-semibold tracking-[-0.5px]">
             Nhà cung cấp
           </h2>
-          <p className="text-[#64748b] text-[14px] mt-1">
-            Quản lý quan hệ với nhà cung cấp và thông tin liên hệ.
-          </p>
         </div>
         <button
           onClick={handleCreate}
@@ -110,7 +107,7 @@ export default function SuppliersPage() {
         </button>
       </div>
 
-      {/* Toolbar */}
+      {}
       <div className="flex items-center justify-between bg-white p-4 rounded-[12px] border border-[#e2e8f0]">
         <div className="flex items-center gap-3">
           <div className="relative">
@@ -133,7 +130,7 @@ export default function SuppliersPage() {
         </div>
       </div>
 
-      {/* Table Area */}
+      {}
       <div className="bg-white border border-[#e2e8f0] rounded-[12px] overflow-hidden">
         <div className="overflow-x-auto min-h-[300px]">
           {loading ? (
@@ -230,7 +227,7 @@ export default function SuppliersPage() {
           )}
         </div>
 
-        {/* Pagination */}
+        {}
         {!loading && !error && filteredSuppliers.length > 0 && (
           <div className="px-6 py-4 border-t border-[#e2e8f0] flex items-center justify-between text-[13px] text-[#64748b]">
             <span>

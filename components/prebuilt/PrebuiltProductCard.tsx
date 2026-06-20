@@ -46,7 +46,7 @@ export function PrebuiltProductCard({ product }: PrebuiltProductCardProps) {
         className={`absolute inset-0 bg-white/40 backdrop-blur-[1px] z-10 transition-opacity ${product.stock === 0 ? "opacity-100" : "opacity-0 pointer-events-none"}`}
       />
 
-      {/* Image */}
+      {}
       <div className="relative bg-[#f7f9fb] h-[192px] flex items-center justify-center overflow-hidden border-b border-[#f1f5f9]">
         {imgSrc && !imgErr ? (
           imgSrc.startsWith("http://localhost") ? (
@@ -85,7 +85,7 @@ export function PrebuiltProductCard({ product }: PrebuiltProductCardProps) {
         )}
       </div>
 
-      {/* Content */}
+      {}
       <div className="flex flex-col flex-1 p-4 gap-2.5 z-0 justify-between">
         <div className="flex flex-col gap-2">
           {product.brand && (
@@ -99,7 +99,7 @@ export function PrebuiltProductCard({ product }: PrebuiltProductCardProps) {
             {product.name}
           </h3>
 
-          {/* Embedded specification lists (Premium display) */}
+          {}
           {product.pcComponents && product.pcComponents.length > 0 && (
             <div className="flex flex-col gap-1.5 bg-[#f8fafc] rounded-[12px] p-2.5 border border-slate-100 mt-1 relative z-20 text-left">
               <p className="text-[9px] font-extrabold text-[#64748b] uppercase tracking-[0.5px] flex items-center gap-1">

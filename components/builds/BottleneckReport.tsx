@@ -43,7 +43,7 @@ export default function BottleneckReport({
         )}
       </div>
 
-      {/* Missing components warning */}
+      {}
       {(!build.cpu || !build.vga || !build.ram) && !loadingBottleneck && (
         <div className="text-[12.5px] text-[#64748b] font-medium py-2 flex items-center gap-2">
           <span className="text-[16px]">💡</span>
@@ -53,7 +53,7 @@ export default function BottleneckReport({
         </div>
       )}
 
-      {/* Error state */}
+      {}
       {bottleneckError && !loadingBottleneck && (
         <div className="bg-rose-50 border border-rose-100 rounded-[16px] p-4 text-[12.5px] text-rose-700 font-semibold flex items-start gap-2.5">
           <span className="text-[16px] shrink-0">⚠️</span>
@@ -68,7 +68,7 @@ export default function BottleneckReport({
         </div>
       )}
 
-      {/* Report Content */}
+      {}
       {bottleneckResult && !loadingBottleneck && !bottleneckError && (
         <div className="flex flex-col gap-5">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
@@ -114,7 +114,7 @@ export default function BottleneckReport({
               const currentStyle = colors[type] || colors[0];
               const currentLabel = classNames[type] || "Không rõ";
               const confidence = Math.round(res.probability * 100);
-              const circumference = 2 * Math.PI * 34; // r = 34 -> ~213.6
+              const circumference = 2 * Math.PI * 34; 
               const strokeDashoffset =
                 circumference - (confidence / 100) * circumference;
 
@@ -132,7 +132,7 @@ export default function BottleneckReport({
                     </p>
                   </div>
 
-                  {/* Radial Gauge */}
+                  {}
                   <div className="relative w-20 h-20 my-3">
                     <svg
                       className="w-full h-full -rotate-90"

@@ -9,9 +9,11 @@ import {
   AlertTriangle,
   Loader2,
   Download,
+  RefreshCw,
 } from "lucide-react";
 import {
   adminAPI,
+  adminChatbotAPI,
   Product,
   Brand,
   Category,
@@ -27,30 +29,49 @@ export default function ProductsPage() {
   const [brandsList, setBrandsList] = useState<Brand[]>([]);
   const [categoriesList, setCategoriesList] = useState<Category[]>([]);
 
-  // Pagination & Loading state
+  
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [page, setPage] = useState(0);
   const PAGE_SIZE = 7;
 
-  // Filter state
+  
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearch, setDebouncedSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
   const [selectedBrand, setSelectedBrand] = useState("");
 
-  // Modal state
+  
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
-  // Delete confirm state
+  
   const [deletingProduct, setDeletingProduct] = useState<Product | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
 
-  // Gearvn import modal state
   const [isGearvnModalOpen, setIsGearvnModalOpen] = useState(false);
 
-  // Debounce search term
+  const [indexing, setIndexing] = useState(false);
+
+  const handleReindex = async () => {
+    setIndexing(true);
+    try {
+      const res = await adminChatbotAPI.reindex();
+      if (res.success) {
+        toast.success(
+          `Index thành công ${res.indexedProducts} sản phẩm trong ${res.durationMs}ms!`,
+        );
+      } else {
+        toast.error(res.message || "Index thất bại");
+      }
+    } catch {
+      toast.error("Lỗi khi kết nối yêu cầu index sản phẩm.");
+    } finally {
+      setIndexing(false);
+    }
+  };
+
+  
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearch(searchTerm);
@@ -59,7 +80,7 @@ export default function ProductsPage() {
     return () => clearTimeout(handler);
   }, [searchTerm]);
 
-  // Fetch initial data (brands, categories)
+  
   useEffect(() => {
     adminAPI.getBrands(0, 100).then((res) => setBrandsList(res.content || []));
     adminAPI
@@ -76,14 +97,14 @@ export default function ProductsPage() {
       let currentPage = 0;
       let totalPages = 1;
 
-      // Loop through all pages to ensure we get 100% of the products for frontend filtering
+      
       while (currentPage < totalPages) {
         const response = await adminAPI.getProducts(currentPage, 1000);
         const content = response.content || [];
         all = [...all, ...content];
         totalPages = response.totalPages || 1;
 
-        // Safety break to prevent infinite loops
+        
         if (currentPage >= 100 || content.length === 0) break;
         currentPage++;
       }
@@ -96,7 +117,7 @@ export default function ProductsPage() {
     }
   };
 
-  // Fetch products without filters to handle locally
+  
   useEffect(() => {
     const timer = setTimeout(() => {
       fetchProducts();
@@ -104,7 +125,7 @@ export default function ProductsPage() {
     return () => clearTimeout(timer);
   }, []);
 
-  // Compute filtered and paginated products
+  
   const filteredProducts = allProducts.filter((p) => {
     const matchSearch = debouncedSearch
       ? p.name.toLowerCase().includes(debouncedSearch.toLowerCase())
@@ -156,17 +177,27 @@ export default function ProductsPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      {/* Page Header */}
+      {}
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-[#0f172a] text-[24px] font-semibold tracking-[-0.5px]">
             Sản phẩm
           </h2>
-          <p className="text-[#64748b] text-[14px] mt-1">
-            Quản lý danh mục và kho hàng của cửa hàng.
-          </p>
         </div>
         <div className="flex items-center gap-2">
+          <button
+            onClick={handleReindex}
+            disabled={indexing}
+            className="border border-[#cbd5e1] hover:border-[#94a3b8] bg-white text-[#475569] hover:text-[#0f172a] px-4 py-2 rounded-[8px] text-[14px] font-medium flex items-center gap-2 transition-all cursor-pointer shadow-sm disabled:opacity-50"
+          >
+            {indexing ? (
+              <Loader2 className="size-4 animate-spin text-[#0058be]" />
+            ) : (
+              <RefreshCw className="size-4 text-[#0058be]" />
+            )}
+            Index lại sản phẩm
+          </button>
+          {/* Tạm thời loại bỏ nút import từ GearVN
           <button
             onClick={() => setIsGearvnModalOpen(true)}
             className="bg-gradient-to-r from-[#e31837] to-[#ff4d6d] text-white px-4 py-2 rounded-[8px] text-[14px] font-medium flex items-center gap-2 hover:from-[#c2102a] hover:to-[#e31837] transition-all cursor-pointer shadow-sm"
@@ -174,6 +205,7 @@ export default function ProductsPage() {
             <Download className="size-4" />
             Import từ GearVN
           </button>
+          */}
           <button
             onClick={handleAddClick}
             className="bg-[#0058be] text-white px-4 py-2 rounded-[8px] text-[14px] font-medium flex items-center gap-2 hover:bg-[#0047a3] transition-colors cursor-pointer"
@@ -184,7 +216,7 @@ export default function ProductsPage() {
         </div>
       </div>
 
-      {/* Toolbar */}
+      {}
       <div className="flex flex-col md:flex-row items-center justify-between bg-white p-4 rounded-[12px] border border-[#e2e8f0] gap-4">
         <div className="relative w-full md:w-auto">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-[#94a3b8]" />
@@ -232,7 +264,7 @@ export default function ProductsPage() {
         </div>
       </div>
 
-      {/* Table Area */}
+      {}
       <div className="bg-white border border-[#e2e8f0] rounded-[12px] overflow-hidden">
         <div className="overflow-x-auto min-h-[300px]">
           {loading ? (
@@ -356,7 +388,7 @@ export default function ProductsPage() {
           )}
         </div>
 
-        {/* Pagination */}
+        {}
         {!loading && !error && currentProducts.length > 0 && (
           <div className="px-6 py-4 border-t border-[#e2e8f0] flex items-center justify-between text-[13px] text-[#64748b]">
             <span>
@@ -386,7 +418,7 @@ export default function ProductsPage() {
         )}
       </div>
 
-      {/* Add / Edit Modal */}
+      {}
       <ProductFormModal
         isOpen={isModalOpen}
         onClose={() => setIsModalOpen(false)}
@@ -394,14 +426,14 @@ export default function ProductsPage() {
         editingProduct={editingProduct}
       />
 
-      {/* Gearvn Import Modal */}
+      {}
       <GearvnImportModal
         isOpen={isGearvnModalOpen}
         onClose={() => setIsGearvnModalOpen(false)}
         onSuccess={handleModalSuccess}
       />
 
-      {/* Delete Confirm Dialog */}
+      {}
       {deletingProduct && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"
