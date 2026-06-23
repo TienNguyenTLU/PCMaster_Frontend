@@ -4,8 +4,7 @@ import { useState } from "react";
 import { ShoppingCart, Package } from "lucide-react";
 import Link from "next/link";
 import { Product } from "@/lib/api";
-import { useCartStore } from "@/lib/store";
-import toast from "react-hot-toast";
+import { useCartManager } from "@/hooks/useCartManager";
 
 interface HomeProductCardProps {
   product: Product;
@@ -16,8 +15,8 @@ export default function HomeProductCard({
   product,
   badgeType,
 }: HomeProductCardProps) {
-  const [adding, setAdding] = useState(false);
-  const { addItem } = useCartStore();
+  const { handleAddToCart, addingIds } = useCartManager();
+  const adding = addingIds.has(Number(product.id));
 
   const imgSrc = product.thumbnailUrl?.startsWith("http")
     ? product.thumbnailUrl
@@ -25,18 +24,10 @@ export default function HomeProductCard({
       ? `http://localhost:8080${product.thumbnailUrl}`
       : null;
 
-  async function handleAddToCart(e: React.MouseEvent) {
+  async function handleAddToCartClick(e: React.MouseEvent) {
     e.preventDefault();
     if (product.stock === 0) return;
-    setAdding(true);
-    try {
-      await addItem(Number(product.id), 1);
-      toast.success("Đã thêm vào giỏ hàng!");
-    } catch {
-      toast.error("Không thể thêm. Vui lòng đăng nhập trước.");
-    } finally {
-      setAdding(false);
-    }
+    await handleAddToCart(Number(product.id), 1);
   }
 
   
@@ -135,7 +126,7 @@ export default function HomeProductCard({
           <button
             type="button"
             disabled={product.stock === 0 || adding}
-            onClick={handleAddToCart}
+            onClick={handleAddToCartClick}
             className="p-2.5 rounded-[12px] bg-[#f1f5f9] hover:bg-[#0058be] text-[#64748b] hover:text-white transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
             aria-label="Thêm vào giỏ hàng"
           >

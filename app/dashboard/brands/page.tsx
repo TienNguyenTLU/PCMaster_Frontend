@@ -20,6 +20,7 @@ export default function BrandsPage() {
   const [page, setPage] = useState(0);
   const pageSize = 8;
   const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState("id-desc");
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingBrand, setEditingBrand] = useState<Brand | null>(null);
@@ -49,8 +50,22 @@ export default function BrandsPage() {
     b.name.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
-  const totalPages = Math.ceil(filteredBrands.length / pageSize);
-  const paginatedBrands = filteredBrands.slice(
+  const sortedBrands = [...filteredBrands].sort((a, b) => {
+    if (sortBy === "name-asc") {
+      return a.name.localeCompare(b.name, "vi");
+    }
+    if (sortBy === "name-desc") {
+      return b.name.localeCompare(a.name, "vi");
+    }
+    if (sortBy === "id-asc") {
+      return Number(a.id) - Number(b.id);
+    }
+    // default: id-desc (mới nhất)
+    return Number(b.id) - Number(a.id);
+  });
+
+  const totalPages = Math.ceil(sortedBrands.length / pageSize);
+  const paginatedBrands = sortedBrands.slice(
     page * pageSize,
     (page + 1) * pageSize,
   );
@@ -110,10 +125,19 @@ export default function BrandsPage() {
               className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[8px] pl-9 pr-4 py-1.5 text-[14px] focus:outline-none focus:border-[#0058be] focus:ring-1 focus:ring-[#0058be] transition-all w-[300px]"
             />
           </div>
-          <button className="flex items-center gap-2 px-3 py-1.5 border border-[#e2e8f0] rounded-[8px] text-[#475569] text-[14px] hover:bg-[#f8fafc] transition-colors cursor-pointer">
-            <Filter className="size-4" />
-            Bộ lọc
-          </button>
+          <select
+            value={sortBy}
+            onChange={(e) => {
+              setSortBy(e.target.value);
+              setPage(0);
+            }}
+            className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[8px] px-3 py-1.5 text-[14px] focus:outline-none focus:border-[#0058be] transition-all cursor-pointer font-semibold text-[#334155]"
+          >
+            <option value="id-desc">Mới nhất</option>
+            <option value="id-asc">Cũ nhất</option>
+            <option value="name-asc">Tên: A-Z</option>
+            <option value="name-desc">Tên: Z-A</option>
+          </select>
         </div>
       </div>
 

@@ -2,8 +2,8 @@
 
 import React from "react";
 import { AlertTriangle } from "lucide-react";
-import { BuildState } from "./BuildPage";
-import { SLOT_LABEL_MAP } from "@/lib/labelMapping";
+import { BuildState } from "@/hooks/usePcBuildState";
+import { SLOT_LABEL_MAP } from "@/utils/labelMapping";
 
 interface ConfirmSelectionModalProps {
   showConfirmModal: boolean;

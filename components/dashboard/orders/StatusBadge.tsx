@@ -1,7 +1,7 @@
 "use client";
 
 import { OrderStatus } from "@/lib/api";
-import { STATUS_META } from "@/lib/labelMapping";
+import { STATUS_META } from "@/utils/labelMapping";
 
 interface StatusBadgeProps {
   status: OrderStatus;

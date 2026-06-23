@@ -16,7 +16,8 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { Product } from "@/lib/api";
-import { SlotDef, BuildState, SLOTS } from "./BuildPage";
+import { SlotDef, BuildState, SLOTS } from "@/hooks/usePcBuildState";
+import { formatPrice } from "@/utils/format";
 
 interface SummaryPanelProps {
   build: BuildState;
@@ -80,10 +81,7 @@ export default function SummaryPanel({
             className="text-[34px] font-black text-[#0f172a] tracking-tight leading-none"
             style={{ fontFamily: "Inter, sans-serif" }}
           >
-            {totalPrice.toLocaleString("vi-VN")}
-            <span className="text-[18px] font-extrabold text-[#0058be] ml-1">
-              ₫
-            </span>
+            {formatPrice(totalPrice)}
           </p>
           <p className="text-[12.5px] text-[#64748b] mt-2 font-medium">
             {selectedCount}/{allSlots.length} linh kiện đã chọn
@@ -192,7 +190,7 @@ export default function SummaryPanel({
                     </p>
                   </div>
                   <p className="text-[12px] font-bold text-[#0f172a] shrink-0">
-                    {product.price.toLocaleString("vi-VN")} ₫
+                    {formatPrice(product.price)}
                   </p>
                 </div>
               );
@@ -203,7 +201,7 @@ export default function SummaryPanel({
               Tổng giá trị
             </p>
             <p className="text-[15px] font-black text-[#0058be]">
-              {totalPrice.toLocaleString("vi-VN")} ₫
+              {formatPrice(totalPrice)}
             </p>
           </div>
         </div>

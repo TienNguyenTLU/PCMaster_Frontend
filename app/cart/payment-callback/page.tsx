@@ -18,9 +18,7 @@ import { orderAPI, OrderResponse } from "@/lib/api";
 import HomeNavBar from "@/components/home/HomeNavBar";
 import AuthFooter from "@/components/auth/AuthFooter";
 
-function formatPrice(price: number): string {
-  return price.toLocaleString("vi-VN") + "₫";
-}
+import { formatPrice, formatDateOnly } from "@/utils/format";
 
 function PaymentCallbackContent() {
   const searchParams = useSearchParams();
@@ -116,7 +114,7 @@ function PaymentCallbackContent() {
                     <span className="text-[#64748b]">Ngày đặt hàng</span>
                     <span className="font-medium text-[#0f172a] flex items-center gap-1">
                       <Calendar className="size-4 text-[#64748b]" />
-                      {order?.createdAt ? new Date(order.createdAt).toLocaleDateString("vi-VN") : "---"}
+                      {formatDateOnly(order?.createdAt)}
                     </span>
                   </div>
                 </div>

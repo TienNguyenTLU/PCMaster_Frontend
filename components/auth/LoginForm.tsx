@@ -6,11 +6,9 @@ import { useRouter } from "next/navigation";
 import AuthFormField from "./AuthFormField";
 import AuthSocialButtons from "./AuthSocialButtons";
 import { useAuthStore } from "@/lib/store";
+import { ArrowRight } from "lucide-react";
 
 import toast from "react-hot-toast";
-
-const imgArrow =
-  "http://localhost:3845/assets/fadd198d26aadd8b0ee816378d8a8139f72021b1.svg";
 
 export default function LoginForm() {
   const router = useRouter();
@@ -149,7 +147,7 @@ export default function LoginForm() {
         >
           {isLoading ? "Đang đăng nhập…" : "Đăng nhập"}
           {!isLoading && (
-            <img src={imgArrow} alt="" className="size-[9.333px]" aria-hidden />
+            <ArrowRight className="size-4" aria-hidden />
           )}
         </button>
 

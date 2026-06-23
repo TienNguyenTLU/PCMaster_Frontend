@@ -20,7 +20,8 @@ import {
   GearvnPreviewResponse,
   getCategoryLabel,
 } from "@/lib/api";
-import { SPEC_LABEL_MAP } from "@/lib/labelMapping";
+import { SPEC_LABEL_MAP } from "@/utils/labelMapping";
+import { formatPrice } from "@/utils/format";
 import toast from "react-hot-toast";
 
 interface GearvnImportModalProps {
@@ -341,11 +342,7 @@ export default function GearvnImportModal({
                         )}
                       </div>
                       <div className="text-[15px] font-bold text-[#0058be] mt-0.5">
-                        Giá:{" "}
-                        {new Intl.NumberFormat("vi-VN", {
-                          style: "currency",
-                          currency: "VND",
-                        }).format(previewData.price)}
+                        Giá: {formatPrice(previewData.price)}
                       </div>
                     </div>
                   </div>

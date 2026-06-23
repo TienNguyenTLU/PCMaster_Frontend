@@ -11,6 +11,7 @@ import {
   Plus,
 } from "lucide-react";
 import { PcBuildResponse } from "@/lib/api";
+import { formatDate, formatPrice } from "@/utils/format";
 
 interface MyBuildsListProps {
   myBuilds: PcBuildResponse[];
@@ -110,10 +111,7 @@ export default function MyBuildsList({
                   <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 mt-2 text-[11px] text-[#64748b] font-semibold">
                     <span className="flex items-center gap-1.5 bg-slate-50 border border-slate-100 px-2 py-0.5 rounded-[6px]">
                       <Calendar className="size-3.5 text-[#94a3b8]" />
-                      {new Date(b.createdAt).toLocaleDateString("vi-VN", {
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
+                      {formatDate(b.createdAt)}
                     </span>
                     <span className="text-[#0058be] bg-[#eff6ff] border border-blue-100/35 px-2 py-0.5 rounded-[6px]">
                       {b.items.length} linh kiện chính
@@ -139,8 +137,7 @@ export default function MyBuildsList({
                     className="text-[20px] font-black text-[#0058be] leading-none"
                     style={{ fontFamily: "Inter, sans-serif" }}
                   >
-                    {b.totalPrice.toLocaleString("vi-VN")}
-                    <span className="text-[13px] font-bold ml-0.5">₫</span>
+                    {formatPrice(b.totalPrice)}
                   </p>
                 </div>
                 <div className="flex items-center gap-2">

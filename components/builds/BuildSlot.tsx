@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { Product } from "@/lib/api";
 import Link from "next/link";
+import { formatPrice } from "@/utils/format";
 
 interface BuildSlotProps {
   slotKey: string;
@@ -147,10 +148,7 @@ export default function BuildSlot({
                 className="text-[15px] font-bold text-[#0058be]"
                 style={{ fontFamily: "Inter, sans-serif" }}
               >
-                {product.price.toLocaleString("vi-VN")}
-                <span className="text-[11px] font-normal ml-0.5 opacity-80">
-                  ₫
-                </span>
+                {formatPrice(product.price)}
               </p>
             </div>
             <Link

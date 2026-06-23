@@ -13,6 +13,7 @@ interface PurchaseOrderListProps {
   isCreateOpen: boolean;
   setIsCreateOpen: (open: boolean) => void;
   reloadTrigger: number;
+  sortBy: string;
 }
 
 export default function PurchaseOrderList({
@@ -20,6 +21,7 @@ export default function PurchaseOrderList({
   isCreateOpen,
   setIsCreateOpen,
   reloadTrigger,
+  sortBy,
 }: PurchaseOrderListProps) {
   const [orders, setOrders] = useState<PurchaseOrder[]>([]);
   const [suppliers, setSuppliers] = useState<Supplier[]>([]);
@@ -65,6 +67,28 @@ export default function PurchaseOrderList({
     );
   });
 
+  const sortedOrders = [...filteredOrders].sort((a, b) => {
+    if (sortBy === "name-asc") {
+      const sA = getSupplier(a.supplierId)?.name || "";
+      const sB = getSupplier(b.supplierId)?.name || "";
+      return sA.localeCompare(sB, "vi");
+    }
+    if (sortBy === "name-desc") {
+      const sA = getSupplier(a.supplierId)?.name || "";
+      const sB = getSupplier(b.supplierId)?.name || "";
+      return sB.localeCompare(sA, "vi");
+    }
+    if (sortBy === "id-asc") {
+      const timeA = a.createdAt ? new Date(a.createdAt).getTime() : Number(a.id);
+      const timeB = b.createdAt ? new Date(b.createdAt).getTime() : Number(b.id);
+      return timeA - timeB;
+    }
+    // default: id-desc (mới nhất)
+    const timeA = a.createdAt ? new Date(a.createdAt).getTime() : Number(a.id);
+    const timeB = b.createdAt ? new Date(b.createdAt).getTime() : Number(b.id);
+    return timeB - timeA;
+  });
+
   return (
     <div
       className="flex flex-col gap-6"
@@ -107,7 +131,7 @@ export default function PurchaseOrderList({
             <div className="flex items-center justify-center h-[300px] gap-2 text-[#64748b]">
               <Loader2 className="size-5 animate-spin" /> Đang tải...
             </div>
-          ) : filteredOrders.length === 0 ? (
+          ) : sortedOrders.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-[300px] text-[#94a3b8] gap-3">
               <FileText className="size-10 opacity-40" />
               <p className="text-[14px]">Không tìm thấy phiếu nhập hàng nào.</p>
@@ -129,7 +153,7 @@ export default function PurchaseOrderList({
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#e2e8f0] text-[#475569]">
-                {filteredOrders.map((order) => {
+                {sortedOrders.map((order) => {
                   const supplier = getSupplier(order.supplierId);
                   return (
                     <tr

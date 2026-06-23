@@ -10,7 +10,8 @@ import {
   AlertTriangle,
 } from "lucide-react";
 import { adminAPI, Product } from "@/lib/api";
-import { isCaseCompatibleWithMb } from "./BuildPage";
+import { isCaseCompatibleWithMb } from "@/hooks/usePcBuildState";
+import { formatPrice } from "@/utils/format";
 
 interface BuildPickerModalProps {
   slotKey: string;
@@ -487,10 +488,7 @@ export default function BuildPickerModal({
                       {}
                       <div className="text-right shrink-0 flex flex-col items-end gap-2">
                         <p className="text-[16px] font-bold text-[#0058be]">
-                          {p.price.toLocaleString("vi-VN")}
-                          <span className="text-[11px] font-normal ml-0.5 opacity-70">
-                            ₫
-                          </span>
+                          {formatPrice(p.price)}
                         </p>
                         {isHovered && (
                           <span className="flex items-center gap-1 text-[11px] font-bold text-white bg-[#0058be] px-2.5 py-1 rounded-full">

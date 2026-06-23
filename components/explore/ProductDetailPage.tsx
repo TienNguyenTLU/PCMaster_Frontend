@@ -17,9 +17,8 @@ import {
   Maximize2,
 } from "lucide-react";
 import { adminAPI, Product, ProductImage, getCategoryLabel } from "@/lib/api";
-import { SPEC_LABEL_MAP } from "@/lib/labelMapping";
-import { useCartStore } from "@/lib/store";
-import toast from "react-hot-toast";
+import { SPEC_LABEL_MAP } from "@/utils/labelMapping";
+import { useCartManager } from "@/hooks/useCartManager";
 import LightboxModal from "./LightboxModal";
 
 
@@ -101,14 +100,13 @@ export default function ProductDetailPage() {
   const [notFound, setNotFound] = useState(false);
   const [imgErr, setImgErr] = useState(false);
   const [quantity, setQuantity] = useState(1);
-  const [addingToCart, setAddingToCart] = useState(false);
 
-  
   const [detailImages, setDetailImages] = useState<ProductImage[]>([]);
   const [selectedImgIndex, setSelectedImgIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
 
-  const { addItem } = useCartStore();
+  const { handleAddToCart, addingIds } = useCartManager();
+  const addingToCart = product ? addingIds.has(Number(product.id)) : false;
 
   useEffect(() => {
     if (!id) return;
@@ -177,17 +175,9 @@ export default function ProductDetailPage() {
     setSelectedImgIndex((prev) => (prev + 1) % allImages.length);
   };
 
-  async function handleAddToCart() {
+  async function handleAddToCartClick() {
     if (!product || outOfStock) return;
-    setAddingToCart(true);
-    try {
-      await addItem(Number(product.id), quantity);
-      toast.success(`Đã thêm ${quantity} sản phẩm vào giỏ hàng!`);
-    } catch {
-      toast.error("Không thể thêm vào giỏ hàng. Vui lòng thử lại.");
-    } finally {
-      setAddingToCart(false);
-    }
+    await handleAddToCart(Number(product.id), quantity);
   }
 
   
@@ -491,7 +481,7 @@ export default function ProductDetailPage() {
                 type="button"
                 id="add-to-cart-btn"
                 disabled={outOfStock || addingToCart}
-                onClick={handleAddToCart}
+                onClick={handleAddToCartClick}
                 className="flex-1 min-w-[180px] h-12 flex items-center justify-center gap-2 bg-[#0058be] text-white text-[14px] font-semibold rounded-[12px] shadow-[0_4px_16px_rgba(0,88,190,0.30)] hover:bg-[#0047a3] hover:shadow-[0_4px_20px_rgba(0,88,190,0.40)] transition-all duration-200 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
               >
                 {addingToCart ? (

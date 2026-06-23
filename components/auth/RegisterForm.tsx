@@ -6,9 +6,7 @@ import { useRouter } from "next/navigation";
 import AuthFormField from "./AuthFormField";
 import AuthSocialButtons from "./AuthSocialButtons";
 import { useAuthStore } from "@/lib/store";
-
-const imgArrow =
-  "http://localhost:3845/assets/fadd198d26aadd8b0ee816378d8a8139f72021b1.svg";
+import { ArrowRight } from "lucide-react";
 
 export default function RegisterForm() {
   const router = useRouter();
@@ -183,7 +181,7 @@ export default function RegisterForm() {
         >
           {isLoading ? "Đang đăng ký…" : "Đăng ký"}
           {!isLoading && (
-            <img src={imgArrow} alt="" className="size-[9.333px]" aria-hidden />
+            <ArrowRight className="size-4" aria-hidden />
           )}
         </button>
 

@@ -53,3 +53,27 @@ body {
 .hover-scale-effect:active {
   transform: scale(0.95);
 }
+
+/* Swiper Custom Pagination */
+.swiper-pagination-custom {
+  width: auto !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+}
+
+.swiper-pagination-bullet-custom {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.4);
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.swiper-pagination-bullet-active-custom {
+  width: 24px;
+  height: 8px;
+  border-radius: 4px;
+  background-color: #ffffff;
+}

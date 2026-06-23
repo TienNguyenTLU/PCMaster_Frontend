@@ -19,16 +19,30 @@ import {
   Keyboard,
   Mouse,
   Headphones,
+  ChevronRight,
 } from "lucide-react";
-
-const imgArrowSmall =
-  "http://localhost:3845/assets/61dd0d1d6928fb3ddfc20fcb1cfc8aee254066a1.svg";
 
 function getCategoryIcon(name: string) {
   const slug = name
     .toLowerCase()
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "");
+  if (
+    slug.includes("pc_system") ||
+    slug.includes("pc-system") ||
+    slug.includes("pc system") ||
+    slug.includes("nguyen bo")
+  ) {
+    return Laptop;
+  }
+  if (
+    slug.includes("pc_gear") ||
+    slug.includes("pc-gear") ||
+    slug.includes("pc gear") ||
+    slug.includes("gaming")
+  ) {
+    return Gamepad2;
+  }
   if (
     slug.includes("cpu") ||
     slug.includes("vi xu ly") ||
@@ -144,12 +158,6 @@ export default function HomeCategoriesSection() {
           >
             DANH MỤC SẢN PHẨM
           </p>
-          <h2
-            className="text-[#191c1e] text-[36px] tracking-[-1.8px] leading-[40px] font-bold"
-            style={{ fontFamily: "Inter, sans-serif" }}
-          >
-            Linh Kiện Cao Cấp
-          </h2>
         </div>
 
         {}
@@ -164,7 +172,7 @@ export default function HomeCategoriesSection() {
           style={{ fontFamily: "Inter, sans-serif" }}
         >
           Xem tất cả danh mục
-          <img src={imgArrowSmall} alt="" className="size-[9.333px]" />
+          <ChevronRight className="size-4" />
         </Link>
       </div>
 

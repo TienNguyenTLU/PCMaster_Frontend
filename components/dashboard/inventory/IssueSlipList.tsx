@@ -14,15 +14,7 @@ import {
 } from "lucide-react";
 import { IssueSlipResponse } from "@/lib/api";
 
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleString("vi-VN", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
+import { formatDate } from "@/utils/format";
 
 interface IssueSlipListProps {
   slips: IssueSlipResponse[];
@@ -36,6 +28,7 @@ interface IssueSlipListProps {
   dispatchingId: number | null;
   searchQuery: string;
   statusFilter: "ALL" | "PENDING" | "COMPLETED";
+  sortBy: string;
 }
 
 export default function IssueSlipList({
@@ -50,6 +43,7 @@ export default function IssueSlipList({
   dispatchingId,
   searchQuery,
   statusFilter,
+  sortBy,
 }: IssueSlipListProps) {
   
   const filteredSlips = slips.filter((slip) => {
@@ -66,11 +60,33 @@ export default function IssueSlipList({
     return matchesSearch && matchesStatus;
   });
 
+  const sortedSlips = [...filteredSlips].sort((a, b) => {
+    if (sortBy === "name-asc") {
+      const rA = a.recipientName || a.code || "";
+      const rB = b.recipientName || b.code || "";
+      return rA.localeCompare(rB, "vi");
+    }
+    if (sortBy === "name-desc") {
+      const rA = a.recipientName || a.code || "";
+      const rB = b.recipientName || b.code || "";
+      return rB.localeCompare(rA, "vi");
+    }
+    if (sortBy === "id-asc") {
+      const timeA = a.createdAt ? new Date(a.createdAt).getTime() : Number(a.id);
+      const timeB = b.createdAt ? new Date(b.createdAt).getTime() : Number(b.id);
+      return timeA - timeB;
+    }
+    // default: id-desc (mới nhất)
+    const timeA = a.createdAt ? new Date(a.createdAt).getTime() : Number(a.id);
+    const timeB = b.createdAt ? new Date(b.createdAt).getTime() : Number(b.id);
+    return timeB - timeA;
+  });
+
   return (
     <div className="space-y-4" style={{ fontFamily: "Inter, sans-serif" }}>
       <div className="bg-white border border-[#e2e8f0] rounded-[12px] overflow-hidden shadow-sm">
         <div className="overflow-x-auto min-h-[300px]">
-          {filteredSlips.length === 0 ? (
+          {sortedSlips.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-[#64748b] gap-2">
               <FileText className="size-8 text-[#94a3b8]" />
               <p className="text-[14px]">Không tìm thấy phiếu xuất kho nào.</p>
@@ -91,7 +107,7 @@ export default function IssueSlipList({
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#e2e8f0] text-[#475569]">
-                {filteredSlips.map((slip) => {
+                {sortedSlips.map((slip) => {
                   const isPending = slip.status === "PENDING";
 
                   return (

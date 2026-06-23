@@ -23,26 +23,10 @@ import {
   DeliveryType,
   Product,
 } from "@/lib/api";
-import { DELIVERY_META, PAYMENT_METHOD_META, PAYMENT_STATUS_META } from "@/lib/labelMapping";
+import { DELIVERY_META, PAYMENT_METHOD_META, PAYMENT_STATUS_META } from "@/utils/labelMapping";
+import { formatPrice, formatDate } from "@/utils/format";
 import toast from "react-hot-toast";
 import StatusBadge from "./StatusBadge";
-
-function formatPrice(n: number) {
-  return new Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency: "VND",
-  }).format(n);
-}
-
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleString("vi-VN", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
 
 interface OrderDetailModalProps {
   order: OrderResponse;

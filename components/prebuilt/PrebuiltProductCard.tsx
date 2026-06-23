@@ -4,9 +4,8 @@ import React, { useState } from "react";
 import Link from "next/link";
 import { ShoppingCart, Package, Cpu } from "lucide-react";
 import { Product } from "@/lib/api";
-import { useCartStore } from "@/lib/store";
 import { CldImage } from "next-cloudinary";
-import toast from "react-hot-toast";
+import { useCartManager } from "@/hooks/useCartManager";
 
 interface PrebuiltProductCardProps {
   product: Product;
@@ -14,8 +13,8 @@ interface PrebuiltProductCardProps {
 
 export function PrebuiltProductCard({ product }: PrebuiltProductCardProps) {
   const [imgErr, setImgErr] = useState(false);
-  const [adding, setAdding] = useState(false);
-  const { addItem } = useCartStore();
+  const { handleAddToCart, addingIds } = useCartManager();
+  const adding = addingIds.has(Number(product.id));
 
   const imgSrc = product.thumbnailUrl?.startsWith("http")
     ? product.thumbnailUrl
@@ -23,18 +22,10 @@ export function PrebuiltProductCard({ product }: PrebuiltProductCardProps) {
       ? `http://localhost:8080${product.thumbnailUrl}`
       : null;
 
-  async function handleAddToCart(e: React.MouseEvent) {
+  async function handleAddToCartClick(e: React.MouseEvent) {
     e.preventDefault();
     if (product.stock === 0) return;
-    setAdding(true);
-    try {
-      await addItem(Number(product.id), 1);
-      toast.success("Đã thêm PC build sẵn vào giỏ hàng!");
-    } catch {
-      toast.error("Vui lòng đăng nhập trước khi mua hàng.");
-    } finally {
-      setAdding(false);
-    }
+    await handleAddToCart(Number(product.id), 1);
   }
 
   return (
@@ -145,7 +136,7 @@ export function PrebuiltProductCard({ product }: PrebuiltProductCardProps) {
           <button
             type="button"
             disabled={product.stock === 0 || adding}
-            onClick={handleAddToCart}
+            onClick={handleAddToCartClick}
             className="p-2 rounded-[8px] bg-[#f1f5f9] hover:bg-[#0058be] text-[#64748b] hover:text-white transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
             aria-label="Thêm vào giỏ"
           >

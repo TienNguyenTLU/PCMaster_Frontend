@@ -3,22 +3,7 @@
 import { ChevronLeft, ChevronRight, Edit2, Warehouse } from "lucide-react";
 import { InventoryBatchResponse } from "@/lib/api";
 
-function formatPrice(n: number) {
-  return new Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency: "VND",
-  }).format(n);
-}
-
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleString("vi-VN", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
+import { formatPrice, formatDate } from "@/utils/format";
 
 interface BatchListProps {
   batches: InventoryBatchResponse[];
@@ -30,6 +15,7 @@ interface BatchListProps {
   onEditClick: (batch: InventoryBatchResponse) => void;
   searchQuery: string;
   hideOutOfStock: boolean;
+  sortBy: string;
 }
 
 export default function BatchList({
@@ -42,6 +28,7 @@ export default function BatchList({
   onEditClick,
   searchQuery,
   hideOutOfStock,
+  sortBy,
 }: BatchListProps) {
   
   const filteredBatches = batches.filter((batch) => {
@@ -53,11 +40,29 @@ export default function BatchList({
     return matchesSearch && matchesStock;
   });
 
+  const sortedBatches = [...filteredBatches].sort((a, b) => {
+    if (sortBy === "name-asc") {
+      return a.productName.localeCompare(b.productName, "vi");
+    }
+    if (sortBy === "name-desc") {
+      return b.productName.localeCompare(a.productName, "vi");
+    }
+    if (sortBy === "id-asc") {
+      const timeA = a.importedAt ? new Date(a.importedAt).getTime() : Number(a.id);
+      const timeB = b.importedAt ? new Date(b.importedAt).getTime() : Number(b.id);
+      return timeA - timeB;
+    }
+    // default: id-desc (mới nhất)
+    const timeA = a.importedAt ? new Date(a.importedAt).getTime() : Number(a.id);
+    const timeB = b.importedAt ? new Date(b.importedAt).getTime() : Number(b.id);
+    return timeB - timeA;
+  });
+
   return (
     <div className="space-y-4" style={{ fontFamily: "Inter, sans-serif" }}>
       <div className="bg-white border border-[#e2e8f0] rounded-[12px] overflow-hidden shadow-sm">
         <div className="overflow-x-auto min-h-[300px]">
-          {filteredBatches.length === 0 ? (
+          {sortedBatches.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-20 text-[#64748b] gap-2">
               <Warehouse className="size-8 text-[#94a3b8]" />
               <p className="text-[14px]">Không tìm thấy lô hàng tồn kho nào.</p>
@@ -85,7 +90,7 @@ export default function BatchList({
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#e2e8f0] text-[#475569]">
-                {filteredBatches.map((batch) => {
+                {sortedBatches.map((batch) => {
                   const isOutOfStock = batch.remainingQuantity === 0;
                   const isLowStock =
                     batch.remainingQuantity > 0 && batch.remainingQuantity <= 5;

@@ -1260,7 +1260,7 @@ export interface GearvnPreviewResponse {
   specs: Record<string, string>;
 }
 
-export { getCategoryLabel } from "./labelMapping";
+export { getCategoryLabel } from "../utils/labelMapping";
 
 
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import {
   Plus,
   Search,
@@ -8,12 +8,10 @@ import {
   Trash2,
   AlertTriangle,
   Loader2,
-  Download,
   RefreshCw,
+  Download,
 } from "lucide-react";
 import {
-  adminAPI,
-  adminChatbotAPI,
   Product,
   Brand,
   Category,
@@ -22,158 +20,42 @@ import {
 import { CldImage } from "next-cloudinary";
 import ProductFormModal from "@/components/dashboard/ProductFormModal";
 import GearvnImportModal from "@/components/dashboard/GearvnImportModal";
-import toast from "react-hot-toast";
+import { useDashboardProducts } from "@/hooks/useDashboardProducts";
 
 export default function ProductsPage() {
-  const [allProducts, setAllProducts] = useState<Product[]>([]);
-  const [brandsList, setBrandsList] = useState<Brand[]>([]);
-  const [categoriesList, setCategoriesList] = useState<Category[]>([]);
-
-  
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [page, setPage] = useState(0);
-  const PAGE_SIZE = 7;
-
-  
-  const [searchTerm, setSearchTerm] = useState("");
-  const [debouncedSearch, setDebouncedSearch] = useState("");
-  const [selectedCategory, setSelectedCategory] = useState("");
-  const [selectedBrand, setSelectedBrand] = useState("");
-
-  
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
-
-  
-  const [deletingProduct, setDeletingProduct] = useState<Product | null>(null);
-  const [deleteLoading, setDeleteLoading] = useState(false);
-
   const [isGearvnModalOpen, setIsGearvnModalOpen] = useState(false);
 
-  const [indexing, setIndexing] = useState(false);
-
-  const handleReindex = async () => {
-    setIndexing(true);
-    try {
-      const res = await adminChatbotAPI.reindex();
-      if (res.success) {
-        toast.success(
-          `Index thành công ${res.indexedProducts} sản phẩm trong ${res.durationMs}ms!`,
-        );
-      } else {
-        toast.error(res.message || "Index thất bại");
-      }
-    } catch {
-      toast.error("Lỗi khi kết nối yêu cầu index sản phẩm.");
-    } finally {
-      setIndexing(false);
-    }
-  };
-
-  
-  useEffect(() => {
-    const handler = setTimeout(() => {
-      setDebouncedSearch(searchTerm);
-      setPage(0);
-    }, 500);
-    return () => clearTimeout(handler);
-  }, [searchTerm]);
-
-  
-  useEffect(() => {
-    adminAPI.getBrands(0, 100).then((res) => setBrandsList(res.content || []));
-    adminAPI
-      .getCategories(0, 100)
-      .then((res) => setCategoriesList(res.content || []));
-  }, []);
-
-  const fetchProducts = async () => {
-    try {
-      setLoading(true);
-      setError("");
-
-      let all: Product[] = [];
-      let currentPage = 0;
-      let totalPages = 1;
-
-      
-      while (currentPage < totalPages) {
-        const response = await adminAPI.getProducts(currentPage, 1000);
-        const content = response.content || [];
-        all = [...all, ...content];
-        totalPages = response.totalPages || 1;
-
-        
-        if (currentPage >= 100 || content.length === 0) break;
-        currentPage++;
-      }
-
-      setAllProducts(all);
-    } catch {
-      setError("Lỗi khi tải danh sách sản phẩm. Vui lòng thử lại sau.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      fetchProducts();
-    }, 0);
-    return () => clearTimeout(timer);
-  }, []);
-
-  
-  const filteredProducts = allProducts.filter((p) => {
-    const matchSearch = debouncedSearch
-      ? p.name.toLowerCase().includes(debouncedSearch.toLowerCase())
-      : true;
-    const matchCat = selectedCategory
-      ? String(p.category?.id ?? p.categoryId) === selectedCategory
-      : true;
-    const matchBrand = selectedBrand
-      ? String(p.brand?.id ?? p.brandId) === selectedBrand
-      : true;
-    return matchSearch && matchCat && matchBrand;
-  });
-
-  const totalElements = filteredProducts.length;
-  const totalPages = Math.ceil(totalElements / PAGE_SIZE) || 1;
-  const currentProducts = filteredProducts.slice(
-    page * PAGE_SIZE,
-    (page + 1) * PAGE_SIZE,
-  );
-
-  const handleAddClick = () => {
-    setEditingProduct(null);
-    setIsModalOpen(true);
-  };
-
-  const handleEditClick = (product: Product) => {
-    setEditingProduct(product);
-    setIsModalOpen(true);
-  };
-
-  const handleModalSuccess = () => {
-    fetchProducts();
-  };
-
-  const handleDeleteConfirm = async () => {
-    if (!deletingProduct) return;
-    setDeleteLoading(true);
-    try {
-      await adminAPI.deleteProduct(deletingProduct.id);
-      setDeletingProduct(null);
-      toast.success("Xóa sản phẩm thành công!");
-      fetchProducts();
-    } catch {
-      toast.error("Xóa sản phẩm thất bại. Vui lòng thử lại.");
-    } finally {
-      setDeleteLoading(false);
-    }
-  };
+  const {
+    brandsList,
+    categoriesList,
+    loading,
+    error,
+    page,
+    setPage,
+    searchTerm,
+    setSearchTerm,
+    selectedCategory,
+    setSelectedCategory,
+    selectedBrand,
+    setSelectedBrand,
+    sortBy,
+    setSortBy,
+    isModalOpen,
+    setIsModalOpen,
+    editingProduct,
+    deletingProduct,
+    setDeletingProduct,
+    deleteLoading,
+    indexing,
+    handleReindex,
+    totalElements,
+    totalPages,
+    currentProducts,
+    handleAddClick,
+    handleEditClick,
+    handleModalSuccess,
+    handleDeleteConfirm,
+  } = useDashboardProducts();
 
   return (
     <div className="flex flex-col gap-6">
@@ -197,7 +79,6 @@ export default function ProductsPage() {
             )}
             Index lại sản phẩm
           </button>
-          {/* Tạm thời loại bỏ nút import từ GearVN
           <button
             onClick={() => setIsGearvnModalOpen(true)}
             className="bg-gradient-to-r from-[#e31837] to-[#ff4d6d] text-white px-4 py-2 rounded-[8px] text-[14px] font-medium flex items-center gap-2 hover:from-[#c2102a] hover:to-[#e31837] transition-all cursor-pointer shadow-sm"
@@ -205,7 +86,6 @@ export default function ProductsPage() {
             <Download className="size-4" />
             Import từ GearVN
           </button>
-          */}
           <button
             onClick={handleAddClick}
             className="bg-[#0058be] text-white px-4 py-2 rounded-[8px] text-[14px] font-medium flex items-center gap-2 hover:bg-[#0047a3] transition-colors cursor-pointer"
@@ -252,7 +132,7 @@ export default function ProductsPage() {
               setSelectedBrand(e.target.value);
               setPage(0);
             }}
-            className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[8px] px-3 py-2 text-[14px] focus:outline-none focus:border-[#0058be] transition-all"
+            className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[8px] px-3 py-2 text-[14px] focus:outline-none focus:border-[#0058be] transition-all cursor-pointer font-medium text-[#334155]"
           >
             <option value="">Tất cả thương hiệu</option>
             {brandsList.map((b) => (
@@ -260,6 +140,20 @@ export default function ProductsPage() {
                 {b.name}
               </option>
             ))}
+          </select>
+
+          <select
+            value={sortBy}
+            onChange={(e) => {
+              setSortBy(e.target.value);
+              setPage(0);
+            }}
+            className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[8px] px-3 py-2 text-[14px] focus:outline-none focus:border-[#0058be] transition-all cursor-pointer font-semibold text-[#334155]"
+          >
+            <option value="id-desc">Mới nhất</option>
+            <option value="id-asc">Cũ nhất</option>
+            <option value="name-asc">Tên: A-Z</option>
+            <option value="name-desc">Tên: Z-A</option>
           </select>
         </div>
       </div>

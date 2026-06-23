@@ -13,7 +13,8 @@ import {
   UserX,
 } from "lucide-react";
 import { adminAPI, UserResponse, CreateStaffRequest } from "@/lib/api";
-import { USER_ROLE_MAP } from "@/lib/labelMapping";
+import { USER_ROLE_MAP } from "@/utils/labelMapping";
+import { formatDate } from "@/utils/format";
 import toast from "react-hot-toast";
 
 export default function UsersPage() {
@@ -25,6 +26,7 @@ export default function UsersPage() {
 
   
   const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState("id-desc");
   const [roleFilter, setRoleFilter] = useState<
     "ALL" | "ADMIN" | "STAFF" | "CUSTOMER"
   >("ALL");
@@ -103,8 +105,26 @@ export default function UsersPage() {
     return matchesSearch && matchesRole && matchesStatus;
   });
 
-  const totalPages = Math.ceil(filteredUsers.length / pageSize);
-  const paginatedUsers = filteredUsers.slice(
+  const sortedUsers = [...filteredUsers].sort((a, b) => {
+    if (sortBy === "name-asc") {
+      return a.username.localeCompare(b.username, "vi");
+    }
+    if (sortBy === "name-desc") {
+      return b.username.localeCompare(a.username, "vi");
+    }
+    if (sortBy === "id-asc") {
+      const valA = a.createdAt ? new Date(a.createdAt).getTime() : Number(a.id);
+      const valB = b.createdAt ? new Date(b.createdAt).getTime() : Number(b.id);
+      return valA - valB;
+    }
+    // default: id-desc (mới nhất)
+    const valA = a.createdAt ? new Date(a.createdAt).getTime() : Number(a.id);
+    const valB = b.createdAt ? new Date(b.createdAt).getTime() : Number(b.id);
+    return valB - valA;
+  });
+
+  const totalPages = Math.ceil(sortedUsers.length / pageSize);
+  const paginatedUsers = sortedUsers.slice(
     page * pageSize,
     (page + 1) * pageSize,
   );
@@ -136,7 +156,7 @@ export default function UsersPage() {
       </div>
 
       {}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 bg-white p-4 rounded-[12px] border border-[#e2e8f0]">
+      <div className="grid grid-cols-1 md:grid-cols-5 gap-4 bg-white p-4 rounded-[12px] border border-[#e2e8f0]">
         {}
         <div className="relative md:col-span-2">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-[#94a3b8]" />
@@ -197,6 +217,30 @@ export default function UsersPage() {
             <option value="ALL">Tất cả trạng thái</option>
             <option value="ACTIVE">Đang hoạt động</option>
             <option value="LOCKED">Bị khóa</option>
+          </select>
+        </div>
+
+        {}
+        <div className="flex items-center gap-2">
+          <label
+            className="text-[13px] font-semibold text-[#64748b] whitespace-nowrap"
+            style={{ fontFamily: "Inter, sans-serif" }}
+          >
+            Sắp xếp:
+          </label>
+          <select
+            value={sortBy}
+            onChange={(e) => {
+              setSortBy(e.target.value);
+              setPage(0);
+            }}
+            className="w-full bg-[#f8fafc] border border-[#e2e8f0] rounded-[8px] px-3 py-2 text-[13px] focus:outline-none focus:border-[#0058be] transition-colors font-semibold text-[#334155] cursor-pointer"
+            style={{ fontFamily: "Inter, sans-serif" }}
+          >
+            <option value="id-desc">Mới nhất</option>
+            <option value="id-asc">Cũ nhất</option>
+            <option value="name-asc">Tên: A-Z</option>
+            <option value="name-desc">Tên: Z-A</option>
           </select>
         </div>
       </div>
@@ -316,13 +360,7 @@ export default function UsersPage() {
                       )}
                     </td>
                     <td className="px-6 py-4 text-[#64748b] text-[13px]">
-                      {new Date(user.createdAt).toLocaleDateString("vi-VN", {
-                        year: "numeric",
-                        month: "2-digit",
-                        day: "2-digit",
-                        hour: "2-digit",
-                        minute: "2-digit",
-                      })}
+                      {formatDate(user.createdAt)}
                     </td>
                     <td className="px-6 py-4 text-right">
                       {user.role === "ADMIN" ? (

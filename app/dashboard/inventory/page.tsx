@@ -1,10 +1,7 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
 import { Loader2, RefreshCw, Search, Filter, Plus } from "lucide-react";
-import { adminAPI, InventoryBatchResponse, IssueSlipResponse } from "@/lib/api";
-import toast from "react-hot-toast";
-
+import { useDashboardInventory } from "@/hooks/useDashboardInventory";
 
 import BatchList from "@/components/dashboard/inventory/BatchList";
 import PurchaseOrderList from "@/components/dashboard/inventory/PurchaseOrderList";
@@ -14,136 +11,46 @@ import IssueSlipDetailModal from "@/components/dashboard/inventory/IssueSlipDeta
 import EditPricesModal from "@/components/dashboard/inventory/EditPricesModal";
 
 export default function InventoryPage() {
-  const [activeTab, setActiveTab] = useState<
-    "batches" | "purchase-orders" | "slips"
-  >("batches");
-  const [batches, setBatches] = useState<InventoryBatchResponse[]>([]);
-  const [slips, setSlips] = useState<IssueSlipResponse[]>([]);
-
-  const [isCreatePOOpen, setIsCreatePOOpen] = useState(false);
-  const [isCreateSlipOpen, setIsCreateSlipOpen] = useState(false);
-  const [poReloadTrigger, setPoReloadTrigger] = useState(0);
-
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-
-  
-  const [batchesPage, setBatchesPage] = useState(0);
-  const [batchesSize] = useState(10);
-  const [batchesTotalPages, setBatchesTotalPages] = useState(0);
-  const [batchesTotalElements, setBatchesTotalElements] = useState(0);
-
-  
-  const [slipsPage, setSlipsPage] = useState(0);
-  const [slipsSize] = useState(10);
-  const [slipsTotalPages, setSlipsTotalPages] = useState(0);
-  const [slipsTotalElements, setSlipsTotalElements] = useState(0);
-
-  
-  const [hideOutOfStock, setHideOutOfStock] = useState(false);
-
-  
-  const [statusFilter, setStatusFilter] = useState<
-    "ALL" | "PENDING" | "COMPLETED"
-  >("ALL");
-
-  
-  const [selectedSlip, setSelectedSlip] = useState<IssueSlipResponse | null>(
-    null,
-  );
-  const [editingBatch, setEditingBatch] =
-    useState<InventoryBatchResponse | null>(null);
-
-  const [savingPrices, setSavingPrices] = useState(false);
-  const [dispatchingId, setDispatchingId] = useState<number | null>(null);
-
-  
-  const fetchData = useCallback(
-    async (isRefresh = false) => {
-      if (isRefresh) {
-        setRefreshing(true);
-      } else {
-        setLoading(true);
-      }
-
-      try {
-        if (activeTab === "batches") {
-          const data = await adminAPI.getInventoryBatches(
-            batchesPage,
-            batchesSize,
-          );
-          setBatches(data.content || []);
-          setBatchesTotalPages(data.totalPages || 0);
-          setBatchesTotalElements(data.totalElements || 0);
-        } else if (activeTab === "slips") {
-          const data = await adminAPI.getIssueSlips(slipsPage, slipsSize);
-          setSlips(data.content || []);
-          setSlipsTotalPages(data.totalPages || 0);
-          setSlipsTotalElements(data.totalElements || 0);
-        } else if (activeTab === "purchase-orders") {
-          setPoReloadTrigger((prev) => prev + 1);
-        }
-      } catch (e: unknown) {
-        toast.error(
-          e instanceof Error ? e.message : "Không thể tải dữ liệu kho hàng",
-        );
-      } finally {
-        setLoading(false);
-        setRefreshing(false);
-      }
-    },
-    [activeTab, batchesPage, batchesSize, slipsPage, slipsSize],
-  );
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      fetchData();
-    }, 0);
-    return () => clearTimeout(timer);
-  }, [fetchData]);
-
-  
-  const handleDispatch = async (slipId: number) => {
-    setDispatchingId(slipId);
-    try {
-      const updatedSlip = await adminAPI.dispatchIssueSlip(slipId);
-      toast.success(`Đã xuất kho thành công phiếu #${updatedSlip.code}!`);
-
-      
-      setSlips((prev) => prev.map((s) => (s.id === slipId ? updatedSlip : s)));
-
-      
-      if (selectedSlip && selectedSlip.id === slipId) {
-        setSelectedSlip(updatedSlip);
-      }
-
-      fetchData(true);
-    } catch (e: unknown) {
-      toast.error(e instanceof Error ? e.message : "Xuất kho thất bại");
-    } finally {
-      setDispatchingId(null);
-    }
-  };
-
-  
-  const handleSavePrices = async (
-    batchId: number,
-    importPrice: number,
-    sellingPrice: number,
-  ) => {
-    setSavingPrices(true);
-    try {
-      await adminAPI.updateInventoryPrices(batchId, importPrice, sellingPrice);
-      toast.success("Cập nhật giá thành công!");
-      setEditingBatch(null);
-      fetchData(true); 
-    } catch (e: unknown) {
-      toast.error(e instanceof Error ? e.message : "Cập nhật giá thất bại");
-    } finally {
-      setSavingPrices(false);
-    }
-  };
+  const {
+    activeTab,
+    setActiveTab,
+    batches,
+    slips,
+    isCreatePOOpen,
+    setIsCreatePOOpen,
+    isCreateSlipOpen,
+    setIsCreateSlipOpen,
+    poReloadTrigger,
+    loading,
+    refreshing,
+    searchQuery,
+    setSearchQuery,
+    batchesPage,
+    setBatchesPage,
+    batchesSize,
+    batchesTotalPages,
+    batchesTotalElements,
+    slipsPage,
+    setSlipsPage,
+    slipsSize,
+    slipsTotalPages,
+    slipsTotalElements,
+    hideOutOfStock,
+    setHideOutOfStock,
+    statusFilter,
+    setStatusFilter,
+    selectedSlip,
+    setSelectedSlip,
+    editingBatch,
+    setEditingBatch,
+    savingPrices,
+    dispatchingId,
+    fetchData,
+    handleDispatch,
+    handleSavePrices,
+    sortBy,
+    setSortBy,
+  } = useDashboardInventory();
 
   return (
     <div
@@ -224,22 +131,52 @@ export default function InventoryPage() {
 
       {}
       <div className="flex flex-col md:flex-row items-center justify-between bg-white p-4 rounded-[12px] border border-[#e2e8f0] gap-4 shadow-sm">
-        {}
-        <div className="relative w-full md:w-[320px]">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-[#94a3b8]" />
-          <input
-            type="text"
-            placeholder={
-              activeTab === "batches"
-                ? "Tìm theo tên, mã lô hoặc mã SP..."
-                : activeTab === "purchase-orders"
-                  ? "Tìm mã phiếu nhập, nhà cung cấp..."
-                  : "Tìm mã phiếu, người nhận, SĐT..."
-            }
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-[#f8fafc] border border-[#e2e8f0] rounded-[8px] pl-9 pr-4 py-1.5 text-[14px] focus:outline-none focus:border-[#0058be] focus:ring-1 focus:ring-[#0058be] transition-all"
-          />
+        <div className="flex flex-col md:flex-row items-center gap-3 w-full md:w-auto">
+          {/* Tìm kiếm */}
+          <div className="relative w-full md:w-[320px]">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-[#94a3b8]" />
+            <input
+              type="text"
+              placeholder={
+                activeTab === "batches"
+                  ? "Tìm theo tên, mã lô hoặc mã SP..."
+                  : activeTab === "purchase-orders"
+                    ? "Tìm mã phiếu nhập, nhà cung cấp..."
+                    : "Tìm mã phiếu, người nhận, SĐT..."
+              }
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="w-full bg-[#f8fafc] border border-[#e2e8f0] rounded-[8px] pl-9 pr-4 py-1.5 text-[14px] focus:outline-none focus:border-[#0058be] focus:ring-1 focus:ring-[#0058be] transition-all"
+            />
+          </div>
+
+          {/* Sắp xếp */}
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[8px] px-3 py-1.5 text-[14px] focus:outline-none focus:border-[#0058be] transition-all cursor-pointer font-semibold text-[#334155] w-full md:w-auto"
+          >
+            <option value="id-desc">Mới nhất</option>
+            <option value="id-asc">Cũ nhất</option>
+            {activeTab === "batches" && (
+              <>
+                <option value="name-asc">Sản phẩm: A-Z</option>
+                <option value="name-desc">Sản phẩm: Z-A</option>
+              </>
+            )}
+            {activeTab === "purchase-orders" && (
+              <>
+                <option value="name-asc">Nhà cung cấp: A-Z</option>
+                <option value="name-desc">Nhà cung cấp: Z-A</option>
+              </>
+            )}
+            {activeTab === "slips" && (
+              <>
+                <option value="name-asc">Người nhận: A-Z</option>
+                <option value="name-desc">Người nhận: Z-A</option>
+              </>
+            )}
+          </select>
         </div>
 
         {}
@@ -314,6 +251,7 @@ export default function InventoryPage() {
           onEditClick={setEditingBatch}
           searchQuery={searchQuery}
           hideOutOfStock={hideOutOfStock}
+          sortBy={sortBy}
         />
       ) : activeTab === "purchase-orders" ? (
         <PurchaseOrderList
@@ -321,6 +259,7 @@ export default function InventoryPage() {
           isCreateOpen={isCreatePOOpen}
           setIsCreateOpen={setIsCreatePOOpen}
           reloadTrigger={poReloadTrigger}
+          sortBy={sortBy}
         />
       ) : (
         <IssueSlipList
@@ -335,6 +274,7 @@ export default function InventoryPage() {
           dispatchingId={dispatchingId}
           searchQuery={searchQuery}
           statusFilter={statusFilter}
+          sortBy={sortBy}
         />
       )}
 

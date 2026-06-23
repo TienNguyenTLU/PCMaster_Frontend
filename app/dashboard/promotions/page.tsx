@@ -30,6 +30,7 @@ export default function PromotionsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState("id-desc");
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingPromotion, setEditingPromotion] = useState<Promotion | null>(
@@ -69,6 +70,24 @@ export default function PromotionsPage() {
       p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       p.slug.toLowerCase().includes(searchQuery.toLowerCase()),
   );
+
+  const sortedPromotions = [...filteredPromotions].sort((a, b) => {
+    if (sortBy === "name-asc") {
+      return a.name.localeCompare(b.name, "vi");
+    }
+    if (sortBy === "name-desc") {
+      return b.name.localeCompare(a.name, "vi");
+    }
+    if (sortBy === "id-asc") {
+      const valA = a.createdAt ? new Date(a.createdAt).getTime() : Number(a.id);
+      const valB = b.createdAt ? new Date(b.createdAt).getTime() : Number(b.id);
+      return valA - valB;
+    }
+    // default: id-desc (mới nhất)
+    const valA = a.createdAt ? new Date(a.createdAt).getTime() : Number(a.id);
+    const valB = b.createdAt ? new Date(b.createdAt).getTime() : Number(b.id);
+    return valB - valA;
+  });
 
   const handleCreate = () => {
     setEditingPromotion(null);
@@ -154,6 +173,16 @@ export default function PromotionsPage() {
               className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[8px] pl-9 pr-4 py-1.5 text-[14px] focus:outline-none focus:border-[#0058be] focus:ring-1 focus:ring-[#0058be] transition-all w-[300px]"
             />
           </div>
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[8px] px-3 py-1.5 text-[14px] focus:outline-none focus:border-[#0058be] transition-all cursor-pointer font-semibold text-[#334155]"
+          >
+            <option value="id-desc">Mới nhất</option>
+            <option value="id-asc">Cũ nhất</option>
+            <option value="name-asc">Tên: A-Z</option>
+            <option value="name-desc">Tên: Z-A</option>
+          </select>
         </div>
       </div>
 
@@ -167,14 +196,14 @@ export default function PromotionsPage() {
         <div className="flex items-center justify-center min-h-[300px] text-red-500 bg-white rounded-[12px] border border-[#e2e8f0]">
           {error}
         </div>
-      ) : filteredPromotions.length === 0 ? (
+      ) : sortedPromotions.length === 0 ? (
         <div className="flex flex-col items-center justify-center min-h-[300px] text-[#64748b] bg-white rounded-[12px] border border-[#e2e8f0] gap-2">
           <Sparkles className="size-8 text-[#94a3b8] opacity-50" />
           Chưa có chương trình khuyến mãi nào được tạo.
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredPromotions.map((p) => {
+          {sortedPromotions.map((p) => {
             const bannerSrc = p.bannerUrl?.startsWith("http")
               ? p.bannerUrl
               : p.bannerUrl

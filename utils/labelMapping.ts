@@ -16,8 +16,7 @@ import {
   Wind,
   Disc,
 } from "lucide-react";
-import { OrderStatus, DeliveryType, PaymentStatus, PaymentMethod } from "./api";
-
+import { OrderStatus, DeliveryType, PaymentStatus, PaymentMethod } from "@/lib/api";
 
 export const STATUS_META: Record<
   OrderStatus,
@@ -55,7 +54,6 @@ export const STATUS_META: Record<
   },
 };
 
-
 export const PAYMENT_STATUS_META: Record<
   PaymentStatus,
   { label: string; color: string; bg: string; Icon: React.ComponentType<{ className?: string }> }
@@ -80,7 +78,6 @@ export const PAYMENT_STATUS_META: Record<
   },
 };
 
-
 export const PAYMENT_METHOD_META: Record<
   PaymentMethod,
   { label: string; color: string; bg: string }
@@ -102,7 +99,6 @@ export const PAYMENT_METHOD_META: Record<
   },
 };
 
-
 export const DELIVERY_META: Record<
   DeliveryType,
   { label: string; Icon: React.ComponentType<{ className?: string }> }
@@ -111,13 +107,11 @@ export const DELIVERY_META: Record<
   SHOWROOM_PICKUP: { label: "Tại showroom", Icon: Store },
 };
 
-
 export const USER_ROLE_MAP = {
   ADMIN: "Quản trị viên",
   STAFF: "Nhân viên",
   CUSTOMER: "Khách hàng",
 };
-
 
 export const DASHBOARD_TITLE_MAP: Record<string, string> = {
   overview: "Tổng quan",
@@ -134,7 +128,6 @@ export const DASHBOARD_TITLE_MAP: Record<string, string> = {
   coupons: "Mã giảm giá (Coupon)",
 };
 
-
 export const SLOT_LABEL_MAP: Record<string, string> = {
   cpu: "Vi xử lý (CPU)",
   mainboard: "Bo mạch chủ (Mainboard)",
@@ -143,7 +136,6 @@ export const SLOT_LABEL_MAP: Record<string, string> = {
   case: "Vỏ máy (Case)",
   cooler: "Tản nhiệt CPU",
 };
-
 
 export const PC_COMPONENT_CATEGORY_LABELS = {
   cpu: "Bộ vi xử lý (CPU)",
@@ -168,7 +160,6 @@ export const PC_COMPONENT_CATEGORY_ICONS = {
   cooler: Wind,
   fan: Disc,
 };
-
 
 export function getCategoryLabel(name: string): string {
   if (!name) return "";
@@ -205,9 +196,7 @@ export function getCategoryLabel(name: string): string {
   }
 }
 
-
 export const SPEC_LABEL_MAP: Record<string, string> = {
-  
   usage_need: "Nhu cầu sử dụng",
   brand: "Thương hiệu",
   component_type: "Loại linh kiện",
@@ -219,8 +208,6 @@ export const SPEC_LABEL_MAP: Record<string, string> = {
   generation: "Thế hệ CPU",
   architecture: "Kiến trúc",
   platform: "Nền tảng",
-
-  
   cores: "Số nhân",
   threads: "Số luồng",
   socket: "Socket",
@@ -242,8 +229,6 @@ export const SPEC_LABEL_MAP: Record<string, string> = {
   memory_support: "Hỗ trợ RAM",
   memory_channels: "Số kênh RAM",
   condition: "Tình trạng",
-
-  
   type: "Loại",
   capacity_gb: "Dung lượng (GB)",
   kit: "Kit",
@@ -264,8 +249,6 @@ export const SPEC_LABEL_MAP: Record<string, string> = {
   lo_i_ram: "Loại Ram",
   memory_speed: "Bus RAM / Tốc độ",
   latency: "Độ trễ Latency",
-
-  
   interface: "Giao diện kết nối",
   giao_di_n_k_t_n_i: "Giao diện kết nối",
   read_speed_mbps: "Tốc độ đọc (MB/s)",
@@ -287,8 +270,6 @@ export const SPEC_LABEL_MAP: Record<string, string> = {
   tbw_b_n_ghi: "Độ bền ghi (TBW)",
   tbw_w: "Độ bền ghi (TBW)",
   dung_l_ng: "Dung lượng",
-
-  
   vram_gb: "VRAM (GB)",
   vram_type: "Loại VRAM",
   base_clock_mhz: "Xung cơ bản (MHz)",
@@ -316,8 +297,6 @@ export const SPEC_LABEL_MAP: Record<string, string> = {
   weight: "Trọng lượng",
   cuda_cores: "số nhân Cuda",
   ai_tops: "Hiệu năng AI (TOPS)",
-
-  
   chipset: "Chipset",
   ram_type: "Loại RAM",
   form_factor: "Form factor",
@@ -338,8 +317,6 @@ export const SPEC_LABEL_MAP: Record<string, string> = {
   khe_ram_t_i_a: "Số khe RAM tối đa",
   warranty: "Bảo hành",
   max_memory_capacity: "Dung lượng bộ nhớ tối đa",
-
-  
   wattage: "Công suất (W)",
   efficiency_rating: "Hiệu suất",
   modularity: "Modularity",
@@ -358,8 +335,6 @@ export const SPEC_LABEL_MAP: Record<string, string> = {
   t_nh_n_ng_b_o_v: "Tính năng bảo vệ",
   i_n_p_u_v_o: "Điện áp đầu vào",
   t_c_quay_c_a_fan: "Tốc độ quay của quạt",
-
-  
   panel_type: "Loại tấm nền",
   resolution: "Độ phân giải",
   refresh_rate_hz: "Tần số quét (Hz)",
@@ -370,8 +345,6 @@ export const SPEC_LABEL_MAP: Record<string, string> = {
   brightness_cdm2: "Độ sáng (cd/m²)",
   response_time_ms: "Phản hồi (ms)",
   color_accuracy: "Độ chuẩn màu",
-
-  
   cooler_type: "Loại tản nhiệt",
   lo_i_s_n_ph_m: "Loại tản nhiệt",
   fan_size_mm: "Kích thước quạt (mm)",
@@ -405,8 +378,6 @@ export const SPEC_LABEL_MAP: Record<string, string> = {
   led_type: "Đèn LED",
   special_features: "Tính năng đặc biệt",
   t_nh_n_ng_c_bi_t: "Tính năng đặc biệt",
-
-  
   is_addressable_rgb: "LED ARGB",
   size_mm: "Kích thước (mm)",
   connection_type: "Chuẩn cắm",
@@ -425,8 +396,6 @@ export const SPEC_LABEL_MAP: Record<string, string> = {
   "Lưu lượng gió (CFM)": "Lưu lượng gió (CFM)",
   "Kích thước quạt (mm)": "Kích thước quạt (mm)",
   m_u_s_c: "Màu sắc",
-
-  
   cpu: "Bộ vi xử lý (CPU)",
   ram: "Bộ nhớ RAM",
   s_khe_ram: "Số khe cắm RAM",
@@ -464,8 +433,6 @@ export const SPEC_LABEL_MAP: Record<string, string> = {
   chu_n_m_u: "Độ chuẩn màu",
   card_h_a: "Card đồ họa (VGA)",
   nhu_c_u_s_d_ng_laptop: "Nhu cầu sử dụng",
-
-  
   size: "Kích thước",
   case_size: "Kích thước vỏ máy",
   k_ch_th_c_case: "Kích thước vỏ máy",
@@ -478,7 +445,6 @@ export const SPEC_LABEL_MAP: Record<string, string> = {
   fan_count_included: "Số lượng quạt đi kèm",
   s_l_ng_qu_t_i_k_m: "Số lượng quạt đi kèm",
   color: "Màu sắc",
-  "Màu sắc": "Màu sắc",
   material: "Chất liệu",
   ch_t_li_u: "Chất liệu",
   usb_3_0_ports: "Cổng USB 3.0",
@@ -486,7 +452,6 @@ export const SPEC_LABEL_MAP: Record<string, string> = {
   usb_2_0_ports: "Cổng USB 2.0",
   c_ng_usb_2_0: "Cổng USB 2.0",
   usb_type_c_ports: "Cổng USB Type-C",
-  "Cổng USB Type-C": "Cổng USB Type-C",
   c_ng_usb_type_c: "Cổng USB Type-C",
   audio_ports: "Cổng kết nối Audio",
   c_ng_audio: "Cổng kết nối Audio",

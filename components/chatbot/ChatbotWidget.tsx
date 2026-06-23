@@ -23,8 +23,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { chatbotAPI } from "@/lib/api";
 import { ChatMessage, RecommendedProduct } from "@/lib/types/chatbot";
-import { useCartStore } from "@/lib/store";
-import toast from "react-hot-toast";
+import { useCartManager } from "@/hooks/useCartManager";
 
 
 const WELCOME_CONSULT_MESSAGE: ChatMessage = {
@@ -59,7 +58,7 @@ export default function ChatbotWidget() {
   const [isOpen, setIsOpen] = useState(false);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [addingId, setAddingId] = useState<number | null>(null);
+  const { handleAddToCart, addingIds } = useCartManager();
 
   
   const [messages, setMessages] = useState<ChatMessage[]>([
@@ -68,7 +67,6 @@ export default function ChatbotWidget() {
 
   const chatEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
-  const { addItem } = useCartStore();
 
   
   useEffect(() => {
@@ -134,22 +132,13 @@ export default function ChatbotWidget() {
   );
 
   
-  const handleAddToCart = useCallback(
+  const handleAddToCartClick = useCallback(
     async (e: React.MouseEvent, product: RecommendedProduct) => {
       e.preventDefault();
-      if (product.stock === 0 || addingId !== null) return;
-
-      setAddingId(product.id);
-      try {
-        await addItem(product.id, 1);
-        toast.success(`Đã thêm "${product.name}" vào giỏ hàng!`);
-      } catch {
-        toast.error("Vui lòng đăng nhập để thêm sản phẩm vào giỏ hàng.");
-      } finally {
-        setAddingId(null);
-      }
+      if (product.stock === 0) return;
+      await handleAddToCart(product.id, 1);
     },
-    [addingId, addItem],
+    [handleAddToCart],
   );
 
   
@@ -225,8 +214,8 @@ export default function ChatbotWidget() {
               <MessageBubble
                 key={index}
                 message={msg}
-                addingId={addingId}
-                onAddToCart={handleAddToCart}
+                addingIds={addingIds}
+                onAddToCart={handleAddToCartClick}
               />
             ))}
 
@@ -307,11 +296,11 @@ export default function ChatbotWidget() {
 
 interface MessageBubbleProps {
   message: ChatMessage;
-  addingId: number | null;
+  addingIds: Set<number | string>;
   onAddToCart: (e: React.MouseEvent, product: RecommendedProduct) => void;
 }
 
-function MessageBubble({ message, addingId, onAddToCart }: MessageBubbleProps) {
+function MessageBubble({ message, addingIds, onAddToCart }: MessageBubbleProps) {
   const isUser = message.role === "user";
 
   return (
@@ -345,7 +334,7 @@ function MessageBubble({ message, addingId, onAddToCart }: MessageBubbleProps) {
       {!isUser && message.products && message.products.length > 0 && (
         <ProductSlider
           products={message.products}
-          addingId={addingId}
+          addingIds={addingIds}
           onAddToCart={onAddToCart}
         />
       )}
@@ -377,13 +366,13 @@ function MarkdownText({ text, isUser }: { text: string; isUser: boolean }) {
 
 interface ProductSliderProps {
   products: RecommendedProduct[];
-  addingId: number | null;
+  addingIds: Set<number | string>;
   onAddToCart: (e: React.MouseEvent, product: RecommendedProduct) => void;
 }
 
 function ProductSlider({
   products,
-  addingId,
+  addingIds,
   onAddToCart,
 }: ProductSliderProps) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -520,12 +509,12 @@ function ProductSlider({
 
                     <button
                       type="button"
-                      disabled={product.stock === 0 || addingId === product.id}
+                      disabled={product.stock === 0 || addingIds.has(product.id)}
                       onClick={(e) => onAddToCart(e, product)}
                       className="p-1.5 rounded-md bg-gray-100 hover:bg-[#0058be] text-gray-400 hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
                       aria-label="Thêm vào giỏ"
                     >
-                      {addingId === product.id ? (
+                      {addingIds.has(product.id) ? (
                         <Loader2 className="size-3.5 animate-spin" />
                       ) : (
                         <ShoppingCart className="size-3.5" />

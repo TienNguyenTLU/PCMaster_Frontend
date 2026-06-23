@@ -1,7 +1,7 @@
 "use client";
 
 import { Loader2 } from "lucide-react";
-import { BuildState } from "./BuildPage";
+import { BuildState } from "@/hooks/usePcBuildState";
 
 interface BottleneckReportProps {
   build: BuildState;

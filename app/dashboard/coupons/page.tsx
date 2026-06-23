@@ -22,6 +22,7 @@ export default function CouponsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [searchQuery, setSearchQuery] = useState("");
+  const [sortBy, setSortBy] = useState("id-desc");
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingCoupon, setEditingCoupon] = useState<Coupon | null>(null);
@@ -48,6 +49,24 @@ export default function CouponsPage() {
       c.code.toLowerCase().includes(searchQuery.toLowerCase()) ||
       c.discountType.toLowerCase().includes(searchQuery.toLowerCase()),
   );
+
+  const sortedCoupons = [...filteredCoupons].sort((a, b) => {
+    if (sortBy === "name-asc") {
+      return a.code.localeCompare(b.code, "en");
+    }
+    if (sortBy === "name-desc") {
+      return b.code.localeCompare(a.code, "en");
+    }
+    if (sortBy === "id-asc") {
+      const valA = a.createdAt ? new Date(a.createdAt).getTime() : Number(a.id);
+      const valB = b.createdAt ? new Date(b.createdAt).getTime() : Number(b.id);
+      return valA - valB;
+    }
+    // default: id-desc (mới nhất)
+    const valA = a.createdAt ? new Date(a.createdAt).getTime() : Number(a.id);
+    const valB = b.createdAt ? new Date(b.createdAt).getTime() : Number(b.id);
+    return valB - valA;
+  });
 
   const handleCreate = () => {
     setEditingCoupon(null);
@@ -145,6 +164,16 @@ export default function CouponsPage() {
               className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[8px] pl-9 pr-4 py-1.5 text-[14px] focus:outline-none focus:border-[#0058be] focus:ring-1 focus:ring-[#0058be] transition-all w-[300px]"
             />
           </div>
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[8px] px-3 py-1.5 text-[14px] focus:outline-none focus:border-[#0058be] transition-all cursor-pointer font-semibold text-[#334155]"
+          >
+            <option value="id-desc">Mới nhất</option>
+            <option value="id-asc">Cũ nhất</option>
+            <option value="name-asc">Mã: A-Z</option>
+            <option value="name-desc">Mã: Z-A</option>
+          </select>
         </div>
       </div>
 
@@ -160,7 +189,7 @@ export default function CouponsPage() {
             <div className="flex items-center justify-center h-[300px] text-red-500">
               {error}
             </div>
-          ) : filteredCoupons.length === 0 ? (
+          ) : sortedCoupons.length === 0 ? (
             <div className="flex flex-col items-center justify-center h-[300px] text-[#64748b] gap-2">
               <Ticket className="size-8 opacity-40" />
               <span>Không tìm thấy mã giảm giá nào.</span>
@@ -183,7 +212,7 @@ export default function CouponsPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#e2e8f0]">
-                {filteredCoupons.map((coupon) => (
+                {sortedCoupons.map((coupon) => (
                   <tr
                     key={coupon.id}
                     className="hover:bg-[#f8fafc] transition-colors"

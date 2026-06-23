@@ -15,7 +15,10 @@ export default function HomePage() {
   return (
     <div
       className="flex flex-col min-h-screen w-full"
-      style={{ background: "linear-gradient(90deg, #f7f9fb 0%, #f7f9fb 100%)" }}
+      style={{
+        background: "linear-gradient(90deg, #f7f9fb 0%, #f7f9fb 100%)",
+        zoom: "0.9"
+      }}
     >
       {}
       <HomeNavBar />

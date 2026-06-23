@@ -1,6 +1,5 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
 import {
   Loader2,
   RefreshCw,
@@ -9,120 +8,73 @@ import {
   FileText,
   ChevronDown,
   ShoppingBag,
-  Home,
-  Store,
   ClipboardList,
   CheckCircle2,
   Truck,
   Package2,
-  XCircle,
-  CreditCard,
 } from "lucide-react";
-import { orderAPI, OrderResponse, OrderStatus, DeliveryType, PaymentStatus } from "@/lib/api";
-import toast from "react-hot-toast";
-
+import { OrderStatus, PaymentStatus } from "@/lib/api";
 import StatusBadge from "@/components/dashboard/orders/StatusBadge";
 import OrderDetailModal from "@/components/dashboard/orders/OrderDetailModal";
-import { PAYMENT_STATUS_META, PAYMENT_METHOD_META } from "@/lib/labelMapping";
-
-function formatPrice(n: number) {
-  return new Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency: "VND",
-  }).format(n);
-}
-
-function formatDate(iso: string) {
-  return new Date(iso).toLocaleString("vi-VN", {
-    day: "2-digit",
-    month: "2-digit",
-    year: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
-
-const DELIVERY_META: Record<
-  DeliveryType,
-  { label: string; Icon: React.ElementType }
-> = {
-  HOME_DELIVERY: { label: "Giao tận nhà", Icon: Home },
-  SHOWROOM_PICKUP: { label: "Tại showroom", Icon: Store },
-};
+import { PAYMENT_STATUS_META, PAYMENT_METHOD_META, DELIVERY_META } from "@/utils/labelMapping";
+import { formatPrice, formatDate } from "@/utils/format";
+import { useDashboardOrders } from "@/hooks/useDashboardOrders";
 
 export default function OrdersPage() {
-  const [orders, setOrders] = useState<OrderResponse[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
-  const [filterStatus, setFilterStatus] = useState<OrderStatus | "ALL">("ALL");
-  const [filterPayment, setFilterPayment] = useState<PaymentStatus | "ALL">("ALL");
-  const [selectedOrder, setSelectedOrder] = useState<OrderResponse | null>(
-    null,
-  );
-
-  const fetchOrders = useCallback(async () => {
-    setLoading(true);
-    try {
-      const data = await orderAPI.adminListAll();
-      setOrders(data || []);
-    } catch {
-      toast.error("Không thể tải danh sách đơn hàng");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      fetchOrders();
-    }, 0);
-    return () => clearTimeout(timer);
-  }, [fetchOrders]);
-
-  const filtered = orders.filter((o) => {
-    const matchStatus = filterStatus === "ALL" || o.status === filterStatus;
-    const matchPayment = filterPayment === "ALL" || o.paymentStatus === filterPayment;
-    const q = search.toLowerCase();
-    const matchSearch =
-      !search ||
-      String(o.id).includes(q) ||
-      (o.username ?? "").toLowerCase().includes(q) ||
-      (o.email ?? "").toLowerCase().includes(q);
-    return matchStatus && matchPayment && matchSearch;
-  });
+  const {
+    orders,
+    loading,
+    search,
+    setSearch,
+    filterStatus,
+    setFilterStatus,
+    filterPayment,
+    setFilterPayment,
+    selectedOrder,
+    setSelectedOrder,
+    fetchOrders,
+    filtered,
+    totalOrdersCount,
+    draftCount,
+    confirmedCount,
+    shippedCount,
+    deliveredCount,
+    sortBy,
+    setSortBy,
+  } = useDashboardOrders();
 
   const stats = [
     {
       label: "Tổng đơn hàng",
-      value: orders.length,
+      value: totalOrdersCount,
       color: "text-[#0058be]",
       bg: "bg-blue-50/80 border border-blue-100",
       Icon: ShoppingBag,
     },
     {
       label: "Chờ duyệt",
-      value: orders.filter((o) => o.status === "DRAFT").length,
+      value: draftCount,
       color: "text-amber-600",
       bg: "bg-amber-50/80 border border-amber-100",
       Icon: ClipboardList,
     },
     {
       label: "Đã duyệt",
-      value: orders.filter((o) => o.status === "CONFIRMED").length,
+      value: confirmedCount,
       color: "text-blue-600",
       bg: "bg-blue-50/80 border border-blue-100",
       Icon: CheckCircle2,
     },
     {
       label: "Đang giao",
-      value: orders.filter((o) => o.status === "SHIPPED").length,
+      value: shippedCount,
       color: "text-violet-600",
       bg: "bg-violet-50/80 border border-violet-100",
       Icon: Truck,
     },
     {
       label: "Đã giao",
-      value: orders.filter((o) => o.status === "DELIVERED").length,
+      value: deliveredCount,
       color: "text-emerald-600",
       bg: "bg-emerald-50/80 border border-emerald-100",
       Icon: Package2,
@@ -217,6 +169,21 @@ export default function OrdersPage() {
             <option value="PENDING">Chờ thanh toán</option>
             <option value="PAID">Đã thanh toán</option>
             <option value="FAILED">Thanh toán lỗi</option>
+          </select>
+          <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 size-3.5 text-[#94a3b8] pointer-events-none" />
+        </div>
+
+        {/* Sort select */}
+        <div className="relative w-full md:w-auto">
+          <select
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+            className="appearance-none w-full md:w-auto bg-[#f8fafc] border border-[#e2e8f0] rounded-[8px] pl-3 pr-8 py-1.5 text-[14px] font-semibold text-[#334155] focus:outline-none focus:border-[#0058be] transition-all cursor-pointer"
+          >
+            <option value="id-desc">Mới nhất</option>
+            <option value="id-asc">Cũ nhất</option>
+            <option value="name-asc">Khách hàng: A-Z</option>
+            <option value="name-desc">Khách hàng: Z-A</option>
           </select>
           <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 size-3.5 text-[#94a3b8] pointer-events-none" />
         </div>

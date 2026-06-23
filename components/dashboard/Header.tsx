@@ -14,7 +14,8 @@ import {
 import { useAuthStore } from "@/lib/store";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { DASHBOARD_TITLE_MAP } from "@/lib/labelMapping";
+import { DASHBOARD_TITLE_MAP } from "@/utils/labelMapping";
+import { formatPrice, formatTimeAgo } from "@/utils/format";
 import { orderAPI, adminAPI } from "@/lib/api";
 
 interface DashboardNotification {
@@ -24,30 +25,6 @@ interface DashboardNotification {
   description: string;
   createdAt: string;
   link: string;
-}
-
-function formatPrice(n: number) {
-  return new Intl.NumberFormat("vi-VN", {
-    style: "currency",
-    currency: "VND",
-  }).format(n);
-}
-
-function formatTimeAgo(iso: string) {
-  const d = new Date(iso);
-  const now = new Date();
-  const diffMs = now.getTime() - d.getTime();
-  const diffMins = Math.floor(diffMs / 60000);
-  if (diffMins < 1) return "Vừa xong";
-  if (diffMins < 60) return `${diffMins} phút trước`;
-  const diffHours = Math.floor(diffMins / 60);
-  if (diffHours < 24) return `${diffHours} giờ trước`;
-  return d.toLocaleDateString("vi-VN", {
-    day: "2-digit",
-    month: "2-digit",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
 }
 
 export default function Header() {

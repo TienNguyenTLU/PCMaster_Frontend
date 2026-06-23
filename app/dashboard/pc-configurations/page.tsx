@@ -30,6 +30,7 @@ export default function PcConfigurationsPage() {
   const [brandsList, setBrandsList] = useState<Brand[]>([]);
   const [selectedBrand, setSelectedBrand] = useState("");
   const [stockStatus, setStockStatus] = useState("");
+  const [sortBy, setSortBy] = useState("id-desc");
 
   
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -114,9 +115,27 @@ export default function PcConfigurationsPage() {
     return matchSearch && matchBrand && matchStock;
   });
 
-  const totalElements = filteredProducts.length;
+  const sortedProducts = [...filteredProducts].sort((a, b) => {
+    if (sortBy === "name-asc") {
+      return a.name.localeCompare(b.name, "vi");
+    }
+    if (sortBy === "name-desc") {
+      return b.name.localeCompare(a.name, "vi");
+    }
+    if (sortBy === "id-asc") {
+      const valA = a.createdAt ? new Date(a.createdAt).getTime() : Number(a.id);
+      const valB = b.createdAt ? new Date(b.createdAt).getTime() : Number(b.id);
+      return valA - valB;
+    }
+    // default: id-desc (mới nhất)
+    const valA = a.createdAt ? new Date(a.createdAt).getTime() : Number(a.id);
+    const valB = b.createdAt ? new Date(b.createdAt).getTime() : Number(b.id);
+    return valB - valA;
+  });
+
+  const totalElements = sortedProducts.length;
   const totalPages = Math.ceil(totalElements / PAGE_SIZE) || 1;
-  const currentProducts = filteredProducts.slice(
+  const currentProducts = sortedProducts.slice(
     page * PAGE_SIZE,
     (page + 1) * PAGE_SIZE,
   );
@@ -204,11 +223,25 @@ export default function PcConfigurationsPage() {
               setStockStatus(e.target.value);
               setPage(0);
             }}
-            className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[8px] px-3 py-2 text-[14px] focus:outline-none focus:border-[#0058be] transition-all cursor-pointer"
+            className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[8px] px-3 py-2 text-[14px] focus:outline-none focus:border-[#0058be] transition-all cursor-pointer font-medium text-[#334155]"
           >
             <option value="">Tất cả trạng thái</option>
             <option value="in-stock">Còn hàng</option>
             <option value="out-of-stock">Hết hàng</option>
+          </select>
+
+          <select
+            value={sortBy}
+            onChange={(e) => {
+              setSortBy(e.target.value);
+              setPage(0);
+            }}
+            className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[8px] px-3 py-2 text-[14px] focus:outline-none focus:border-[#0058be] transition-all cursor-pointer font-semibold text-[#334155]"
+          >
+            <option value="id-desc">Mới nhất</option>
+            <option value="id-asc">Cũ nhất</option>
+            <option value="name-asc">Tên: A-Z</option>
+            <option value="name-desc">Tên: Z-A</option>
           </select>
         </div>
       </div>

@@ -31,7 +31,7 @@ import {
   STATUS_META,
   PAYMENT_STATUS_META,
   PAYMENT_METHOD_META,
-} from "@/lib/labelMapping";
+} from "@/utils/labelMapping";
 
 export default function MyOrdersPage() {
   const { user, isHydrated } = useAuthStore();
