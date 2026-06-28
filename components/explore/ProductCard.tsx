@@ -25,13 +25,13 @@ export default function ProductCard({ product }: ProductCardProps) {
   if (specs.cores) highlights.push(`${specs.cores} nhân`);
   if (specs.threads) highlights.push(`${specs.threads} luồng`);
   if (specs.socket) highlights.push(specs.socket);
-  if (specs.vram_gb) highlights.push(`${specs.vram_gb}GB VRAM`);
-  if (specs.capacity_gb && !specs.vram_gb)
+  if (specs.vram) highlights.push(`${specs.vram}GB VRAM`);
+  if (specs.capacity_gb && !specs.vram)
     highlights.push(`${specs.capacity_gb}GB`);
   if (specs.wattage) highlights.push(`${specs.wattage}W`);
   if (specs.refresh_rate_hz) highlights.push(`${specs.refresh_rate_hz}Hz`);
   if (specs.panel_type) highlights.push(specs.panel_type);
-  if (specs.ram_type && !specs.vram_gb && !specs.cores)
+  if (specs.ram_type && !specs.vram && !specs.cores)
     highlights.push(specs.ram_type);
 
   const imgSrc = product.thumbnailUrl?.startsWith("http")

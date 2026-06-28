@@ -147,11 +147,13 @@ export default function OrdersPage() {
             className="appearance-none w-full md:w-auto bg-[#f8fafc] border border-[#e2e8f0] rounded-[8px] pl-3 pr-8 py-1.5 text-[14px] font-medium text-[#475569] focus:outline-none focus:border-[#0058be] transition-all cursor-pointer"
           >
             <option value="ALL">Tất cả trạng thái đơn</option>
-            <option value="DRAFT">Chờ duyệt</option>
+            <option value="DRAFT">Nháp</option>
+            <option value="PENDING_APPROVAL">Chờ duyệt</option>
             <option value="CONFIRMED">Đã duyệt</option>
             <option value="SHIPPED">Đang giao</option>
             <option value="DELIVERED">Đã giao</option>
             <option value="CANCELLED">Đã hủy</option>
+            <option value="REJECTED">Bị từ chối</option>
           </select>
           <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 size-3.5 text-[#94a3b8] pointer-events-none" />
         </div>

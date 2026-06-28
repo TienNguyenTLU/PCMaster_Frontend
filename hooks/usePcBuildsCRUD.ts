@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Product, buildAPI, adminAPI, PcBuildResponse } from "@/lib/api";
 import { useAuthStore } from "@/lib/store";
 import { formatDateOnly } from "@/utils/format";
@@ -36,7 +36,7 @@ export function usePcBuildsCRUD({ build, setBuild, selectedCount }: UsePcBuildsC
   const [pendingDeleteBuildId, setPendingDeleteBuildId] = useState<number | null>(null);
 
   // Tải danh sách cấu hình đã lưu của khách hàng
-  const fetchMyBuilds = async () => {
+  const fetchMyBuilds = useCallback(async () => {
     if (!user) return;
     setLoadingMyBuilds(true);
     try {
@@ -47,14 +47,16 @@ export function usePcBuildsCRUD({ build, setBuild, selectedCount }: UsePcBuildsC
     } finally {
       setLoadingMyBuilds(false);
     }
-  };
+  }, [user]);
 
   // Tự động tải danh sách cấu hình khi chuyển sang tab "Cấu hình đã lưu"
   useEffect(() => {
     if (activeTab === "my-builds" && user) {
-      fetchMyBuilds();
+      Promise.resolve().then(() => {
+        fetchMyBuilds();
+      });
     }
-  }, [activeTab, user]);
+  }, [activeTab, user, fetchMyBuilds]);
 
   // Click nút mở modal Lưu cấu hình
   const handleSaveClick = () => {

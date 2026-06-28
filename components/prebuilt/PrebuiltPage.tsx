@@ -105,7 +105,9 @@ export default function PrebuiltPage() {
 
   useEffect(() => {
     if (categories.length > 0) {
-      fetchPrebuiltPCs();
+      Promise.resolve().then(() => {
+        fetchPrebuiltPCs();
+      });
     }
   }, [categories, fetchPrebuiltPCs]);
 

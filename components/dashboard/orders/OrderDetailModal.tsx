@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import Link from "next/link";
 import {
   CheckCircle2,
   ExternalLink,
@@ -41,7 +42,9 @@ export default function OrderDetailModal({
 }: OrderDetailModalProps) {
   const [confirming, setConfirming] = useState(false);
   const [updating, setUpdating] = useState(false);
-  const [creatingSlip, setCreatingSlip] = useState(false);
+  const [rejecting, setRejecting] = useState(false);
+  const [showRejectForm, setShowRejectForm] = useState(false);
+  const [rejectReason, setRejectReason] = useState("");
   const [productsMap, setProductsMap] = useState<Record<number, Product>>({});
   const [loadingProducts, setLoadingProducts] = useState(true);
 
@@ -85,6 +88,24 @@ export default function OrderDetailModal({
     }
   };
 
+  const handleReject = async () => {
+    if (!rejectReason.trim()) {
+      toast.error("Vui lòng nhập lý do từ chối");
+      return;
+    }
+    setRejecting(true);
+    try {
+      await orderAPI.adminReject(order.id, rejectReason.trim());
+      toast.success(`Đã từ chối đơn hàng #${order.id}`);
+      onRefresh();
+      onClose();
+    } catch (e: unknown) {
+      toast.error(e instanceof Error ? e.message : "Từ chối đơn thất bại");
+    } finally {
+      setRejecting(false);
+    }
+  };
+
   const handleStatusUpdate = async (status: OrderStatus) => {
     setUpdating(true);
     try {
@@ -99,21 +120,7 @@ export default function OrderDetailModal({
     }
   };
 
-  const handleCreateIssueSlip = async () => {
-    setCreatingSlip(true);
-    try {
-      await adminAPI.createIssueSlip(order.id);
-      toast.success(`Tạo phiếu xuất kho thành công cho đơn hàng #${order.id}!`);
-      onRefresh();
-      onClose();
-    } catch (e: unknown) {
-      toast.error(
-        e instanceof Error ? e.message : "Tạo phiếu xuất kho thất bại",
-      );
-    } finally {
-      setCreatingSlip(false);
-    }
-  };
+
 
   const delivery = DELIVERY_META[order.deliveryType];
   const isOnlinePayment = order.paymentMethod !== "COD";
@@ -121,13 +128,14 @@ export default function OrderDetailModal({
   const canConfirm = !isOnlinePayment || isPaid;
 
   const steps: { status: OrderStatus; label: string }[] = [
-    { status: "DRAFT", label: "Chờ duyệt" },
+    { status: "PENDING_APPROVAL", label: "Chờ duyệt" },
     { status: "CONFIRMED", label: "Đã duyệt" },
     { status: "SHIPPED", label: "Đang giao" },
     { status: "DELIVERED", label: "Đã giao" },
   ];
   const activeIndex = steps.findIndex((s) => s.status === order.status);
   const isCancelled = order.status === "CANCELLED";
+  const isRejected = order.status === "REJECTED";
 
   return (
     <div
@@ -172,6 +180,16 @@ export default function OrderDetailModal({
               <div className="flex items-center gap-2 text-red-600 bg-red-50 border border-red-100 rounded-[8px] px-3 py-2">
                 <XCircle className="size-4 shrink-0" />
                 <span className="font-semibold text-[12px]">Đơn hàng này đã bị hủy.</span>
+              </div>
+            ) : isRejected ? (
+              <div className="flex flex-col gap-1.5 text-rose-600 bg-rose-50 border border-rose-100 rounded-[8px] px-3 py-2">
+                <div className="flex items-center gap-2">
+                  <XCircle className="size-4 shrink-0" />
+                  <span className="font-semibold text-[12px]">Đơn hàng này đã bị từ chối.</span>
+                </div>
+                {order.rejectReason && (
+                  <p className="text-[11px] ml-6 opacity-90 font-medium">Lý do: {order.rejectReason}</p>
+                )}
               </div>
             ) : (
               <div className="relative flex items-center justify-between mt-2 px-2 pb-1">
@@ -427,69 +445,107 @@ export default function OrderDetailModal({
 
         {/* Footer Actions */}
         <div className="bg-[#f8fafc] border-t border-[#e2e8f0] px-6 py-4 flex items-center gap-3 flex-wrap">
-          {order.status === "DRAFT" && (
+          {showRejectForm ? (
+            <div className="w-full flex flex-col gap-2 animate-fade-in">
+              <p className="text-[12px] font-bold text-rose-600">Lý do từ chối đơn hàng:</p>
+              <textarea
+                value={rejectReason}
+                onChange={(e) => setRejectReason(e.target.value)}
+                placeholder="Nhập lý do chi tiết..."
+                className="w-full min-h-[60px] p-2 text-[13px] border border-rose-200 rounded-[8px] focus:outline-none focus:border-rose-400 resize-none bg-rose-50"
+                autoFocus
+              />
+              <div className="flex justify-end gap-2 mt-1">
+                <button
+                  type="button"
+                  onClick={() => setShowRejectForm(false)}
+                  disabled={rejecting}
+                  className="px-3 py-1.5 bg-white border border-[#cbd5e1] text-[#475569] text-[12px] font-semibold rounded-[6px] hover:bg-[#f1f5f9] transition-colors disabled:opacity-50"
+                >
+                  Hủy
+                </button>
+                <button
+                  type="button"
+                  onClick={handleReject}
+                  disabled={rejecting || !rejectReason.trim()}
+                  className="px-3 py-1.5 bg-rose-600 text-white text-[12px] font-semibold rounded-[6px] hover:bg-rose-700 transition-colors disabled:opacity-50 flex items-center gap-1"
+                >
+                  {rejecting && <Loader2 className="size-3 animate-spin" />}
+                  Xác nhận từ chối
+                </button>
+              </div>
+            </div>
+          ) : (
             <>
-              <button
-                type="button"
-                disabled={confirming || !canConfirm}
-                onClick={handleConfirm}
-                className="flex items-center gap-2 px-4 py-2 bg-[#0058be] hover:bg-[#0047a3] text-white text-[13px] font-semibold rounded-[8px] shadow-sm transition-colors cursor-pointer disabled:opacity-50"
-                title={!canConfirm ? "Chỉ có thể duyệt đơn online khi đã thanh toán thành công" : undefined}
-              >
-                {confirming ? (
-                  <Loader2 className="size-4 animate-spin" />
-                ) : (
-                  <CheckCircle2 className="size-4" />
-                )}
-                Duyệt đơn hàng
-              </button>
-              {!canConfirm && (
-                <span className="text-red-500 text-[12px] font-semibold bg-red-50 border border-red-100 rounded px-2.5 py-1">
-                  Chưa thanh toán online
-                </span>
+              {order.status === "PENDING_APPROVAL" && (
+                <>
+                  <button
+                    type="button"
+                    disabled={confirming || !canConfirm}
+                    onClick={handleConfirm}
+                    className="flex items-center gap-2 px-4 py-2 bg-[#0058be] hover:bg-[#0047a3] text-white text-[13px] font-semibold rounded-[8px] shadow-sm transition-colors cursor-pointer disabled:opacity-50"
+                    title={!canConfirm ? "Chỉ có thể duyệt đơn online khi đã thanh toán thành công" : undefined}
+                  >
+                    {confirming ? (
+                      <Loader2 className="size-4 animate-spin" />
+                    ) : (
+                      <CheckCircle2 className="size-4" />
+                    )}
+                    Duyệt đơn hàng
+                  </button>
+                  <button
+                    type="button"
+                    disabled={confirming || updating}
+                    onClick={() => setShowRejectForm(true)}
+                    className="flex items-center gap-2 px-4 py-2 bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 text-[13px] font-semibold rounded-[8px] shadow-sm transition-colors cursor-pointer disabled:opacity-50"
+                  >
+                    <XCircle className="size-4" />
+                    Từ chối đơn
+                  </button>
+                  {!canConfirm && (
+                    <span className="text-red-500 text-[12px] font-semibold bg-red-50 border border-red-100 rounded px-2.5 py-1">
+                      Chưa thanh toán online
+                    </span>
+                  )}
+                </>
+              )}
+              {order.status === "CONFIRMED" && (
+                <Link
+                  href="/dashboard/inventory"
+                  className="flex items-center gap-2 px-4 py-2 bg-blue-50 hover:bg-blue-100 border border-blue-200 text-[#0058be] text-[13px] font-semibold rounded-[8px] transition-colors"
+                  onClick={onClose}
+                >
+                  <FileText className="size-4" />
+                  Đơn đã duyệt. Chuyển sang Quản lý xuất kho để tạo phiếu.
+                </Link>
+              )}
+              {order.status === "SHIPPED" && (
+                <button
+                  type="button"
+                  disabled={updating}
+                  onClick={() => handleStatusUpdate("DELIVERED")}
+                  className="flex items-center gap-2 px-4 py-2 bg-[#10b981] hover:bg-[#059669] text-white text-[13px] font-semibold rounded-[8px] shadow-sm transition-colors cursor-pointer disabled:opacity-50"
+                >
+                  {updating ? (
+                    <Loader2 className="size-4 animate-spin" />
+                  ) : (
+                    <CheckCircle2 className="size-4" />
+                  )}
+                  Đánh dấu là đã giao
+                </button>
+              )}
+              {(order.status === "PENDING_APPROVAL" || order.status === "CONFIRMED") && (
+                <button
+                  type="button"
+                  disabled={updating || confirming}
+                  onClick={() => handleStatusUpdate("CANCELLED")}
+                  className="flex items-center gap-2 px-4 py-2 bg-white border border-red-200 text-red-600 text-[13px] font-semibold rounded-[8px] hover:bg-red-50 transition-colors cursor-pointer disabled:opacity-50 ml-auto"
+                >
+                  <XCircle className="size-4" />
+                  Hủy đơn
+                </button>
               )}
             </>
-          )}
-          {order.status === "CONFIRMED" && (
-            <button
-              type="button"
-              disabled={creatingSlip}
-              onClick={handleCreateIssueSlip}
-              className="flex items-center gap-2 px-4 py-2 bg-[#0058be] hover:bg-[#0047a3] text-white text-[13px] font-semibold rounded-[8px] shadow-sm transition-colors cursor-pointer disabled:opacity-50 animate-pulse"
-            >
-              {creatingSlip ? (
-                <Loader2 className="size-4 animate-spin" />
-              ) : (
-                <FileText className="size-4" />
-              )}
-              Tạo phiếu xuất kho
-            </button>
-          )}
-          {order.status === "SHIPPED" && (
-            <button
-              type="button"
-              disabled={updating}
-              onClick={() => handleStatusUpdate("DELIVERED")}
-              className="flex items-center gap-2 px-4 py-2 bg-[#10b981] hover:bg-[#059669] text-white text-[13px] font-semibold rounded-[8px] shadow-sm transition-colors cursor-pointer disabled:opacity-50"
-            >
-              {updating ? (
-                <Loader2 className="size-4 animate-spin" />
-              ) : (
-                <CheckCircle2 className="size-4" />
-              )}
-              Đánh dấu là đã giao
-            </button>
-          )}
-          {(order.status === "DRAFT" || order.status === "CONFIRMED") && (
-            <button
-              type="button"
-              disabled={updating || confirming}
-              onClick={() => handleStatusUpdate("CANCELLED")}
-              className="flex items-center gap-2 px-4 py-2 bg-white border border-red-200 text-red-600 text-[13px] font-semibold rounded-[8px] hover:bg-red-50 transition-colors cursor-pointer disabled:opacity-50 ml-auto"
-            >
-              <XCircle className="size-4" />
-              Hủy đơn
-            </button>
           )}
         </div>
       </div>

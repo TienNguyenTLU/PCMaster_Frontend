@@ -311,24 +311,26 @@ export function usePcBuildState(cpuAdvice: string | null = null) {
     0,
   );
 
-  // Đồng bộ xóa bỏ ổ cứng extra khi đổi Mainboard có ít khe hơn
   useEffect(() => {
     const mbSpecsObj = build.mainboard ? getProductSpecs(build.mainboard) : {};
     const currentM2Slots = Number(mbSpecsObj.m2_slots) || 0;
-    let hasChanges = false;
-    const newBuild = { ...build };
-    Object.keys(build).forEach((key) => {
-      if (key.startsWith("storage_extra_")) {
-        const index = parseInt(key.replace("storage_extra_", ""), 10);
-        if (isNaN(index) || index > currentM2Slots) {
-          delete newBuild[key];
-          hasChanges = true;
-        }
-      }
+    
+    Promise.resolve().then(() => {
+      setBuild((prev) => {
+        let hasChanges = false;
+        const newBuild = { ...prev };
+        Object.keys(prev).forEach((key) => {
+          if (key.startsWith("storage_extra_")) {
+            const index = parseInt(key.replace("storage_extra_", ""), 10);
+            if (isNaN(index) || index > currentM2Slots) {
+              delete newBuild[key];
+              hasChanges = true;
+            }
+          }
+        });
+        return hasChanges ? newBuild : prev;
+      });
     });
-    if (hasChanges) {
-      setBuild(newBuild);
-    }
   }, [build.mainboard]);
 
   // Xử lý chọn linh kiện và kiểm tra xung đột phần cứng

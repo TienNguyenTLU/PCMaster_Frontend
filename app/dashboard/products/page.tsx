@@ -116,14 +116,28 @@ export default function ProductsPage() {
               setSelectedCategory(e.target.value);
               setPage(0);
             }}
-            className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[8px] px-3 py-2 text-[14px] focus:outline-none focus:border-[#0058be] transition-all"
+            className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[8px] px-3 py-2 text-[14px] focus:outline-none focus:border-[#0058be] transition-all cursor-pointer font-medium text-[#334155]"
           >
             <option value="">Tất cả danh mục</option>
-            {categoriesList.map((c) => (
-              <option key={c.id} value={c.id}>
-                {getCategoryLabel(c.name)}
-              </option>
-            ))}
+            {categoriesList
+              .filter((c) => !c.parentId)
+              .map((parent) => {
+                const subs = categoriesList.filter(
+                  (sub) => String(sub.parentId) === String(parent.id),
+                );
+                return (
+                  <optgroup key={parent.id} label={getCategoryLabel(parent.name)}>
+                    <option value={parent.id}>
+                      {getCategoryLabel(parent.name)} (Tất cả)
+                    </option>
+                    {subs.map((sub) => (
+                      <option key={sub.id} value={sub.id}>
+                        — {getCategoryLabel(sub.name)}
+                      </option>
+                    ))}
+                  </optgroup>
+                );
+              })}
           </select>
 
           <select

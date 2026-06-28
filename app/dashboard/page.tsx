@@ -138,7 +138,6 @@ export default function DashboardOverview() {
     categoryData.reduce((sum, item) => sum + item.revenue, 0) || 1;
 
   
-  let accumulatedOffset = 0;
 
   return (
     <div className="flex flex-col gap-6">
@@ -332,8 +331,10 @@ export default function DashboardOverview() {
                   {categoryData.map((item, idx) => {
                     const percent = (item.revenue / totalCatRevenue) * 100;
                     const strokeLength = (percent / 100) * 471.239;
-                    const offset = accumulatedOffset;
-                    accumulatedOffset += strokeLength;
+                    const offset = categoryData.slice(0, idx).reduce((sum, prevItem) => {
+                      const prevPercent = (prevItem.revenue / totalCatRevenue) * 100;
+                      return sum + (prevPercent / 100) * 471.239;
+                    }, 0);
                     const color = COLORS[idx % COLORS.length];
 
                     return (

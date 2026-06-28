@@ -238,10 +238,12 @@ export interface CartDto {
 
 export type OrderStatus =
   | "DRAFT"
+  | "PENDING_APPROVAL"
   | "CONFIRMED"
   | "SHIPPED"
   | "DELIVERED"
-  | "CANCELLED";
+  | "CANCELLED"
+  | "REJECTED";
 export type DeliveryType = "HOME_DELIVERY" | "SHOWROOM_PICKUP";
 export type PaymentMethod = "COD" | "VNPAY" | "STRIPE";
 export type PaymentStatus = "PENDING" | "PAID" | "FAILED";
@@ -271,6 +273,8 @@ export interface OrderResponse {
   couponDiscount?: number;
   paymentMethod: PaymentMethod;
   paymentStatus: PaymentStatus;
+  appointmentTime?: string;
+  rejectReason?: string;
   items: OrderItemResponse[];
 }
 
@@ -287,6 +291,7 @@ export interface OrderRequest {
   shippingAddress?: string;
   couponCode?: string;
   paymentMethod: PaymentMethod;
+  appointmentTime?: string;
 }
 
 
@@ -964,6 +969,14 @@ export const orderAPI = {
     return data;
   },
 
+  adminReject: async (id: number, reason: string): Promise<OrderResponse> => {
+    const { data } = await axiosInstance.put<OrderResponse>(
+      `/api/orders/admin/${id}/reject`,
+      { reason },
+    );
+    return data;
+  },
+
   
   adminUpdateStatus: async (
     id: number,
@@ -972,6 +985,13 @@ export const orderAPI = {
     const { data } = await axiosInstance.put<OrderResponse>(
       `/api/orders/admin/${id}/status`,
       { status },
+    );
+    return data;
+  },
+
+  vnpayCallback: async (queryString: string): Promise<{ RspCode: string; Message: string }> => {
+    const { data } = await axiosInstance.get<{ RspCode: string; Message: string }>(
+      `/api/orders/vnpay-ipn?${queryString}`
     );
     return data;
   },

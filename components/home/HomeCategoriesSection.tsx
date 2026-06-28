@@ -182,22 +182,24 @@ export default function HomeCategoriesSection() {
           Array.from({ length: 6 }).map((_, idx) => (
             <CategorySkeleton key={idx} />
           ))
-        ) : categories.length === 0 ? (
+        ) : categories.filter((cat) => !cat.parentId).length === 0 ? (
           <div className="col-span-full py-8 text-center text-[#64748b] text-[14px]">
             Không tìm thấy danh mục nào.
           </div>
         ) : (
-          categories.map((cat) => {
-            const Icon = getCategoryIcon(cat.name);
-            return (
-              <HomeCategoryCard
-                key={cat.id}
-                id={cat.id}
-                name={cat.name}
-                Icon={Icon}
-              />
-            );
-          })
+          categories
+            .filter((cat) => !cat.parentId)
+            .map((cat) => {
+              const Icon = getCategoryIcon(cat.name);
+              return (
+                <HomeCategoryCard
+                  key={cat.id}
+                  id={cat.id}
+                  name={cat.name}
+                  Icon={Icon}
+                />
+              );
+            })
         )}
       </div>
     </section>

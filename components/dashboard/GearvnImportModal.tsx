@@ -65,15 +65,17 @@ export default function GearvnImportModal({
   
   useEffect(() => {
     if (isOpen) {
-      setUrl("");
-      setCategoryId("");
-      setUrlError("");
-      setCategoryError("");
-      setPreviewData(null);
-      setPreviewLoading(false);
-      setPreviewError("");
-      setExpandedPreview(false);
-      setImporting(false);
+      Promise.resolve().then(() => {
+        setUrl("");
+        setCategoryId("");
+        setUrlError("");
+        setCategoryError("");
+        setPreviewData(null);
+        setPreviewLoading(false);
+        setPreviewError("");
+        setExpandedPreview(false);
+        setImporting(false);
+      });
     }
   }, [isOpen]);
 
@@ -237,18 +239,34 @@ export default function GearvnImportModal({
                   setCategoryId(e.target.value);
                   setCategoryError("");
                 }}
-                className={`bg-white border rounded-[8px] px-3.5 py-2.5 text-[14px] focus:outline-none transition-all ${
+                className={`bg-white border rounded-[8px] px-3.5 py-2.5 text-[14px] focus:outline-none transition-all cursor-pointer font-medium text-[#334155] ${
                   categoryError
                     ? "border-red-400 focus:border-red-500"
                     : "border-[#e2e8f0] focus:border-[#0058be]"
                 }`}
               >
                 <option value="">-- Chọn danh mục sản phẩm --</option>
-                {categories.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {getCategoryLabel(c.name)}
-                  </option>
-                ))}
+                {categories
+                  .filter((c) => !c.parentId)
+                  .map((parent) => {
+                    const subs = categories.filter(
+                      (sub) => String(sub.parentId) === String(parent.id),
+                    );
+                    return (
+                      <optgroup key={parent.id} label={getCategoryLabel(parent.name)}>
+                        {subs.length === 0 && (
+                          <option value={parent.id}>
+                            {getCategoryLabel(parent.name)}
+                          </option>
+                        )}
+                        {subs.map((sub) => (
+                          <option key={sub.id} value={sub.id}>
+                            {getCategoryLabel(sub.name)}
+                          </option>
+                        ))}
+                      </optgroup>
+                    );
+                  })}
               </select>
               {categoryError && (
                 <span className="text-red-500 text-[12px] font-medium flex items-center gap-1">

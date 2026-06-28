@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, Suspense } from "react";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import {
   CheckCircle2,
@@ -22,6 +22,7 @@ import { formatPrice, formatDateOnly } from "@/utils/format";
 
 function PaymentCallbackContent() {
   const searchParams = useSearchParams();
+  const router = useRouter();
   const { clearCart } = useCartStore();
 
   const [loading, setLoading] = useState(true);
@@ -40,6 +41,10 @@ function PaymentCallbackContent() {
       }
 
       try {
+        // Trigger backend IPN processing first to ensure status is updated
+        const queryString = searchParams.toString();
+        await orderAPI.vnpayCallback(queryString);
+
         const orderId = parseInt(txnRef);
         const orderData = await orderAPI.getById(orderId);
         setOrder(orderData);
@@ -47,7 +52,8 @@ function PaymentCallbackContent() {
         if (responseCode === "00") {
           await clearCart();
         } else {
-          setError("Giao dịch không thành công hoặc bị hủy bỏ.");
+          router.replace("/cart?error=vnpay_failed");
+          return; // Stop rendering this page and redirect
         }
       } catch (err: any) {
         console.error("Error fetching order in callback:", err);
@@ -58,7 +64,7 @@ function PaymentCallbackContent() {
     }
 
     verifyAndFetch();
-  }, [responseCode, txnRef, clearCart]);
+  }, [responseCode, txnRef, searchParams, clearCart, router]);
 
   if (loading) {
     return (

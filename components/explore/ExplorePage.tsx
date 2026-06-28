@@ -410,7 +410,7 @@ const SPECS_BY_CATEGORY: Record<string, SpecFilterDef[]> = {
       options: ["NVIDIA", "AMD"],
     },
     {
-      key: "vram_gb",
+      key: "vram",
       label: "VRAM (GB)",
       type: "select",
       options: ["4", "6", "8", "12", "16", "24", "32"],
@@ -540,7 +540,7 @@ const RANGE_SPEC_DEFS: Record<
   base_clock_ghz: { min: 0, max: 8, step: 0.1, suffix: "GHz" },
   boost_clock_ghz: { min: 0, max: 8, step: 0.1, suffix: "GHz" },
   performance_score: { min: 0, max: 60000, step: 500, suffix: "đ" },
-  cache_mb: { min: 0, max: 256, step: 4, suffix: "MB" },
+  l3_cache: { min: 0, max: 256, step: 4, suffix: "MB" },
   max_gpu_length_mm: { min: 0, max: 500, step: 5, suffix: "mm" },
   length_mm: { min: 0, max: 500, step: 5, suffix: "mm" },
   max_cpu_cooler_height_mm: { min: 0, max: 250, step: 5, suffix: "mm" },
@@ -824,6 +824,7 @@ export default function ExplorePage() {
 
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("");
+  const [selectedSubcategory, setSelectedSubcategory] = useState("");
   const [selectedBrands, setSelectedBrands] = useState<string[]>([]);
   const [priceRange, setPriceRange] = useState<[number, number]>([
     0, 150_000_000,
@@ -839,8 +840,9 @@ export default function ExplorePage() {
   const PAGE_SIZE = 12;
   const searchDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
+  const activeCategoryId = selectedSubcategory || selectedCategory;
   const activeCategoryName =
-    categories.find((c) => String(c.id) === selectedCategory)?.name ?? "";
+    categories.find((c) => String(c.id) === activeCategoryId)?.name ?? "";
   const activeSpecFilters = getSpecFiltersForCategory(activeCategoryName);
 
   
@@ -852,13 +854,15 @@ export default function ExplorePage() {
       return () => clearTimeout(timer);
     }
     
-    adminAPI.getProducts(0, 1000, "", selectedCategory, "").then((res) => {
+    adminAPI.getProducts(0, 1000, "", selectedSubcategory || selectedCategory, "").then((res) => {
       const specsMap: Record<string, Set<string>> = {};
       const prods = res.content || [];
       prods.forEach((p) => {
         if (!p.specsJson) return;
         try {
-          const s = JSON.parse(p.specsJson);
+          const s = typeof p.specsJson === "string"
+            ? JSON.parse(p.specsJson)
+            : p.specsJson;
           Object.entries(s).forEach(([k, v]) => {
             if (v === null || v === undefined || v === "") return;
             if (!specsMap[k]) specsMap[k] = new Set();
@@ -882,7 +886,7 @@ export default function ExplorePage() {
       });
       setAvailableSpecs(newSpecs);
     });
-  }, [selectedCategory]);
+  }, [selectedCategory, selectedSubcategory]);
 
   
   useEffect(() => {
@@ -902,7 +906,20 @@ export default function ExplorePage() {
     const timer = setTimeout(() => {
       if (categoryParam) {
         if (!isNaN(Number(categoryParam))) {
-          setSelectedCategory(categoryParam);
+          const catId = Number(categoryParam);
+          const matched = categories.find((c) => Number(c.id) === catId);
+          if (matched) {
+            if (matched.parentId) {
+              setSelectedCategory(String(matched.parentId));
+              setSelectedSubcategory(String(matched.id));
+            } else {
+              setSelectedCategory(String(matched.id));
+              setSelectedSubcategory("");
+            }
+          } else {
+            setSelectedCategory(categoryParam);
+            setSelectedSubcategory("");
+          }
         } else {
           const matched = categories.find(
             (c) =>
@@ -912,13 +929,21 @@ export default function ExplorePage() {
                 categoryParam.toLowerCase(),
           );
           if (matched) {
-            setSelectedCategory(String(matched.id));
+            if (matched.parentId) {
+              setSelectedCategory(String(matched.parentId));
+              setSelectedSubcategory(String(matched.id));
+            } else {
+              setSelectedCategory(String(matched.id));
+              setSelectedSubcategory("");
+            }
           } else {
             setSelectedCategory("");
+            setSelectedSubcategory("");
           }
         }
       } else {
         setSelectedCategory("");
+        setSelectedSubcategory("");
       }
     }, 0);
     return () => clearTimeout(timer);
@@ -932,7 +957,7 @@ export default function ExplorePage() {
         0,
         1000,
         search || undefined,
-        selectedCategory || undefined,
+        selectedSubcategory || selectedCategory || undefined,
         undefined,
       );
       setProducts(res.content || []);
@@ -941,7 +966,7 @@ export default function ExplorePage() {
     } finally {
       setLoading(false);
     }
-  }, [search, selectedCategory]);
+  }, [search, selectedCategory, selectedSubcategory]);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -959,6 +984,7 @@ export default function ExplorePage() {
   }, [
     search,
     selectedCategory,
+    selectedSubcategory,
     selectedBrands,
     priceRange,
     specFilters,
@@ -996,29 +1022,59 @@ export default function ExplorePage() {
           : {};
 
         
-        const matchValue = (specVal: any, wantedVal: string): boolean => {
-          const cleanSpec = String(specVal)
-            .toLowerCase()
-            .replace(/[\s\-_]/g, "");
-          const cleanWanted = wantedVal.toLowerCase().replace(/[\s\-_]/g, "");
+        const matchValue = (specVal: unknown, wantedVal: string): boolean => {
+          const specStr = String(specVal).toLowerCase().trim();
+          const wantedStr = wantedVal.toLowerCase().trim();
 
-          if (cleanSpec === cleanWanted) return true;
-          if (
-            cleanSpec.includes(cleanWanted) ||
-            cleanWanted.includes(cleanSpec)
-          )
-            return true;
+          // Helper to tokenize and clean up word and number tokens
+          const tokenize = (str: string) => {
+            return str
+              .split(/[\s,\/;]+/)
+              .map((t) => t.trim().replace(/[\-_]/g, ""))
+              .filter((t) => t && t !== "series" && t !== "dong" && t !== "san" && t !== "pham");
+          };
 
-          const specTokens = String(specVal)
-            .toLowerCase()
-            .split(/[\s,\/;]+/)
-            .map((t) => t.trim().replace(/[\-_]/g, ""));
-          const wantedTokens = wantedVal
-            .toLowerCase()
-            .split(/[\s,\/;]+/)
-            .map((t) => t.trim().replace(/[\-_]/g, ""));
+          const specTokens = tokenize(specStr);
+          const wantedTokens = tokenize(wantedStr);
 
-          return wantedTokens.some((w) => specTokens.includes(w));
+          if (specTokens.length === 0 || wantedTokens.length === 0) return false;
+
+          // Normalize synonym tokens (e.g. radeon -> amd)
+          const normalize = (t: string) => {
+            if (t === "radeon") return "amd";
+            if (t === "geforce") return "nvidia";
+            return t;
+          };
+
+          const normSpecTokens = specTokens.map(normalize);
+          const normWantedTokens = wantedTokens.map(normalize);
+
+          // We want every wanted token to find a matching token in the specification tokens
+          return normWantedTokens.every((w) => {
+            const isNumeric = /^\d+$/.test(w);
+            
+            return normSpecTokens.some((s) => {
+              if (s === w) return true;
+
+              if (isNumeric) {
+                const sIsNumeric = /^\d+$/.test(s);
+                if (sIsNumeric) {
+                  // For series matching like "9000" or "6000" that might end with trailing zeroes
+                  if (w.endsWith("00") || w.endsWith("000")) {
+                    const nonZeroPrefix = w.replace(/0+$/, "");
+                    return s.startsWith(nonZeroPrefix);
+                  }
+                  // For GPU series like "50" matching "5060" (major series matching)
+                  if (w.length >= 2 && s.length > w.length) {
+                    return s.startsWith(w);
+                  }
+                }
+              }
+
+              // Exact match fallback for general alphanumeric tokens
+              return s === w;
+            });
+          });
         };
 
         for (const [key, val] of activeKeys) {
@@ -1079,6 +1135,7 @@ export default function ExplorePage() {
 
   const clearAllFilters = () => {
     setSelectedCategory("");
+    setSelectedSubcategory("");
     setSelectedBrands([]);
     setPriceRange([0, 150_000_000]);
     setSpecFilters({});
@@ -1116,36 +1173,45 @@ export default function ExplorePage() {
           <button
             onClick={() => {
               setSelectedCategory("");
+              setSelectedSubcategory("");
               setSpecFilters({});
               setPage(0);
             }}
             className={`w-full text-left px-2.5 py-2 rounded-[8px] text-[12px] transition-colors cursor-pointer font-medium ${
               !selectedCategory
-                ? "bg-[#eff6ff] text-[#0058be]"
+                ? "bg-[#eff6ff] text-[#0058be] font-bold"
                 : "text-[#475569] hover:bg-[#f8fafc]"
             }`}
           >
             Tất cả danh mục
           </button>
-          {categories.map((cat) => (
-            <button
-              key={cat.id}
-              onClick={() => {
-                setSelectedCategory(String(cat.id));
-                setSpecFilters({});
-                setPage(0);
-              }}
-              className={`w-full text-left px-2.5 py-2 rounded-[8px] text-[12px] transition-colors cursor-pointer truncate ${
-                selectedCategory === String(cat.id)
-                  ? "bg-[#eff6ff] text-[#0058be] font-semibold"
-                  : "text-[#475569] hover:bg-[#f8fafc]"
-              }`}
-            >
-              {getCategoryLabel(cat.name)}
-            </button>
-          ))}
+          {categories.filter((cat) => !cat.parentId).map((cat) => {
+            const isCurrentParent = selectedCategory === String(cat.id);
+            
+            return (
+              <button
+                key={cat.id}
+                type="button"
+                onClick={() => {
+                  setSelectedCategory(String(cat.id));
+                  setSelectedSubcategory("");
+                  setSpecFilters({});
+                  setPage(0);
+                }}
+                className={`w-full text-left px-2.5 py-2 rounded-[8px] text-[12px] transition-colors cursor-pointer truncate ${
+                  isCurrentParent
+                    ? "bg-[#eff6ff] text-[#0058be] font-bold"
+                    : "text-[#475569] hover:bg-[#f8fafc]"
+                }`}
+              >
+                {getCategoryLabel(cat.name)}
+              </button>
+            );
+          })}
         </div>
       </FilterSection>
+
+
 
       {}
       <FilterSection title="Khoảng giá">
@@ -1159,27 +1225,24 @@ export default function ExplorePage() {
       </FilterSection>
 
       {}
-      {activeSpecFilters.length > 0 && (
-        <FilterSection title={`Thông số — ${activeCategoryName}`}>
-          <div className="flex flex-col gap-3.5">
-            {activeSpecFilters.map((filter) => (
-              <div key={filter.key} className="flex flex-col gap-2">
-                <label className="text-[11px] font-semibold text-[#94a3b8] uppercase tracking-[0.4px]">
-                  {filter.label}
-                </label>
-                <SpecFilterInput
-                  filter={filter}
-                  value={specFilters[filter.key] ?? ""}
-                  dynamicOptions={availableSpecs[filter.key]}
-                  onChange={(v) =>
-                    setSpecFilters((prev) => ({ ...prev, [filter.key]: v }))
-                  }
-                />
-              </div>
-            ))}
+      {activeSpecFilters.map((filter, idx) => (
+        <FilterSection
+          key={filter.key}
+          title={filter.label}
+          defaultOpen={idx < 2}
+        >
+          <div className="pt-1">
+            <SpecFilterInput
+              filter={filter}
+              value={specFilters[filter.key] ?? ""}
+              dynamicOptions={availableSpecs[filter.key]}
+              onChange={(v) =>
+                setSpecFilters((prev) => ({ ...prev, [filter.key]: v }))
+              }
+            />
           </div>
         </FilterSection>
-      )}
+      ))}
     </aside>
   );
 
@@ -1278,6 +1341,60 @@ export default function ExplorePage() {
           />
         </div>
 
+        {(() => {
+          const activeSubcategories = categories.filter(
+            (sub) => String(sub.parentId) === selectedCategory
+          );
+          if (!selectedCategory || activeSubcategories.length === 0) return null;
+          return (
+            <div className="mb-5 bg-white border border-[#e2e8f0] rounded-[16px] p-4.5 shadow-sm flex flex-col gap-3 animate-in fade-in slide-in-from-top-2 duration-200">
+              <div className="flex items-center gap-2">
+                <span className="text-[12px] font-bold text-[#475569] uppercase tracking-[0.5px]">
+                  Phân loại {getCategoryLabel(activeCategoryName)}:
+                </span>
+              </div>
+              <div className="flex flex-wrap gap-2">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setSelectedSubcategory("");
+                    setSpecFilters({});
+                    setPage(0);
+                  }}
+                  className={`px-4.5 py-2.5 rounded-[10px] text-[13px] font-semibold transition-all cursor-pointer ${
+                    !selectedSubcategory
+                      ? "bg-[#0058be] text-white shadow-sm font-bold scale-[1.02]"
+                      : "bg-[#f8fafc] text-[#475569] border border-[#e2e8f0] hover:bg-[#f1f5f9] hover:text-[#0f172a]"
+                  }`}
+                >
+                  Tất cả
+                </button>
+                {activeSubcategories.map((sub) => {
+                  const isCurrentSub = selectedSubcategory === String(sub.id);
+                  return (
+                    <button
+                      key={sub.id}
+                      type="button"
+                      onClick={() => {
+                        setSelectedSubcategory(String(sub.id));
+                        setSpecFilters({});
+                        setPage(0);
+                      }}
+                      className={`px-4.5 py-2.5 rounded-[10px] text-[13px] font-semibold transition-all cursor-pointer ${
+                        isCurrentSub
+                          ? "bg-[#0058be] text-white shadow-sm font-bold scale-[1.02]"
+                          : "bg-[#f8fafc] text-[#475569] border border-[#e2e8f0] hover:bg-[#f1f5f9] hover:text-[#0f172a]"
+                      }`}
+                    >
+                      {getCategoryLabel(sub.name)}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          );
+        })()}
+
         {}
         <div className="flex items-center justify-between mb-4 flex-wrap gap-4">
           <div className="flex items-center gap-3 flex-wrap">
@@ -1309,12 +1426,31 @@ export default function ExplorePage() {
             </div>
 
             <div className="flex items-center gap-2 flex-wrap ml-2">
-              {activeCategoryName && selectedCategory && (
+              {selectedCategory && (
                 <span className="inline-flex items-center gap-1.5 bg-[#eff6ff] text-[#0058be] text-[11px] font-medium px-2 py-0.5 rounded-full">
-                  {getCategoryLabel(activeCategoryName)}
+                  {getCategoryLabel(
+                    categories.find((c) => String(c.id) === selectedCategory)?.name ?? "",
+                  )}
                   <button
                     onClick={() => {
                       setSelectedCategory("");
+                      setSelectedSubcategory("");
+                      setSpecFilters({});
+                    }}
+                    className="cursor-pointer"
+                  >
+                    <X className="size-3" />
+                  </button>
+                </span>
+              )}
+              {selectedSubcategory && (
+                <span className="inline-flex items-center gap-1.5 bg-[#eff6ff] text-[#0058be] text-[11px] font-medium px-2 py-0.5 rounded-full animate-in fade-in zoom-in duration-100">
+                  {getCategoryLabel(
+                    categories.find((c) => String(c.id) === selectedSubcategory)?.name ?? "",
+                  )}
+                  <button
+                    onClick={() => {
+                      setSelectedSubcategory("");
                       setSpecFilters({});
                     }}
                     className="cursor-pointer"

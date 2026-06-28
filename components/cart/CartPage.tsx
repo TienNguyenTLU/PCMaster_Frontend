@@ -52,6 +52,7 @@ export default function CartPage() {
   } = useCartManager();
 
   const router = useRouter();
+  const searchParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
 
   const [showClearModal, setShowClearModal] = useState(false);
   const [placingOrder, setPlacingOrder] = useState(false);
@@ -63,6 +64,7 @@ export default function CartPage() {
 
   const [deliveryType, setDeliveryType] =
     useState<DeliveryType>("SHOWROOM_PICKUP");
+  const [appointmentTime, setAppointmentTime] = useState("");
   const [recipientName, setRecipientName] = useState("");
   const [recipientPhone, setRecipientPhone] = useState("");
   const [shippingAddress, setShippingAddress] = useState("");
@@ -82,6 +84,16 @@ export default function CartPage() {
       fetchCart();
     }
   }, [isHydrated, user, fetchCart]);
+
+  useEffect(() => {
+    if (searchParams) {
+      const error = searchParams.get("error");
+      if (error === "vnpay_failed") {
+        toast.error("Thanh toán thất bại hoặc bị hủy bỏ. Vui lòng thử lại.");
+        router.replace("/cart", { scroll: false });
+      }
+    }
+  }, [searchParams, router]);
 
   const subtotal = items.reduce((sum, item) => {
     const price =
@@ -156,6 +168,11 @@ export default function CartPage() {
         toast.error("Vui lòng nhập địa chỉ giao hàng");
         return;
       }
+    } else if (deliveryType === "SHOWROOM_PICKUP") {
+      if (!appointmentTime) {
+        toast.error("Vui lòng chọn thời gian hẹn đến lấy hàng");
+        return;
+      }
     }
 
     setPlacingOrder(true);
@@ -172,6 +189,8 @@ export default function CartPage() {
           deliveryType === "HOME_DELIVERY" ? recipientPhone.trim() : undefined,
         shippingAddress:
           deliveryType === "HOME_DELIVERY" ? shippingAddress.trim() : undefined,
+        appointmentTime:
+          deliveryType === "SHOWROOM_PICKUP" ? new Date(appointmentTime).toISOString() : undefined,
         couponCode: appliedCoupon ? appliedCoupon.code : undefined,
         paymentMethod,
       };
@@ -418,13 +437,26 @@ export default function CartPage() {
                     </div>
 
                     {deliveryType === "SHOWROOM_PICKUP" && (
-                      <div className="flex items-start gap-2 bg-blue-50 border border-blue-100 rounded-[10px] px-3 py-2.5">
-                        <MapPin className="size-3.5 text-[#0058be] shrink-0 mt-0.5" />
-                        <p className="text-[11px] text-[#0058be] font-medium leading-relaxed">
-                          123 Đường Láng, Đống Đa, Hà Nội
-                          <br />
-                          ĐT: 1800 1234 · T2–CN: 8h–21h
-                        </p>
+                      <div className="flex flex-col gap-2 animate-fade-in">
+                        <div className="flex items-start gap-2 bg-blue-50 border border-blue-100 rounded-[10px] px-3 py-2.5">
+                          <MapPin className="size-3.5 text-[#0058be] shrink-0 mt-0.5" />
+                          <p className="text-[11px] text-[#0058be] font-medium leading-relaxed">
+                            123 Đường Láng, Đống Đa, Hà Nội
+                            <br />
+                            ĐT: 1800 1234 · T2–CN: 8h–21h
+                          </p>
+                        </div>
+                        <div className="relative mt-1">
+                          <input
+                            type="datetime-local"
+                            value={appointmentTime}
+                            onChange={(e) => setAppointmentTime(e.target.value)}
+                            className="w-full px-3 py-2 text-[13px] border border-[#e2e8f0] rounded-[10px] focus:outline-none focus:border-[#0058be] transition-colors"
+                          />
+                          <p className="text-[10px] text-[#64748b] mt-1 ml-1">
+                            * Vui lòng chọn thời gian bạn sẽ đến lấy hàng
+                          </p>
+                        </div>
                       </div>
                     )}
 

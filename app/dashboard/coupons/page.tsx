@@ -41,7 +41,11 @@ export default function CouponsPage() {
   };
 
   useEffect(() => {
-    fetchCoupons();
+    const loadData = async () => {
+      await Promise.resolve();
+      fetchCoupons();
+    };
+    loadData();
   }, []);
 
   const filteredCoupons = coupons.filter(
@@ -302,7 +306,7 @@ function CouponFormModal({
   onClose: () => void;
   onSuccess: () => void;
 }) {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState(() => ({
     code: coupon?.code || "",
     discountType:
       coupon?.discountType || ("PERCENTAGE" as "PERCENTAGE" | "FIXED_AMOUNT"),
@@ -317,7 +321,7 @@ function CouponFormModal({
       : new Date(Date.now() + 30 * 86400000).toISOString().substring(0, 10),
     usageLimit: coupon?.usageLimit || 0,
     active: coupon?.active !== false,
-  });
+  }));
 
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});

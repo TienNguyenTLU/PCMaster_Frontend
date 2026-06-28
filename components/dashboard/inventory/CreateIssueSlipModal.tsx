@@ -81,27 +81,31 @@ export default function CreateIssueSlipModal({
   }, []);
 
   useEffect(() => {
-    if (reason === "RETAIL_SALE") {
-      const fetchOrders = async () => {
-        setLoadingOrders(true);
-        try {
-          const res = await orderAPI.adminListAll();
-          
-          const confirmedOrders = res.filter((o) => o.status === "CONFIRMED");
-          setOrders(confirmedOrders);
-        } catch (e) {
-          toast.error("Không thể tải danh sách đơn hàng đã duyệt");
-        } finally {
-          setLoadingOrders(false);
-        }
-      };
-      fetchOrders();
-      setSelectedItems([]);
-      setSelectedOrderId(null);
-    } else {
-      setSelectedItems([]);
-      setSelectedOrderId(null);
-    }
+    const init = async () => {
+      await Promise.resolve();
+      if (reason === "RETAIL_SALE") {
+        const fetchOrders = async () => {
+          setLoadingOrders(true);
+          try {
+            const res = await orderAPI.adminListAll();
+            
+            const confirmedOrders = res.filter((o) => o.status === "CONFIRMED");
+            setOrders(confirmedOrders);
+          } catch (e) {
+            toast.error("Không thể tải danh sách đơn hàng đã duyệt");
+          } finally {
+            setLoadingOrders(false);
+          }
+        };
+        fetchOrders();
+        setSelectedItems([]);
+        setSelectedOrderId(null);
+      } else {
+        setSelectedItems([]);
+        setSelectedOrderId(null);
+      }
+    };
+    init();
   }, [reason]);
 
   

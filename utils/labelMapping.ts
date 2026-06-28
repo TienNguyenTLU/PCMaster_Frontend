@@ -23,6 +23,12 @@ export const STATUS_META: Record<
   { label: string; color: string; bg: string; Icon: React.ComponentType<{ className?: string }> }
 > = {
   DRAFT: {
+    label: "Nháp",
+    color: "text-slate-600",
+    bg: "bg-slate-100 border border-slate-200",
+    Icon: ClipboardList,
+  },
+  PENDING_APPROVAL: {
     label: "Chờ duyệt",
     color: "text-amber-700",
     bg: "bg-amber-50/70 border border-amber-200",
@@ -50,6 +56,12 @@ export const STATUS_META: Record<
     label: "Đã hủy",
     color: "text-red-600",
     bg: "bg-red-50/70 border border-red-200",
+    Icon: XCircle,
+  },
+  REJECTED: {
+    label: "Từ chối",
+    color: "text-rose-700",
+    bg: "bg-rose-50/70 border border-rose-200",
     Icon: XCircle,
   },
 };
@@ -191,6 +203,35 @@ export function getCategoryLabel(name: string): string {
       return "Ổ cứng SSD";
     case "VGA":
       return "Card màn hình (VGA)";
+    case "LIQUID_COOLER":
+      return "Tản nhiệt nước (Liquid)";
+    case "AIR_COOLER":
+      return "Tản nhiệt khí (Air)";
+    case "WORKSTATION_VGA":
+      return "Card đồ họa Workstation";
+    case "GAMING_VGA":
+      return "Card đồ họa Gaming";
+    case "WORKSTATION_MAINBOARD":
+      return "Mainboard Máy trạm";
+    case "REGULAR_MAINBOARD":
+      return "Mainboard Phổ thông";
+    case "SSD_SATA":
+      return "SSD SATA";
+    case "SSD_NVME":
+      return "SSD NVMe";
+    case "ATX_CASE":
+      return "Vỏ máy ATX";
+    case "MATX_CASE":
+      return "Vỏ máy Micro-ATX (mATX)";
+    case "ITX_CASE":
+      return "Vỏ máy Mini-ITX (itx)";
+    case "E_ATX_CASE":
+    case "E-ATX_CASE":
+      return "Vỏ máy E-ATX";
+    case "AMD_CPU":
+      return "CPU AMD";
+    case "INTEL_CPU":
+      return "CPU Intel";
     default:
       return name;
   }
@@ -213,7 +254,6 @@ export const SPEC_LABEL_MAP: Record<string, string> = {
   socket: "Socket",
   integrated_gpu: "GPU tích hợp",
   tdp_w: "TDP (W)",
-  cache_mb: "Bộ nhớ đệm (MB)",
   base_clock_ghz: "Xung cơ bản (GHz)",
   boost_clock_ghz: "Xung tối đa (GHz)",
   performance_score: "Điểm hiệu năng",
@@ -270,10 +310,7 @@ export const SPEC_LABEL_MAP: Record<string, string> = {
   tbw_b_n_ghi: "Độ bền ghi (TBW)",
   tbw_w: "Độ bền ghi (TBW)",
   dung_l_ng: "Dung lượng",
-  vram_gb: "VRAM (GB)",
   vram_type: "Loại VRAM",
-  base_clock_mhz: "Xung cơ bản (MHz)",
-  boost_clock_mhz: "Xung boost (MHz)",
   length_mm: "Chiều dài (mm)",
   min_psu_w: "Nguồn tối thiểu (W)",
   vga_series: "Dòng sản phẩm VGA",

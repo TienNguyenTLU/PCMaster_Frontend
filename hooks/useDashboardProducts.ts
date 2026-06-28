@@ -112,7 +112,12 @@ export function useDashboardProducts() {
       ? p.name.toLowerCase().includes(debouncedSearch.toLowerCase())
       : true;
     const matchCat = selectedCategory
-      ? String(p.category?.id ?? p.categoryId) === selectedCategory
+      ? (() => {
+          const pCatId = String(p.category?.id ?? p.categoryId ?? "");
+          if (pCatId === selectedCategory) return true;
+          const parentId = p.category?.parentId ?? categoriesList.find((c) => String(c.id) === pCatId)?.parentId;
+          return parentId !== undefined && parentId !== null && String(parentId) === selectedCategory;
+        })()
       : true;
     const matchBrand = selectedBrand
       ? String(p.brand?.id ?? p.brandId) === selectedBrand

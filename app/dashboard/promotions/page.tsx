@@ -61,8 +61,12 @@ export default function PromotionsPage() {
   };
 
   useEffect(() => {
-    fetchPromotions();
-    fetchAllProducts();
+    const loadData = async () => {
+      await Promise.resolve();
+      fetchPromotions();
+      fetchAllProducts();
+    };
+    loadData();
   }, []);
 
   const filteredPromotions = promotions.filter(
@@ -315,7 +319,7 @@ function PromotionFormModal({
   onClose: () => void;
   onSuccess: () => void;
 }) {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState(() => ({
     name: promotion?.name || "",
     slug: promotion?.slug || "",
     description: promotion?.description || "",
@@ -329,7 +333,7 @@ function PromotionFormModal({
       : new Date(Date.now() + 7 * 86400000).toISOString().substring(0, 10),
     active: promotion?.active !== false,
     productIds: promotion?.productIds || ([] as number[]),
-  });
+  }));
 
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -368,7 +372,9 @@ function PromotionFormModal({
         .replace(/[^a-z0-9 -]/g, "")
         .replace(/\s+/g, "-")
         .replace(/-+/g, "-");
-      setFormData((prev) => ({ ...prev, slug: generated }));
+      Promise.resolve().then(() => {
+        setFormData((prev) => ({ ...prev, slug: generated }));
+      });
     }
   }, [formData.name, promotion]);
 

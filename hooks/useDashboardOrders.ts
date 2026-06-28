@@ -81,7 +81,7 @@ export function useDashboardOrders() {
 
   // Tính toán nhanh số liệu thống kê đơn hàng phục vụ hiển thị
   const totalOrdersCount = orders.length;
-  const draftCount = orders.filter((o) => o.status === "DRAFT").length;
+  const draftCount = orders.filter((o) => o.status === "PENDING_APPROVAL").length;
   const confirmedCount = orders.filter((o) => o.status === "CONFIRMED").length;
   const shippedCount = orders.filter((o) => o.status === "SHIPPED").length;
   const deliveredCount = orders.filter((o) => o.status === "DELIVERED").length;

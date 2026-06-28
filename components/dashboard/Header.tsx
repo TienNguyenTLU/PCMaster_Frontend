@@ -109,7 +109,11 @@ export default function Header() {
   }, []);
 
   useEffect(() => {
-    fetchNotifications();
+    const loadData = async () => {
+      await Promise.resolve();
+      fetchNotifications();
+    };
+    loadData();
     const interval = setInterval(fetchNotifications, 30000); // Poll every 30s
     return () => clearInterval(interval);
   }, [fetchNotifications]);

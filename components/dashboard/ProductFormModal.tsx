@@ -463,10 +463,10 @@ const SPECS_BY_CATEGORY: Record<string, SpecField[]> = {
       ],
     },
     {
-      key: "cache_mb",
-      label: "Bộ nhớ đệm (MB)",
+      key: "l3_cache",
+      label: "Bộ nhớ đệm L3 (MB)",
       type: "number",
-      placeholder: "16",
+      placeholder: "32",
     },
     {
       key: "base_clock_ghz",
@@ -1057,7 +1057,7 @@ const SPECS_BY_CATEGORY: Record<string, SpecField[]> = {
       placeholder: "GTX 1650 Super",
     },
     {
-      key: "vram_gb",
+      key: "vram",
       label: "VRAM (GB)",
       type: "select",
       options: ["2", "4", "6", "8", "10", "12", "16", "20", "24", "32", "48"],
@@ -1092,13 +1092,13 @@ const SPECS_BY_CATEGORY: Record<string, SpecField[]> = {
       ],
     },
     {
-      key: "base_clock_mhz",
+      key: "base_clock",
       label: "Xung cơ bản (MHz)",
       type: "number",
       placeholder: "1530",
     },
     {
-      key: "boost_clock_mhz",
+      key: "boost_clock",
       label: "Xung boost (MHz)",
       type: "number",
       placeholder: "1755",
@@ -2367,18 +2367,34 @@ export default function ProductFormModal({
                   <select
                     value={basic.categoryId}
                     onChange={(e) => handleBasic("categoryId", e.target.value)}
-                    className={`bg-[#f8fafc] border rounded-[8px] px-3 py-2.5 text-[14px] focus:outline-none transition-all ${
+                    className={`bg-[#f8fafc] border rounded-[8px] px-3 py-2.5 text-[14px] focus:outline-none transition-all cursor-pointer font-medium text-[#374151] ${
                       errors.categoryId
                         ? "border-red-500 focus:border-red-500"
                         : "border-[#e2e8f0] focus:border-[#0058be]"
                     }`}
                   >
                     <option value="">-- Chọn danh mục --</option>
-                    {categories.map((c) => (
-                      <option key={c.id} value={c.id}>
-                        {getCategoryLabel(c.name)}
-                      </option>
-                    ))}
+                    {categories
+                      .filter((c) => !c.parentId)
+                      .map((parent) => {
+                        const subs = categories.filter(
+                          (sub) => String(sub.parentId) === String(parent.id),
+                        );
+                        return (
+                          <optgroup key={parent.id} label={getCategoryLabel(parent.name)}>
+                            {subs.length === 0 && (
+                              <option value={parent.id}>
+                                {getCategoryLabel(parent.name)}
+                              </option>
+                            )}
+                            {subs.map((sub) => (
+                              <option key={sub.id} value={sub.id}>
+                                {getCategoryLabel(sub.name)}
+                              </option>
+                            ))}
+                          </optgroup>
+                        );
+                      })}
                   </select>
                 </div>
                 <div className="flex flex-col gap-1.5">

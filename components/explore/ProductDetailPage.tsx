@@ -109,28 +109,32 @@ export default function ProductDetailPage() {
   const addingToCart = product ? addingIds.has(Number(product.id)) : false;
 
   useEffect(() => {
-    if (!id) return;
-    setLoading(true);
-    adminAPI
-      .getProductById(id)
-      .then((p) => {
-        setProduct(p);
-        setLoading(false);
-        
-        adminAPI
-          .getProductImages(p.id)
-          .then((imgs) => {
-            const sorted = [...imgs].sort((a, b) => a.sortOrder - b.sortOrder);
-            setDetailImages(sorted);
-          })
-          .catch((err) => {
-            console.error("Error fetching product detail images:", err);
-          });
-      })
-      .catch(() => {
-        setNotFound(true);
-        setLoading(false);
-      });
+    const loadData = async () => {
+      if (!id) return;
+      await Promise.resolve();
+      setLoading(true);
+      adminAPI
+        .getProductById(id)
+        .then((p) => {
+          setProduct(p);
+          setLoading(false);
+          
+          adminAPI
+            .getProductImages(p.id)
+            .then((imgs) => {
+              const sorted = [...imgs].sort((a, b) => a.sortOrder - b.sortOrder);
+              setDetailImages(sorted);
+            })
+            .catch((err) => {
+              console.error("Error fetching product detail images:", err);
+            });
+        })
+        .catch(() => {
+          setNotFound(true);
+          setLoading(false);
+        });
+    };
+    loadData();
   }, [id]);
 
   const specs: Record<string, unknown> = (() => {

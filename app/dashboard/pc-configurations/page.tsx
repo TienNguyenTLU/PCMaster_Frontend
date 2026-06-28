@@ -94,8 +94,12 @@ export default function PcConfigurationsPage() {
   };
 
   useEffect(() => {
-    fetchProducts();
-    adminAPI.getBrands(0, 100).then((res) => setBrandsList(res.content || []));
+    const loadData = async () => {
+      await Promise.resolve();
+      fetchProducts();
+      adminAPI.getBrands(0, 100).then((res) => setBrandsList(res.content || []));
+    };
+    loadData();
   }, []);
 
   

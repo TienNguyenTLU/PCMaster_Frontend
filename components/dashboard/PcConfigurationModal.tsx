@@ -431,84 +431,88 @@ export default function PcConfigurationModal({
 
   // Initialize/Load configuration
   useEffect(() => {
-    if (!isOpen) return;
+    const init = async () => {
+      if (!isOpen) return;
+      await Promise.resolve();
 
-    if (editingProduct) {
-      setName(editingProduct.name);
-      setBrandId(String(editingProduct.brandId || editingProduct.brand?.id || ""));
-      setPrice(String(editingProduct.price));
-      setStock(String(editingProduct.stock));
-      setDescription(editingProduct.description || "");
-      setThumbnailPreview(editingProduct.thumbnailUrl || "");
+      if (editingProduct) {
+        setName(editingProduct.name);
+        setBrandId(String(editingProduct.brandId || editingProduct.brand?.id || ""));
+        setPrice(String(editingProduct.price));
+        setStock(String(editingProduct.stock));
+        setDescription(editingProduct.description || "");
+        setThumbnailPreview(editingProduct.thumbnailUrl || "");
 
-      const specs = getProductSpecs(editingProduct);
-      const editingUsageNeeds: string[] = specs.usage_need
-        ? Array.isArray(specs.usage_need)
-          ? specs.usage_need
-          : String(specs.usage_need)
-              .split(",")
-              .map((s: string) => s.trim())
-        : [];
-      setUsageNeeds(editingUsageNeeds);
+        const specs = getProductSpecs(editingProduct);
+        const editingUsageNeeds: string[] = specs.usage_need
+          ? Array.isArray(specs.usage_need)
+            ? specs.usage_need
+            : String(specs.usage_need)
+                .split(",")
+                .map((s: string) => s.trim())
+          : [];
+        setUsageNeeds(editingUsageNeeds);
 
-      const newBuild: BuildState = Object.fromEntries(SLOTS.map((s) => [s.key, null]));
-      const newQtys: Record<string, number> = Object.fromEntries(SLOTS.map((s) => [s.key, 1]));
+        const newBuild: BuildState = Object.fromEntries(SLOTS.map((s) => [s.key, null]));
+        const newQtys: Record<string, number> = Object.fromEntries(SLOTS.map((s) => [s.key, 1]));
 
-      if (editingProduct.pcComponents && productList.length > 0) {
-        const prodMap = productList.reduce(
-          (acc, p) => {
-            acc[Number(p.id)] = p;
-            return acc;
-          },
-          {} as Record<number, Product>,
-        );
+        if (editingProduct.pcComponents && productList.length > 0) {
+          const prodMap = productList.reduce(
+            (acc, p) => {
+              acc[Number(p.id)] = p;
+              return acc;
+            },
+            {} as Record<number, Product>,
+          );
 
-        let storageCount = 0;
+          let storageCount = 0;
 
-        editingProduct.pcComponents.forEach((c) => {
-          const prod = prodMap[Number(c.componentProductId)];
-          if (prod) {
-            const cat = getComponentCategory(prod);
-            if (cat !== "other") {
-              if (cat === "ssd") {
-                if (storageCount === 0) {
-                  newBuild["storage"] = prod;
-                  newQtys["storage"] = c.quantity;
+          editingProduct.pcComponents.forEach((c) => {
+            const prod = prodMap[Number(c.componentProductId)];
+            if (prod) {
+              const cat = getComponentCategory(prod);
+              if (cat !== "other") {
+                if (cat === "ssd") {
+                  if (storageCount === 0) {
+                    newBuild["storage"] = prod;
+                    newQtys["storage"] = c.quantity;
+                  } else {
+                    const key = `storage_extra_${storageCount}`;
+                    newBuild[key] = prod;
+                    newQtys[key] = c.quantity;
+                  }
+                  storageCount++;
                 } else {
-                  const key = `storage_extra_${storageCount}`;
-                  newBuild[key] = prod;
-                  newQtys[key] = c.quantity;
+                  newBuild[cat] = prod;
+                  newQtys[cat] = c.quantity;
                 }
-                storageCount++;
-              } else {
-                newBuild[cat] = prod;
-                newQtys[cat] = c.quantity;
               }
             }
-          }
-        });
-      }
+          });
+        }
 
-      setBuild(newBuild);
-      setCompQtys(newQtys);
-    } else {
-      setName("");
-      setBrandId("");
-      setPrice("0");
-      setStock("0");
-      setDescription("");
-      setThumbnailPreview("");
-      setThumbnailFile(null);
-      setUsageNeeds([]);
-      setBuild(Object.fromEntries(SLOTS.map((s) => [s.key, null])));
-      setCompQtys(Object.fromEntries(SLOTS.map((s) => [s.key, 1])));
-      setAiBuildNote(null);
-      setBottleneckResult(null);
-      setAiPsuWattage(null);
-      setCpuAdvice(null);
-    }
-    setSubmitError("");
-    setErrors({});
+        setBuild(newBuild);
+        setCompQtys(newQtys);
+      } else {
+        setName("");
+        setBrandId("");
+        setPrice("0");
+        setStock("0");
+        setDescription("");
+        setThumbnailPreview("");
+        setThumbnailFile(null);
+        setUsageNeeds([]);
+        setBuild(Object.fromEntries(SLOTS.map((s) => [s.key, null])));
+        setCompQtys(Object.fromEntries(SLOTS.map((s) => [s.key, 1])));
+        setAiBuildNote(null);
+        setBottleneckResult(null);
+        setAiPsuWattage(null);
+        setCpuAdvice(null);
+      }
+      setSubmitError("");
+      setErrors({});
+    };
+    init();
   }, [editingProduct, isOpen, productList]);
 
   // Clean-up extra slots when mainboard changes
@@ -516,121 +520,146 @@ export default function PcConfigurationModal({
     const mbSpecsObj = build.mainboard ? getProductSpecs(build.mainboard) : {};
     const currentM2Slots = Number(mbSpecsObj.m2_slots) || 0;
 
-    let hasChanges = false;
-    const newBuild = { ...build };
-    const newQtys = { ...compQtys };
+    Promise.resolve().then(() => {
+      setBuild((prevBuild) => {
+        let hasChanges = false;
+        const newBuild = { ...prevBuild };
+        Object.keys(prevBuild).forEach((key) => {
+          if (key.startsWith("storage_extra_")) {
+            const index = parseInt(key.replace("storage_extra_", ""), 10);
+            if (isNaN(index) || index > currentM2Slots) {
+              delete newBuild[key];
+              hasChanges = true;
+            }
+          }
+        });
 
-    Object.keys(build).forEach((key) => {
-      if (key.startsWith("storage_extra_")) {
-        const index = parseInt(key.replace("storage_extra_", ""), 10);
-        if (isNaN(index) || index > currentM2Slots) {
-          delete newBuild[key];
-          delete newQtys[key];
-          hasChanges = true;
+        if (hasChanges) {
+          setCompQtys((prevQtys) => {
+            const newQtys = { ...prevQtys };
+            Object.keys(prevBuild).forEach((key) => {
+              if (key.startsWith("storage_extra_")) {
+                const index = parseInt(key.replace("storage_extra_", ""), 10);
+                if (isNaN(index) || index > currentM2Slots) {
+                  delete newQtys[key];
+                }
+              }
+            });
+            return newQtys;
+          });
+          return newBuild;
         }
-      }
+        return prevBuild;
+      });
     });
-
-    if (hasChanges) {
-      setBuild(newBuild);
-      setCompQtys(newQtys);
-    }
   }, [build.mainboard]);
 
   // AI PSU Recommendation hook
   useEffect(() => {
-    const cpu = build.cpu;
-    const vga = build.vga;
-    const ram = build.ram;
+    const loadPsu = async () => {
+      const cpu = build.cpu;
+      const vga = build.vga;
+      const ram = build.ram;
 
-    if (!cpu || !vga || !ram) {
-      setAiPsuWattage(null);
-      setAiPsuExplanation(null);
-      return;
-    }
+      if (!cpu || !vga || !ram) {
+        await Promise.resolve();
+        setAiPsuWattage(null);
+        setAiPsuExplanation(null);
+        return;
+      }
 
-    setLoadingPsu(true);
-    aiBuildAPI
-      .getPsuRecommendation(cpu.name, vga.name, ram.name)
-      .then((data) => {
-        setAiPsuWattage(data.recommendedWattage);
-        setAiPsuExplanation(data.explanation);
-      })
-      .catch((err) => {
-        console.error("Error fetching AI PSU recommendation:", err);
-        const cpuTdp = Number(getProductSpecs(cpu).tdp_w) || 100;
-        const gpuTdp = Number(getProductSpecs(vga).tdp_w) || 200;
-        const wattage = Math.ceil((cpuTdp + gpuTdp + 150) / 50) * 50;
-        setAiPsuWattage(wattage);
-        setAiPsuExplanation(
-          `Đề xuất nguồn công suất tối thiểu ${wattage}W dựa trên tổng TDP của CPU (${cpuTdp}W) và GPU (${gpuTdp}W) kèm 150W biên an toàn.`,
-        );
-      })
-      .finally(() => setLoadingPsu(false));
+      setLoadingPsu(true);
+      aiBuildAPI
+        .getPsuRecommendation(cpu.name, vga.name, ram.name)
+        .then((data) => {
+          setAiPsuWattage(data.recommendedWattage);
+          setAiPsuExplanation(data.explanation);
+        })
+        .catch((err) => {
+          console.error("Error fetching AI PSU recommendation:", err);
+          const cpuTdp = Number(getProductSpecs(cpu).tdp_w) || 100;
+          const gpuTdp = Number(getProductSpecs(vga).tdp_w) || 200;
+          const wattage = Math.ceil((cpuTdp + gpuTdp + 150) / 50) * 50;
+          setAiPsuWattage(wattage);
+          setAiPsuExplanation(
+            `Đề xuất nguồn công suất tối thiểu ${wattage}W dựa trên tổng TDP của CPU (${cpuTdp}W) và GPU (${gpuTdp}W) kèm 150W biên an toàn.`,
+          );
+        })
+        .finally(() => setLoadingPsu(false));
+    };
+    loadPsu();
   }, [build.cpu, build.vga, build.ram]);
 
   // CPU Advice hook
   useEffect(() => {
-    if (!build.cpu) {
-      setCpuAdvice(null);
-      return;
-    }
-    aiBuildAPI
-      .getCpuAdvice(build.cpu.name)
-      .then((data) => setCpuAdvice(data.advice))
-      .catch((err) => {
-        console.error("Error fetching CPU advice:", err);
+    const loadCpuAdvice = async () => {
+      if (!build.cpu) {
+        await Promise.resolve();
         setCpuAdvice(null);
-      });
+        return;
+      }
+      aiBuildAPI
+        .getCpuAdvice(build.cpu.name)
+        .then((data) => setCpuAdvice(data.advice))
+        .catch((err) => {
+          console.error("Error fetching CPU advice:", err);
+          setCpuAdvice(null);
+        });
+    };
+    loadCpuAdvice();
   }, [build.cpu]);
 
   // AI ML Bottleneck Prediction hook
   useEffect(() => {
-    const cpu = build.cpu;
-    const vga = build.vga;
-    const ram = build.ram;
+    const loadBottleneck = async () => {
+      const cpu = build.cpu;
+      const vga = build.vga;
+      const ram = build.ram;
 
-    if (!cpu || !vga || !ram) {
-      setBottleneckResult(null);
+      if (!cpu || !vga || !ram) {
+        await Promise.resolve();
+        setBottleneckResult(null);
+        setBottleneckError(null);
+        return;
+      }
+
+      setLoadingBottleneck(true);
       setBottleneckError(null);
-      return;
-    }
 
-    setLoadingBottleneck(true);
-    setBottleneckError(null);
+      const cpuName = normalizeHardwareName(cpu.name, "cpu");
+      const gpuName = normalizeHardwareName(vga.name, "gpu");
+      const { capacity: ramCapacity, busSpeed: ramBusSpeed } = getRamCapacityAndBus(ram);
 
-    const cpuName = normalizeHardwareName(cpu.name, "cpu");
-    const gpuName = normalizeHardwareName(vga.name, "gpu");
-    const { capacity: ramCapacity, busSpeed: ramBusSpeed } = getRamCapacityAndBus(ram);
-
-    fetch("http://localhost:5000/api/predict", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        cpu_name: cpuName,
-        gpu_name: gpuName,
-        ram_capacity: ramCapacity,
-        ram_bus_speed: ramBusSpeed,
-      }),
-    })
-      .then((res) => {
-        if (!res.ok) throw new Error(`Status: ${res.status}`);
-        return res.json();
+      fetch("http://localhost:5000/api/predict", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          cpu_name: cpuName,
+          gpu_name: gpuName,
+          ram_capacity: ramCapacity,
+          ram_bus_speed: ramBusSpeed,
+        }),
       })
-      .then((data) => {
-        if (data.success) {
-          setBottleneckResult(data.predictions);
-        } else {
-          setBottleneckError(data.error || "Lỗi phân tích không xác định");
-        }
-      })
-      .catch((err) => {
-        console.error("Bottleneck API error:", err);
-        setBottleneckError("Không thể liên kết với server phân tích nghẽn AI (Port 5000).");
-      })
-      .finally(() => setLoadingBottleneck(false));
+        .then((res) => {
+          if (!res.ok) throw new Error(`Status: ${res.status}`);
+          return res.json();
+        })
+        .then((data) => {
+          if (data.success) {
+            setBottleneckResult(data.predictions);
+          } else {
+            setBottleneckError(data.error || "Lỗi phân tích không xác định");
+          }
+        })
+        .catch((err) => {
+          console.error("Bottleneck API error:", err);
+          setBottleneckError("Không thể liên kết với server phân tích nghẽn AI (Port 5000).");
+        })
+        .finally(() => setLoadingBottleneck(false));
+    };
+    loadBottleneck();
   }, [build.cpu, build.vga, build.ram]);
 
   const pcSystemCategoryId = categories.find((c) => c.slug === "pc-system")?.id || "";
@@ -1966,11 +1995,11 @@ function AdminBuildSlot({
   if (specs.cores) highlights.push(`${specs.cores} nhân`);
   if (specs.threads) highlights.push(`${specs.threads} luồng`);
   if (specs.socket) highlights.push(specs.socket);
-  if (specs.vram_gb) highlights.push(`${specs.vram_gb}GB VRAM`);
-  if (specs.capacity_gb && !specs.vram_gb)
+  if (specs.vram) highlights.push(`${specs.vram}GB VRAM`);
+  if (specs.capacity_gb && !specs.vram)
     highlights.push(`${specs.capacity_gb}GB`);
   if (specs.wattage) highlights.push(`${specs.wattage}W`);
-  if (specs.ram_type && !specs.vram_gb && !specs.cores)
+  if (specs.ram_type && !specs.vram && !specs.cores)
     highlights.push(specs.ram_type);
 
   return (
