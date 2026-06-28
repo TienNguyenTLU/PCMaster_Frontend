@@ -811,34 +811,7 @@ export const adminAPI = {
 
   
   
-  previewGearvnProduct: async (
-    url: string,
-    categoryId: number,
-  ): Promise<GearvnPreviewResponse> => {
-    const { data } = await axiosInstance.post<GearvnPreviewResponse>(
-      "/api/admin/products/gearvn/preview",
-      {
-        url,
-        categoryId,
-      },
-    );
-    return data;
-  },
 
-  
-  importFromGearvn: async (
-    url: string,
-    categoryId: number,
-  ): Promise<Product> => {
-    const { data } = await axiosInstance.post<Product>(
-      "/api/admin/products/gearvn/import",
-      {
-        url,
-        categoryId,
-      },
-    );
-    return data;
-  },
 
   
   getUsers: async (): Promise<UserResponse[]> => {
@@ -1270,15 +1243,7 @@ export const bottleneckAPI = {
 
 
 
-export interface GearvnPreviewResponse {
-  title: string;
-  brand: string;
-  description: string;
-  price: number;
-  thumbnailUrl: string;
-  sku: string;
-  specs: Record<string, string>;
-}
+
 
 export { getCategoryLabel } from "../utils/labelMapping";
 
@@ -1299,6 +1264,11 @@ export interface UserProfileUpdateRequest {
   address: string | null;
 }
 
+export interface ChangePasswordRequest {
+  oldPassword: string;
+  newPassword: string;
+}
+
 export const profileAPI = {
   
   getProfile: async (): Promise<UserProfile> => {
@@ -1312,6 +1282,14 @@ export const profileAPI = {
     const { data } = await axiosInstance.put<UserProfile>(
       "/api/profile",
       payload,
+    );
+    return data;
+  },
+
+  changePassword: async (payload: ChangePasswordRequest): Promise<{ message: string }> => {
+    const { data } = await axiosInstance.put<{ message: string }>(
+      "/api/profile/password",
+      payload
     );
     return data;
   },

@@ -117,7 +117,7 @@ export default function UsersPage() {
       const valB = b.createdAt ? new Date(b.createdAt).getTime() : Number(b.id);
       return valA - valB;
     }
-    // default: id-desc (mới nhất)
+    
     const valA = a.createdAt ? new Date(a.createdAt).getTime() : Number(a.id);
     const valB = b.createdAt ? new Date(b.createdAt).getTime() : Number(b.id);
     return valB - valA;

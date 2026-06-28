@@ -13,19 +13,19 @@ interface UsePcBuildsCRUDProps {
   selectedCount: number;
 }
 
-// ==========================================
-// HOOK QUẢN LÝ LƯU TRỮ VÀ KHỞI TẠO CẤU HÌNH (CRUD)
-// ==========================================
+
+
+
 
 export function usePcBuildsCRUD({ build, setBuild, selectedCount }: UsePcBuildsCRUDProps) {
   const { user } = useAuthStore();
 
-  // Các state quản lý danh sách cấu hình và tab hiển thị
+  
   const [activeTab, setActiveTab] = useState<"builder" | "my-builds">("builder");
   const [myBuilds, setMyBuilds] = useState<PcBuildResponse[]>([]);
   const [loadingMyBuilds, setLoadingMyBuilds] = useState(false);
 
-  // Các state quản lý modal Lưu cấu hình
+  
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [buildName, setBuildName] = useState("");
   const [savingBuild, setSavingBuild] = useState(false);
@@ -58,7 +58,7 @@ export function usePcBuildsCRUD({ build, setBuild, selectedCount }: UsePcBuildsC
     }
   }, [activeTab, user, fetchMyBuilds]);
 
-  // Click nút mở modal Lưu cấu hình
+  
   const handleSaveClick = () => {
     if (!user) {
       toast.error("Vui lòng đăng nhập trước khi lưu cấu hình!");
@@ -73,7 +73,7 @@ export function usePcBuildsCRUD({ build, setBuild, selectedCount }: UsePcBuildsC
     setShowSaveModal(true);
   };
 
-  // Gửi thông tin lưu cấu hình PC
+  
   const handleSaveConfirm = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!buildName.trim()) {
@@ -124,7 +124,7 @@ export function usePcBuildsCRUD({ build, setBuild, selectedCount }: UsePcBuildsC
     }
   };
 
-  // Nạp lại cấu hình cũ đã lưu vào giỏ lắp ráp hiện tại
+  
   const loadSavedBuild = async (savedBuild: PcBuildResponse) => {
     setLoadingMyBuilds(true);
     const toastId = toast.loading("Đang tải chi tiết cấu hình...");
@@ -173,14 +173,14 @@ export function usePcBuildsCRUD({ build, setBuild, selectedCount }: UsePcBuildsC
     }
   };
 
-  // Click nút yêu cầu xóa cấu hình
+  
   const handleDeleteBuildClick = (buildId: number, e: React.MouseEvent) => {
     e.stopPropagation();
     setPendingDeleteBuildId(buildId);
     setShowDeleteConfirmModal(true);
   };
 
-  // Xác nhận xóa cấu hình
+  
   const confirmDeleteBuild = async () => {
     if (pendingDeleteBuildId === null) return;
     const toastId = toast.loading("Đang xóa cấu hình...");

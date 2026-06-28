@@ -4,16 +4,16 @@ import { useState, useEffect, useCallback } from "react";
 import { orderAPI, OrderResponse, OrderStatus, PaymentStatus } from "@/lib/api";
 import toast from "react-hot-toast";
 
-// ==========================================
-// HOOK QUẢN LÝ ĐƠN HÀNG BÁN Ở DASHBOARD
-// ==========================================
+
+
+
 
 export function useDashboardOrders() {
-  // Trạng thái danh sách đơn hàng từ API
+  
   const [orders, setOrders] = useState<OrderResponse[]>([]);
   const [loading, setLoading] = useState(true);
 
-  // Trạng thái tìm kiếm và bộ lọc đơn hàng
+  
   const [search, setSearch] = useState("");
   const [filterStatus, setFilterStatus] = useState<OrderStatus | "ALL">("ALL");
   const [filterPayment, setFilterPayment] = useState<PaymentStatus | "ALL">("ALL");
@@ -22,7 +22,7 @@ export function useDashboardOrders() {
   );
   const [sortBy, setSortBy] = useState("id-desc");
 
-  // Tải toàn bộ danh sách đơn hàng
+  
   const fetchOrders = useCallback(async () => {
     setLoading(true);
     try {
@@ -35,7 +35,7 @@ export function useDashboardOrders() {
     }
   }, []);
 
-  // Tự động tải đơn hàng lần đầu khi mount
+  
   useEffect(() => {
     const timer = setTimeout(() => {
       fetchOrders();
@@ -43,7 +43,7 @@ export function useDashboardOrders() {
     return () => clearTimeout(timer);
   }, [fetchOrders]);
 
-  // Lọc danh sách đơn hàng ở client dựa theo từ khóa, trạng thái đơn, trạng thái thanh toán
+  
   const filtered = orders.filter((o) => {
     const matchStatus = filterStatus === "ALL" || o.status === filterStatus;
     const matchPayment = filterPayment === "ALL" || o.paymentStatus === filterPayment;
@@ -73,13 +73,13 @@ export function useDashboardOrders() {
       const valB = b.createdAt ? new Date(b.createdAt).getTime() : Number(b.id);
       return valA - valB;
     }
-    // default: id-desc (mới nhất)
+    
     const valA = a.createdAt ? new Date(a.createdAt).getTime() : Number(a.id);
     const valB = b.createdAt ? new Date(b.createdAt).getTime() : Number(b.id);
     return valB - valA;
   });
 
-  // Tính toán nhanh số liệu thống kê đơn hàng phục vụ hiển thị
+  
   const totalOrdersCount = orders.length;
   const draftCount = orders.filter((o) => o.status === "PENDING_APPROVAL").length;
   const confirmedCount = orders.filter((o) => o.status === "CONFIRMED").length;

@@ -52,7 +52,7 @@ export default function BatchList({
       const timeB = b.importedAt ? new Date(b.importedAt).getTime() : Number(b.id);
       return timeA - timeB;
     }
-    // default: id-desc (mới nhất)
+    
     const timeA = a.importedAt ? new Date(a.importedAt).getTime() : Number(a.id);
     const timeB = b.importedAt ? new Date(b.importedAt).getTime() : Number(b.id);
     return timeB - timeA;

@@ -26,7 +26,7 @@ export default function BuildPage() {
   const { user } = useAuthStore();
   const [showSmartBuildDropdown, setShowSmartBuildDropdown] = useState(false);
 
-  // 1. Core Build State Hook
+  
   const {
     build,
     setBuild,
@@ -49,7 +49,7 @@ export default function BuildPage() {
     handleAddAllToCart,
   } = usePcBuildState();
 
-  // 2. Hardware Analysis Hook (depends on build)
+  
   const {
     bottleneckResult,
     loadingBottleneck,
@@ -60,7 +60,7 @@ export default function BuildPage() {
     loadingPsu,
   } = usePcHardwareAnalysis({ build });
 
-  // 3. AI Smart Build Hook (depends on build, setBuild, showSmartBuildDropdown, setShowSmartBuildDropdown)
+  
   const {
     smartBuildNeed,
     setSmartBuildNeed,
@@ -78,7 +78,7 @@ export default function BuildPage() {
     setShowSmartBuildDropdown,
   });
 
-  // 4. Custom Builds CRUD Hook (depends on build, setBuild, selectedCount)
+  
   const {
     activeTab,
     setActiveTab,
@@ -106,7 +106,7 @@ export default function BuildPage() {
     selectedCount,
   });
 
-  // Compose / Append cpuAdvice from hardwareAnalysis to compatNotes
+  
   const compatNotes = [...baseCompatNotes];
   if (cpuAdvice) {
     compatNotes.push({
@@ -115,7 +115,7 @@ export default function BuildPage() {
     });
   }
 
-  // Calculate dynamic showCompatNotes based on composed compatNotes
+  
   const showCompatNotes =
     compatNotes.length > 0 &&
     (!build.mainboard || compatNotes.some((note) => note.type === "warning"));
@@ -146,7 +146,7 @@ export default function BuildPage() {
         background: "linear-gradient(180deg, #f7f9fb 0%, #f0f4f8 100%)",
       }}
     >
-      {/* HEADER */}
+      {}
       <div className="w-full bg-white/80 backdrop-blur-md border-b border-[#e2e8f0]/80 sticky top-0 z-30 shadow-sm">
         <div className="max-w-[1400px] mx-auto px-8 py-3.5 flex items-center justify-between">
           <div className="flex items-center gap-6">
@@ -161,7 +161,7 @@ export default function BuildPage() {
                 Xây dựng cấu hình PC
               </h1>
             </div>
-            {/* Nav Tabs */}
+            {}
             {activeTab === "builder" ? (
               <div className="flex items-center gap-3">
                 <button
@@ -220,13 +220,13 @@ export default function BuildPage() {
         </div>
       </div>
 
-      {/* BODY */}
+      {}
       <div className="max-w-[1400px] mx-auto w-full px-8 py-8 flex-1">
         {activeTab === "builder" ? (
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-8 items-start">
-            {/* LEFT BUILD SLOTS */}
+            {}
             <div className="flex flex-col gap-3">
-              {/* AI Advice Comment Box */}
+              {}
               {aiBuildNote && (
                 <div className="bg-white border border-violet-100 rounded-[24px] p-6 flex flex-col gap-4 shadow-sm mb-3">
                   <div className="flex items-center justify-between border-b border-[#f1f5f9] pb-3">
@@ -248,7 +248,7 @@ export default function BuildPage() {
                 </div>
               )}
 
-              {/* ML Bottleneck Report */}
+              {}
               <BottleneckReport
                 build={build}
                 bottleneckResult={bottleneckResult}
@@ -256,7 +256,7 @@ export default function BuildPage() {
                 bottleneckError={bottleneckError}
               />
 
-              {/* Compatibility Warning Box */}
+              {}
               {showCompatNotes && (
                 <div className="bg-white border border-[#e8ecf2] rounded-[24px] p-6 flex flex-col gap-4 shadow-sm mb-3">
                   <div className="flex items-center gap-2.5 text-[#0058be] font-extrabold text-[14px] uppercase tracking-[0.5px]">
@@ -282,7 +282,7 @@ export default function BuildPage() {
                 </div>
               )}
 
-              {/* Core Slots */}
+              {}
               <p className="text-[11px] font-black text-[#94a3b8] uppercase tracking-[1.5px] px-1 mt-2">
                 🔧 Linh kiện cốt lõi
               </p>
@@ -301,7 +301,7 @@ export default function BuildPage() {
                 ))}
               </div>
 
-              {/* Optional Slots */}
+              {}
               <p className="text-[11px] font-black text-[#94a3b8] uppercase tracking-[1.5px] px-1 mt-4">
                 ✨ Linh kiện tùy chọn
               </p>
@@ -333,7 +333,7 @@ export default function BuildPage() {
               </div>
             </div>
 
-            {/* RIGHT SIDE SUMMARY PANEL */}
+            {}
             <SummaryPanel
               build={build}
               totalPrice={totalPrice}
@@ -357,7 +357,7 @@ export default function BuildPage() {
         )}
       </div>
 
-      {/* Pick Part Modal */}
+      {}
       {activeSlot && (
         <BuildPickerModal
           slotKey={activeSlot}
@@ -371,7 +371,7 @@ export default function BuildPage() {
         />
       )}
 
-      {/* Save Modal */}
+      {}
       <SaveBuildModal
         showSaveModal={showSaveModal}
         setShowSaveModal={setShowSaveModal}
@@ -383,7 +383,7 @@ export default function BuildPage() {
         handleSaveConfirm={handleSaveConfirm}
       />
 
-      {/* Incompatibility Warn Modal */}
+      {}
       <ConfirmSelectionModal
         showConfirmModal={showConfirmModal}
         pendingSelection={pendingSelection}
@@ -392,7 +392,7 @@ export default function BuildPage() {
         build={build}
       />
 
-      {/* Delete Saved Build Modal */}
+      {}
       <DeleteBuildModal
         showDeleteConfirmModal={showDeleteConfirmModal}
         pendingDeleteBuildId={pendingDeleteBuildId}

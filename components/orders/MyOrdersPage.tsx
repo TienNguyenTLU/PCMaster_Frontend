@@ -191,7 +191,7 @@ export default function MyOrdersPage() {
         background: "linear-gradient(180deg, #f7f9fb 0%, #f0f4f8 100%)",
       }}
     >
-      {/* Title */}
+      {}
       <div className="w-full bg-white border-b border-[#e8ecf2] py-8 shadow-sm">
         <div className="max-w-[1000px] mx-auto px-6">
           <p className="text-[11px] font-bold text-[#0058be] uppercase tracking-[1.5px] mb-1">
@@ -210,7 +210,7 @@ export default function MyOrdersPage() {
         </div>
       </div>
 
-      {/* Main Content */}
+      {}
       <div className="max-w-[1000px] mx-auto w-full px-6 py-8 flex flex-col gap-6 flex-1">
         {!user ? (
           <div className="bg-white rounded-[24px] border border-[#e8ecf2] p-16 text-center flex flex-col items-center gap-4 shadow-sm my-8">
@@ -235,7 +235,7 @@ export default function MyOrdersPage() {
           </div>
         ) : (
           <>
-            {/* Filter Tabs */}
+            {}
             <div className="flex flex-wrap items-center bg-white p-1.5 rounded-[14px] border border-[#e8ecf2] shadow-sm gap-1 overflow-x-auto">
               {(
                 [
@@ -281,7 +281,7 @@ export default function MyOrdersPage() {
               })}
             </div>
 
-            {/* Orders List */}
+            {}
             {filteredOrders.length === 0 ? (
               <div className="bg-white rounded-[24px] border border-[#e8ecf2] p-16 text-center flex flex-col items-center gap-4 shadow-sm my-4">
                 <span className="text-[48px]">📦</span>
@@ -310,7 +310,7 @@ export default function MyOrdersPage() {
                       key={order.id}
                       className="bg-white rounded-[20px] border border-[#e8ecf2] shadow-sm hover:shadow-md transition-shadow overflow-hidden flex flex-col"
                     >
-                      {/* Accordion Trigger */}
+                      {}
                       <div
                         onClick={() => toggleExpand(order.id)}
                         className="p-5 flex flex-wrap items-center justify-between gap-4 cursor-pointer hover:bg-slate-50/50 transition-colors select-none"
@@ -368,12 +368,12 @@ export default function MyOrdersPage() {
                         </div>
                       </div>
 
-                      {/* Accordion Content */}
+                      {}
                       {isExpanded && (
                         <div className="border-t border-[#f1f5f9] bg-[#fdfefe]/40 p-5 flex flex-col gap-5 animate-dropdown origin-top">
-                          {/* Inner details grids */}
+                          {}
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-5 bg-[#f8fafc]/80 border border-slate-100 rounded-[14px] p-4 text-[12px] font-medium text-[#475569]">
-                            {/* Shipping information */}
+                            {}
                             <div className="flex flex-col gap-2">
                               <p className="text-[11px] font-bold text-[#0058be] uppercase tracking-[0.5px] mb-1">
                                 Thông tin nhận hàng
@@ -415,7 +415,7 @@ export default function MyOrdersPage() {
                               </div>
                             </div>
 
-                            {/* Payment information */}
+                            {}
                             <div className="flex flex-col gap-2 border-t md:border-t-0 md:border-l border-slate-100 pt-3 md:pt-0 md:pl-5">
                               <p className="text-[11px] font-bold text-[#0058be] uppercase tracking-[0.5px] mb-1">
                                 Thanh toán
@@ -439,7 +439,7 @@ export default function MyOrdersPage() {
                                 </span>
                               </div>
 
-                              {/* Repay Button if Pending VNPAY */}
+                              {}
                               {order.paymentMethod === "VNPAY" && order.paymentStatus === "PENDING" && order.status !== "CANCELLED" && (
                                 <div className="mt-3">
                                   <button
@@ -464,7 +464,7 @@ export default function MyOrdersPage() {
                             </div>
                           </div>
 
-                          {/* Products breakdown */}
+                          {}
                           <div className="flex flex-col gap-3">
                             <p className="text-[11px] font-bold text-[#475569] uppercase tracking-[0.5px]">
                               Chi tiết sản phẩm đã mua:
@@ -525,7 +525,7 @@ export default function MyOrdersPage() {
                             </div>
                           </div>
 
-                          {/* Pricing details and total breakdown */}
+                          {}
                           <div className="bg-white border border-slate-100 rounded-[14px] p-4 flex flex-col gap-2 text-[12px] font-medium text-[#475569] shadow-sm">
                             <div className="flex items-center justify-between text-slate-500 font-semibold">
                               <span>Tạm tính</span>
@@ -551,7 +551,7 @@ export default function MyOrdersPage() {
                             </div>
                           </div>
 
-                          {/* Issue Slip download link */}
+                          {}
                           {order.documentUrl && (
                             <div className="flex justify-end pt-2 border-t border-slate-100">
                               <a

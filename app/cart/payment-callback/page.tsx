@@ -41,7 +41,7 @@ function PaymentCallbackContent() {
       }
 
       try {
-        // Trigger backend IPN processing first to ensure status is updated
+        
         const queryString = searchParams.toString();
         await orderAPI.vnpayCallback(queryString);
 
@@ -53,7 +53,7 @@ function PaymentCallbackContent() {
           await clearCart();
         } else {
           router.replace("/cart?error=vnpay_failed");
-          return; // Stop rendering this page and redirect
+          return; 
         }
       } catch (err: any) {
         console.error("Error fetching order in callback:", err);

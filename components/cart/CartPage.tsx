@@ -23,13 +23,13 @@ import { useAuthStore } from "@/lib/store";
 import { orderAPI, OrderRequest, DeliveryType, couponAPI, PaymentMethod } from "@/lib/api";
 import toast from "react-hot-toast";
 
-// Reusable utilities
+
 import { formatPrice } from "@/utils/format";
 
-// Custom Hook
+
 import { useCartManager } from "@/hooks/useCartManager";
 
-// Atomic subcomponents
+
 import OrderSuccessModal from "./OrderSuccessModal";
 import ClearCartModal from "./ClearCartModal";
 import CartItemRow from "./CartItemRow";

@@ -73,7 +73,7 @@ export default function SuppliersPage() {
     if (sortBy === "id-asc") {
       return Number(a.id) - Number(b.id);
     }
-    // default: id-desc (mới nhất)
+    
     return Number(b.id) - Number(a.id);
   });
 

@@ -1026,7 +1026,7 @@ export default function ExplorePage() {
           const specStr = String(specVal).toLowerCase().trim();
           const wantedStr = wantedVal.toLowerCase().trim();
 
-          // Helper to tokenize and clean up word and number tokens
+          
           const tokenize = (str: string) => {
             return str
               .split(/[\s,\/;]+/)
@@ -1039,7 +1039,7 @@ export default function ExplorePage() {
 
           if (specTokens.length === 0 || wantedTokens.length === 0) return false;
 
-          // Normalize synonym tokens (e.g. radeon -> amd)
+          
           const normalize = (t: string) => {
             if (t === "radeon") return "amd";
             if (t === "geforce") return "nvidia";
@@ -1049,7 +1049,7 @@ export default function ExplorePage() {
           const normSpecTokens = specTokens.map(normalize);
           const normWantedTokens = wantedTokens.map(normalize);
 
-          // We want every wanted token to find a matching token in the specification tokens
+          
           return normWantedTokens.every((w) => {
             const isNumeric = /^\d+$/.test(w);
             
@@ -1059,7 +1059,7 @@ export default function ExplorePage() {
               if (isNumeric) {
                 const sIsNumeric = /^\d+$/.test(s);
                 if (sIsNumeric) {
-                  // For series matching like "9000" or "6000" that might end with trailing zeroes
+                  
                   if (w.endsWith("00") || w.endsWith("000")) {
                     const nonZeroPrefix = w.replace(/0+$/, "");
                     return s.startsWith(nonZeroPrefix);
@@ -1071,7 +1071,7 @@ export default function ExplorePage() {
                 }
               }
 
-              // Exact match fallback for general alphanumeric tokens
+              
               return s === w;
             });
           });

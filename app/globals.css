@@ -54,7 +54,7 @@ body {
   transform: scale(0.95);
 }
 
-/* Swiper Custom Pagination */
+
 .swiper-pagination-custom {
   width: auto !important;
   left: 50% !important;

@@ -32,7 +32,7 @@ import ConfirmSelectionModal from "@/components/builds/ConfirmSelectionModal";
 import BottleneckReport from "@/components/builds/BottleneckReport";
 import SmartBuildDropdown from "@/components/builds/SmartBuildDropdown";
 
-// Types matching the user build page
+
 export interface SlotDef {
   key: string;
   label: string;
@@ -297,7 +297,7 @@ export default function PcConfigurationModal({
 }: PcConfigurationModalProps) {
   const isEditing = !!editingProduct;
 
-  // Form Fields
+  
   const [name, setName] = useState("");
   const [brandId, setBrandId] = useState("");
   const [price, setPrice] = useState("0");
@@ -335,20 +335,20 @@ export default function PcConfigurationModal({
   const [aiBuildNote, setAiBuildNote] = useState<string | null>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Bottleneck Prediction states
+  
   const [bottleneckResult, setBottleneckResult] = useState<any>(null);
   const [loadingBottleneck, setLoadingBottleneck] = useState(false);
   const [bottleneckError, setBottleneckError] = useState<string | null>(null);
 
-  // PSU suggestion states
+  
   const [aiPsuWattage, setAiPsuWattage] = useState<number | null>(null);
   const [aiPsuExplanation, setAiPsuExplanation] = useState<string | null>(null);
   const [loadingPsu, setLoadingPsu] = useState(false);
 
-  // CPU Advice state
+  
   const [cpuAdvice, setCpuAdvice] = useState<string | null>(null);
 
-  // Pending selections (for incompatibilities check modal)
+  
   const [showConfirmModal, setShowConfirmModal] = useState(false);
   const [pendingSelection, setPendingSelection] = useState<{
     slotKey: string;
@@ -356,7 +356,7 @@ export default function PcConfigurationModal({
     incompatibleSlots: string[];
   } | null>(null);
 
-  // Static spec parsing
+  
   const getProductSpecs = (p?: Product | null) => {
     if (!p || !p.specsJson) return {};
     try {
@@ -392,7 +392,7 @@ export default function PcConfigurationModal({
     return "other";
   };
 
-  // Load static lists
+  
   useEffect(() => {
     adminAPI.getBrands(0, 200).then((r) => setBrands(r.content || []));
     adminAPI.getCategories(0, 200).then((r) => setCategories(r.content || []));
@@ -411,7 +411,7 @@ export default function PcConfigurationModal({
     });
   }, [editingProduct, isOpen]);
 
-  // Click outside listener for AI smart builder
+  
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
@@ -429,7 +429,7 @@ export default function PcConfigurationModal({
     };
   }, [showSmartBuildDropdown]);
 
-  // Initialize/Load configuration
+  
   useEffect(() => {
     const init = async () => {
       if (!isOpen) return;
@@ -925,7 +925,7 @@ export default function PcConfigurationModal({
     setThumbnailPreview(URL.createObjectURL(file));
   };
 
-  // Smart AI build submit matching BuildPage implementation
+  
   const handleSmartBuildSubmit = async () => {
     if (productList.length === 0) {
       toast.error("Đang tải danh sách linh kiện. Vui lòng thử lại sau.");
@@ -1978,7 +1978,7 @@ function AdminBuildSlot({
   const imgSrc = product?.thumbnailUrl?.startsWith("http")
     ? product.thumbnailUrl
     : product?.thumbnailUrl
-      ? `http://localhost:8080${product.thumbnailUrl}`
+      ? `http:
       : null;
 
   const isOutOfStock = product && product.stock === 0;
@@ -2013,7 +2013,7 @@ function AdminBuildSlot({
       }`}
     >
       <div className="flex items-center gap-4 flex-1">
-        {/* Icon */}
+        {}
         <div
           className={`size-11 rounded-[12px] flex items-center justify-center shrink-0 border transition-all duration-300 ${
             product
@@ -2026,7 +2026,7 @@ function AdminBuildSlot({
           <Icon className="size-5" />
         </div>
 
-        {/* Info */}
+        {}
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2 mb-0.5">
             <p className="text-[11px] font-bold text-[#94a3b8] uppercase tracking-[1px]">
@@ -2083,11 +2083,11 @@ function AdminBuildSlot({
         </div>
       </div>
 
-      {/* Actions & Quantity */}
+      {}
       <div className="flex items-center justify-between md:justify-end gap-4 border-t border-slate-100/60 pt-2.5 md:pt-0 md:border-t-0 shrink-0">
         {product && (
           <div className="flex items-center gap-3">
-            {/* Quantity control */}
+            {}
             <div className="flex items-center gap-1.5 bg-white px-2 py-1 rounded-[10px] border border-[#cbd5e1]/60 shadow-sm">
               <span className="text-[10px] text-[#64748b] font-medium pr-1">SL:</span>
               <button
@@ -2107,7 +2107,7 @@ function AdminBuildSlot({
               </button>
             </div>
 
-            {/* Price display */}
+            {}
             <div className="text-right">
               <p className="text-[14px] font-extrabold text-[#0058be]">
                 {(product.price * qty).toLocaleString("vi-VN")}

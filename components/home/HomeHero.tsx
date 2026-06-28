@@ -125,7 +125,7 @@ export default function HomeHero() {
         ))}
       </Swiper>
 
-      {/* Navigation Buttons */}
+      {}
       {banners.length > 1 && (
         <>
           <button
@@ -143,7 +143,7 @@ export default function HomeHero() {
         </>
       )}
 
-      {/* Pagination */}
+      {}
       {banners.length > 1 && (
         <div className="swiper-pagination-custom absolute bottom-5 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2.5 px-3.5 py-2 bg-black/30 backdrop-blur-md rounded-full border border-white/20 shadow-lg" />
       )}

@@ -18,9 +18,9 @@ import { Product } from "@/lib/api";
 import { useCartManager } from "@/hooks/useCartManager";
 import toast from "react-hot-toast";
 
-// ==========================================
-// ĐỊNH NGHĨA KIỂU DỮ LIỆU & HẰNG SỐ CỦA SLOT
-// ==========================================
+
+
+
 
 export interface SlotDef {
   key: string;
@@ -105,9 +105,9 @@ export const SLOTS: SlotDef[] = [
 
 export type BuildState = Record<string, Product | null>;
 
-// ==========================================
-// CÁC HÀM TRỢ GIÚP PHÂN TÍCH THÔNG TIN PHẦN CỨNG
-// ==========================================
+
+
+
 
 export function normalizeHardwareName(name: string, type: "cpu" | "gpu"): string {
   if (!name) return "";
@@ -260,14 +260,14 @@ export const isCaseCompatibleWithMb = (
   return isSupportedStrMatch(String(supported));
 };
 
-// ==========================================
-// HOOK CHÍNH: QUẢN LÝ TRẠNG THÁI LẮP RÁP PC
-// ==========================================
+
+
+
 
 export function usePcBuildState(cpuAdvice: string | null = null) {
   const { handleAddToCart } = useCartManager();
 
-  // Khởi tạo các state
+  
   const [build, setBuild] = useState<BuildState>(
     Object.fromEntries(SLOTS.map((s) => [s.key, null])),
   );
@@ -289,7 +289,7 @@ export function usePcBuildState(cpuAdvice: string | null = null) {
     }
   };
 
-  // Khởi tạo động các khe cắm ổ cứng M.2 dựa trên Mainboard
+  
   const extraStorageSlots: SlotDef[] = [];
   const mb = build.mainboard;
   const mbSpecs = mb ? getProductSpecs(mb) : {};
@@ -403,7 +403,7 @@ export function usePcBuildState(cpuAdvice: string | null = null) {
     const ramType = getSpecs(currentRam).ram_type;
     const mainboardFormFactor = getSpecs(currentMainboard).form_factor;
 
-    // Kiểm tra socket CPU vs Mainboard & Cooler
+    
     if (slotKey === "cpu") {
       const socket = specs.socket;
       if (
@@ -422,7 +422,7 @@ export function usePcBuildState(cpuAdvice: string | null = null) {
         incompatibleSlots.push("cooler");
       }
     }
-    // Kiểm tra Mainboard vs CPU, RAM, Case, SSD, Cooler
+    
     if (slotKey === "mainboard") {
       const mbSocket = specs.socket;
       const mbRamType = specs.ram_type;
@@ -461,7 +461,7 @@ export function usePcBuildState(cpuAdvice: string | null = null) {
         incompatibleSlots.push("cooler");
       }
     }
-    // Kiểm tra chuẩn RAM vs Mainboard
+    
     if (slotKey === "ram") {
       const pRamType = specs.ram_type;
       if (
@@ -473,7 +473,7 @@ export function usePcBuildState(cpuAdvice: string | null = null) {
         incompatibleSlots.push("mainboard");
       }
     }
-    // Kiểm tra Case vs Mainboard
+    
     if (slotKey === "case") {
       if (
         currentMainboard &&
@@ -483,13 +483,13 @@ export function usePcBuildState(cpuAdvice: string | null = null) {
         incompatibleSlots.push("mainboard");
       }
     }
-    // Kiểm tra SSD vs Mainboard
+    
     if (slotKey === "storage" || slotKey.startsWith("storage_extra_")) {
       if (currentMainboard && !isSsdCompatible(product, currentMainboard)) {
         incompatibleSlots.push("mainboard");
       }
     }
-    // Kiểm tra Cooler vs CPU & Mainboard
+    
     if (slotKey === "cooler") {
       if (currentCpu && cpuSocket && !isCoolerCompatible(product, cpuSocket)) {
         incompatibleSlots.push("cpu");
@@ -519,7 +519,7 @@ export function usePcBuildState(cpuAdvice: string | null = null) {
     setActiveSlot(null);
   };
 
-  // Xác nhận thay thế các linh kiện xung đột
+  
   const confirmPendingSelection = () => {
     if (!pendingSelection) return;
     const { slotKey, product, incompatibleSlots } = pendingSelection;
@@ -541,18 +541,18 @@ export function usePcBuildState(cpuAdvice: string | null = null) {
     setPendingSelection(null);
   };
 
-  // Xóa linh kiện khỏi giỏ build
+  
   const handleRemove = (slotKey: string) => {
     setBuild((prev) => ({ ...prev, [slotKey]: null }));
   };
 
-  // Đặt lại toàn bộ cấu hình
+  
   const handleReset = () => {
     setBuild(Object.fromEntries(SLOTS.map((s) => [s.key, null])));
     toast.success("Đã đặt lại cấu hình!");
   };
 
-  // Thêm tất cả linh kiện đã chọn vào giỏ hàng thực tế
+  
   const handleAddAllToCart = async () => {
     const selected = Object.values(build).filter((p): p is Product => !!p);
     if (selected.length === 0) {
@@ -577,7 +577,7 @@ export function usePcBuildState(cpuAdvice: string | null = null) {
     }
   };
 
-  // Lấy các ghi chú cảnh báo tương thích phần cứng tổng thể
+  
   const getCompatibilityNotes = (): {
     type: "info" | "warning";
     text: string;

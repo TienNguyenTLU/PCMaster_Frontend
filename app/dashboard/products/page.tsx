@@ -9,7 +9,6 @@ import {
   AlertTriangle,
   Loader2,
   RefreshCw,
-  Download,
 } from "lucide-react";
 import {
   Product,
@@ -19,11 +18,9 @@ import {
 } from "@/lib/api";
 import { CldImage } from "next-cloudinary";
 import ProductFormModal from "@/components/dashboard/ProductFormModal";
-import GearvnImportModal from "@/components/dashboard/GearvnImportModal";
 import { useDashboardProducts } from "@/hooks/useDashboardProducts";
 
 export default function ProductsPage() {
-  const [isGearvnModalOpen, setIsGearvnModalOpen] = useState(false);
 
   const {
     brandsList,
@@ -79,13 +76,7 @@ export default function ProductsPage() {
             )}
             Index lại sản phẩm
           </button>
-          <button
-            onClick={() => setIsGearvnModalOpen(true)}
-            className="bg-gradient-to-r from-[#e31837] to-[#ff4d6d] text-white px-4 py-2 rounded-[8px] text-[14px] font-medium flex items-center gap-2 hover:from-[#c2102a] hover:to-[#e31837] transition-all cursor-pointer shadow-sm"
-          >
-            <Download className="size-4" />
-            Import từ GearVN
-          </button>
+
           <button
             onClick={handleAddClick}
             className="bg-[#0058be] text-white px-4 py-2 rounded-[8px] text-[14px] font-medium flex items-center gap-2 hover:bg-[#0047a3] transition-colors cursor-pointer"
@@ -334,14 +325,7 @@ export default function ProductsPage() {
         editingProduct={editingProduct}
       />
 
-      {}
-      <GearvnImportModal
-        isOpen={isGearvnModalOpen}
-        onClose={() => setIsGearvnModalOpen(false)}
-        onSuccess={handleModalSuccess}
-      />
 
-      {}
       {deletingProduct && (
         <div
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm"

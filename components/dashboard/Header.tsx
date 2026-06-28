@@ -51,7 +51,7 @@ export default function Header() {
 
       const items: DashboardNotification[] = [];
 
-      // 1. Orders needing approval (DRAFT)
+      
       if (Array.isArray(ordersData)) {
         ordersData.forEach((o) => {
           if (o.status === "DRAFT") {
@@ -67,7 +67,7 @@ export default function Header() {
         });
       }
 
-      // 2. Purchase Orders needing receive (DRAFT)
+      
       if (Array.isArray(poData)) {
         poData.forEach((po) => {
           if (po.status === "DRAFT") {
@@ -83,7 +83,7 @@ export default function Header() {
         });
       }
 
-      // 3. Issue Slips needing dispatch (PENDING)
+      
       const slips = slipsPage?.content || [];
       if (Array.isArray(slips)) {
         slips.forEach((slip) => {
@@ -100,7 +100,7 @@ export default function Header() {
         });
       }
 
-      // Sort notifications by createdAt descending
+      
       items.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
       setNotifications(items);
     } catch (err) {
@@ -114,7 +114,7 @@ export default function Header() {
       fetchNotifications();
     };
     loadData();
-    const interval = setInterval(fetchNotifications, 30000); // Poll every 30s
+    const interval = setInterval(fetchNotifications, 30000); 
     return () => clearInterval(interval);
   }, [fetchNotifications]);
 
@@ -137,7 +137,7 @@ export default function Header() {
 
   return (
     <header className="h-16 bg-white border-b border-[#e2e8f0] flex items-center justify-between px-8 sticky top-0 z-30">
-      {/* Title */}
+      {}
       <div className="flex items-center gap-2">
         <h1
           className="text-[#0f172a] text-[18px] font-semibold tracking-[-0.2px]"
@@ -147,11 +147,11 @@ export default function Header() {
         </h1>
       </div>
 
-      {/* Action panel */}
+      {}
       <div className="flex items-center gap-6">
 
 
-        {/* Notifications Bell */}
+        {}
         <div className="relative notification-container">
           <button
             onClick={() => {
@@ -168,7 +168,7 @@ export default function Header() {
             )}
           </button>
 
-          {/* Dropdown Menu */}
+          {}
           {isOpen && (
             <div className="absolute right-0 top-full mt-2 w-80 bg-white border border-[#e2e8f0] rounded-[12px] shadow-lg py-1 z-50 overflow-hidden">
               <div className="px-4 py-2.5 border-b border-[#e2e8f0] flex items-center justify-between bg-[#f8fafc]">
@@ -233,7 +233,7 @@ export default function Header() {
           )}
         </div>
 
-        {/* User Account */}
+        {}
         <div className="flex items-center gap-3 border-l border-[#e2e8f0] pl-6 relative group cursor-pointer">
           <div className="w-8 h-8 rounded-full bg-[#e2e8f0] flex items-center justify-center text-[#64748b]">
             <User className="size-4" />
@@ -248,7 +248,7 @@ export default function Header() {
             </span>
           </div>
 
-          {/* User Menu */}
+          {}
           <div className="absolute right-0 top-full mt-2 w-48 bg-white border border-[#e2e8f0] rounded-[8px] shadow-lg py-1 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all z-50">
             <Link
               href="/home"

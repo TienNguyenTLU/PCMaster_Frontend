@@ -148,7 +148,7 @@ export default function OrderDetailModal({
         className="bg-white rounded-[12px] shadow-xl w-full max-w-[680px] max-h-[90vh] flex flex-col overflow-hidden border border-[#e2e8f0]"
         style={{ fontFamily: "Inter, sans-serif" }}
       >
-        {/* Header */}
+        {}
         <div className="border-b border-[#e2e8f0] px-6 py-4 flex items-center justify-between bg-[#f8fafc]">
           <div>
             <h2 className="text-[#0f172a] text-[18px] font-semibold tracking-[-0.3px]">
@@ -169,9 +169,9 @@ export default function OrderDetailModal({
           </div>
         </div>
 
-        {/* Content */}
+        {}
         <div className="flex-1 overflow-y-auto p-6 flex flex-col gap-5 text-[13px]">
-          {/* Stepper Timeline */}
+          {}
           <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[8px] p-4 flex flex-col gap-3">
             <p className="text-[11px] font-bold text-[#64748b] uppercase tracking-[0.5px]">
               Tiến trình đơn hàng
@@ -193,7 +193,7 @@ export default function OrderDetailModal({
               </div>
             ) : (
               <div className="relative flex items-center justify-between mt-2 px-2 pb-1">
-                {/* Connecting lines */}
+                {}
                 <div className="absolute left-6 right-6 top-[11px] -translate-y-1/2 h-0.5 bg-[#e2e8f0] -z-0" />
                 <div
                   className="absolute left-6 top-[11px] -translate-y-1/2 h-0.5 bg-[#0058be] transition-all duration-300 -z-0"
@@ -203,7 +203,7 @@ export default function OrderDetailModal({
                   }}
                 />
 
-                {/* Steps */}
+                {}
                 {steps.map((step, idx) => {
                   const isCompleted = idx <= activeIndex;
                   const isActive = idx === activeIndex;
@@ -238,7 +238,7 @@ export default function OrderDetailModal({
             )}
           </div>
 
-          {/* Customer & Shipping Details */}
+          {}
           <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[8px] p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="flex items-start gap-2">
               <UserIcon className="size-4 text-[#0058be] shrink-0 mt-0.5" />
@@ -308,7 +308,7 @@ export default function OrderDetailModal({
             </div>
           </div>
 
-          {/* Payment Status section */}
+          {}
           <div className="bg-white border border-[#e2e8f0] rounded-[8px] p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="flex items-start gap-2">
               <CreditCard className="size-4 text-[#0058be] shrink-0 mt-0.5" />
@@ -349,7 +349,7 @@ export default function OrderDetailModal({
             </div>
           </div>
 
-          {/* Products List */}
+          {}
           <div>
             <p className="text-[11px] font-bold text-[#64748b] uppercase tracking-[0.8px] mb-3">
               Danh sách sản phẩm
@@ -407,7 +407,7 @@ export default function OrderDetailModal({
             )}
           </div>
 
-          {/* Pricing Breakdown */}
+          {}
           <div className="bg-[#f8fafc] border border-[#e2e8f0] rounded-[8px] p-4 flex flex-col gap-2">
             <div className="flex items-center justify-between text-slate-600 font-semibold">
               <span>Tạm tính</span>
@@ -428,7 +428,7 @@ export default function OrderDetailModal({
             </div>
           </div>
 
-          {/* Document download */}
+          {}
           {order.documentUrl && (
             <a
               href={order.documentUrl}
@@ -443,7 +443,7 @@ export default function OrderDetailModal({
           )}
         </div>
 
-        {/* Footer Actions */}
+        {}
         <div className="bg-[#f8fafc] border-t border-[#e2e8f0] px-6 py-4 flex items-center gap-3 flex-wrap">
           {showRejectForm ? (
             <div className="w-full flex flex-col gap-2 animate-fade-in">

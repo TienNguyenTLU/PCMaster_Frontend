@@ -18,9 +18,9 @@ interface UseAiSmartBuildProps {
   setShowSmartBuildDropdown: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
-// ==========================================
-// HOOK XỬ LÝ LẮP RÁP CẤU HÌNH THÔNG MINH BẰNG AI
-// ==========================================
+
+
+
 
 export function useAiSmartBuild({
   build,
@@ -28,7 +28,7 @@ export function useAiSmartBuild({
   showSmartBuildDropdown,
   setShowSmartBuildDropdown,
 }: UseAiSmartBuildProps) {
-  // Định nghĩa các state quản lý form nhu cầu và tiến trình lắp ráp
+  
   const [smartBuildNeed, setSmartBuildNeed] = useState("gaming");
   const [smartBuildBudget, setSmartBuildBudget] = useState("20-30");
   const [isGeneratingSmartBuild, setIsGeneratingSmartBuild] = useState(false);
@@ -44,7 +44,7 @@ export function useAiSmartBuild({
     }
   };
 
-  // Logic chạy thuật toán lắp ráp tự động AI
+  
   const handleSmartBuildSubmit = async () => {
     setIsGeneratingSmartBuild(true);
     setAiBuildNote(null);
@@ -67,7 +67,7 @@ export function useAiSmartBuild({
     const selectedBudget = budgetMap[smartBuildBudget] || smartBuildBudget;
 
     try {
-      // 1. Tải danh mục linh kiện
+      
       setSmartBuildStatus("Đang tải thông tin danh mục linh kiện...");
       await new Promise((resolve) => setTimeout(resolve, 300));
       const categoriesResponse = await adminAPI.getCategories(0, 100);
@@ -92,7 +92,7 @@ export function useAiSmartBuild({
       const monitorId = findIdBySlug("monitor");
       const fanId = findIdBySlug("fan");
 
-      // 2. Tải danh sách linh kiện trong kho
+      
       setSmartBuildStatus("Đang tải danh sách linh kiện khả dụng từ cửa hàng...");
       await new Promise((resolve) => setTimeout(resolve, 300));
       const [
@@ -157,7 +157,7 @@ export function useAiSmartBuild({
         return;
       }
 
-      // 3. Phân bổ ngân sách theo nhu cầu
+      
       setSmartBuildStatus("Đang cân đối ngân sách cho từng linh kiện...");
       await new Promise((resolve) => setTimeout(resolve, 300));
       let targetBudget = 25000000;
@@ -188,7 +188,7 @@ export function useAiSmartBuild({
         }
       };
 
-      // Đánh giá nghẽn cổ chai dựa trên dữ liệu tĩnh
+      
       const checkStaticBottleneck = (cpuName: string, gpuName: string): number => {
         const cpuL = cpuName.toLowerCase();
         const gpuL = gpuName.toLowerCase();
@@ -234,7 +234,7 @@ export function useAiSmartBuild({
         return 0;
       };
 
-      // Đánh giá nghẽn cổ chai qua gọi API
+      
       const queryBottleneck = async (cpu: Product, gpu: Product, ram: Product): Promise<number> => {
         const cpuName = normalizeHardwareName(cpu.name, "cpu");
         const gpuName = normalizeHardwareName(gpu.name, "gpu");
@@ -334,7 +334,7 @@ export function useAiSmartBuild({
         )[0];
       };
 
-      // 4. Lắp ráp tổ hợp CPU, Mainboard & RAM
+      
       setSmartBuildStatus("Đang ghép nối CPU và Mainboard tương thích socket...");
       await new Promise((resolve) => setTimeout(resolve, 400));
       let currentCpuIdx = findClosestIndex(sortedCpus, cpuBudget);
@@ -360,7 +360,7 @@ export function useAiSmartBuild({
       let currentVgaIdx = findClosestIndex(sortedVgas, vgaBudget);
       let currVga = sortedVgas.length > 0 ? sortedVgas[currentVgaIdx] : null;
 
-      // Vòng lặp tối ưu hóa tránh nghẽn cổ chai
+      
       let loopCount = 0;
       const maxIterations = 6;
       let bestConfig = {
@@ -465,7 +465,7 @@ export function useAiSmartBuild({
       const finalRam = bestConfig.ram;
       const finalVga = bestConfig.vga;
 
-      // 5. Chọn vỏ máy, nguồn, ổ cứng, tản nhiệt CPU
+      
       setSmartBuildStatus("Đang tự động lựa chọn các linh kiện còn lại...");
       await new Promise((resolve) => setTimeout(resolve, 400));
       const getOptimalComponent = (pool: Product[], targetPrice: number): Product | null => {
@@ -566,7 +566,7 @@ export function useAiSmartBuild({
         newBuild.fan = fans.sort((a, b) => a.price - b.price)[0];
       }
 
-      // 6. Tính toán công suất nguồn PSU cuối cùng
+      
       setSmartBuildStatus("Đang kiểm tra công suất nguồn PSU cuối cùng...");
       await new Promise((resolve) => setTimeout(resolve, 500));
       const finalPsuWattageNeeded = psuWattageNeeded;
@@ -605,7 +605,7 @@ export function useAiSmartBuild({
       }
       setBuild(newBuild);
 
-      // 7. Nhận xét cấu hình từ Trợ lý AI
+      
       setSmartBuildStatus("Đang gửi cấu hình tới Trợ lý AI để lấy nhận xét chuyên gia...");
       const promptMessage = `Bạn là chuyên gia PCMaster. Tôi đã tự động build cấu hình PC sau:
 - CPU: ${finalCpu.name}

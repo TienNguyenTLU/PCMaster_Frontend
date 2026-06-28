@@ -4,17 +4,17 @@ import { useState, useEffect } from "react";
 import { adminAPI, adminChatbotAPI, Product, Brand, Category } from "@/lib/api";
 import toast from "react-hot-toast";
 
-// ==========================================
-// HOOK QUẢN LÝ NGHIỆP VỤ SẢN PHẨM Ở DASHBOARD
-// ==========================================
+
+
+
 
 export function useDashboardProducts() {
-  // Trạng thái lưu trữ danh sách từ API
+  
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [brandsList, setBrandsList] = useState<Brand[]>([]);
   const [categoriesList, setCategoriesList] = useState<Category[]>([]);
 
-  // Trạng thái phân trang và tiến trình tải
+  
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const [page, setPage] = useState(0);
@@ -27,18 +27,18 @@ export function useDashboardProducts() {
   const [selectedBrand, setSelectedBrand] = useState("");
   const [sortBy, setSortBy] = useState("id-desc");
 
-  // Trạng thái đóng/mở modal Thêm/Sửa sản phẩm
+  
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
 
-  // Trạng thái đóng/mở modal Xóa sản phẩm
+  
   const [deletingProduct, setDeletingProduct] = useState<Product | null>(null);
   const [deleteLoading, setDeleteLoading] = useState(false);
 
-  // Trạng thái tiến trình index dữ liệu chatbot
+  
   const [indexing, setIndexing] = useState(false);
 
-  // Gọi API re-index lại sản phẩm tìm kiếm AI
+  
   const handleReindex = async () => {
     setIndexing(true);
     try {
@@ -57,7 +57,7 @@ export function useDashboardProducts() {
     }
   };
 
-  // Tự động debounce tìm kiếm sau 500ms
+  
   useEffect(() => {
     const handler = setTimeout(() => {
       setDebouncedSearch(searchTerm);
@@ -66,7 +66,7 @@ export function useDashboardProducts() {
     return () => clearTimeout(handler);
   }, [searchTerm]);
 
-  // Tải danh sách thương hiệu và danh mục khi mount
+  
   useEffect(() => {
     adminAPI.getBrands(0, 100).then((res) => setBrandsList(res.content || []));
     adminAPI
@@ -74,7 +74,7 @@ export function useDashboardProducts() {
       .then((res) => setCategoriesList(res.content || []));
   }, []);
 
-  // Hàm gọi API tải toàn bộ sản phẩm (đọc tất cả các trang)
+  
   const fetchProducts = async () => {
     try {
       setLoading(true);
@@ -138,7 +138,7 @@ export function useDashboardProducts() {
       const valB = b.createdAt ? new Date(b.createdAt).getTime() : Number(b.id);
       return valA - valB;
     }
-    // default: id-desc (mới nhất)
+    
     const valA = a.createdAt ? new Date(a.createdAt).getTime() : Number(a.id);
     const valB = b.createdAt ? new Date(b.createdAt).getTime() : Number(b.id);
     return valB - valA;
@@ -165,7 +165,7 @@ export function useDashboardProducts() {
     fetchProducts();
   };
 
-  // Xác nhận thực hiện xóa sản phẩm
+  
   const handleDeleteConfirm = async () => {
     if (!deletingProduct) return;
     setDeleteLoading(true);

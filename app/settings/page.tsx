@@ -16,6 +16,8 @@ import {
   Settings,
   Shield,
   Bell,
+  Lock,
+  Key,
 } from "lucide-react";
 import toast from "react-hot-toast";
 
@@ -36,6 +38,11 @@ export default function SettingsPage() {
   const [activeSubTab, setActiveSubTab] = useState<
     "profile" | "security" | "notifications"
   >("profile");
+
+  const [oldPassword, setOldPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [changingPassword, setChangingPassword] = useState(false);
 
   
   useEffect(() => {
@@ -98,6 +105,33 @@ export default function SettingsPage() {
     }
   };
 
+  const handlePasswordChange = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!oldPassword || !newPassword || !confirmPassword) {
+      toast.error("Vui lòng điền đầy đủ thông tin!");
+      return;
+    }
+    if (newPassword !== confirmPassword) {
+      toast.error("Mật khẩu xác nhận không khớp!");
+      return;
+    }
+
+    setChangingPassword(true);
+    try {
+      await profileAPI.changePassword({ oldPassword, newPassword });
+      toast.success("Đổi mật khẩu thành công!");
+      setOldPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+    } catch (err: any) {
+      console.error("Failed to change password:", err);
+      const msg = err.response?.data?.message || "Có lỗi xảy ra khi đổi mật khẩu!";
+      toast.error(msg);
+    } finally {
+      setChangingPassword(false);
+    }
+  };
+
   if (!isHydrated || loading) {
     return (
       <div className="flex flex-col min-h-screen">
@@ -149,7 +183,6 @@ export default function SettingsPage() {
               <button
                 onClick={() => {
                   setActiveSubTab("security");
-                  toast.success("Chức năng bảo mật sẽ sớm được hỗ trợ!");
                 }}
                 className={`flex items-center gap-3 px-4 py-3 rounded-[12px] text-[13.5px] font-bold transition-all text-left cursor-pointer ${
                   activeSubTab === "security"
@@ -276,6 +309,75 @@ export default function SettingsPage() {
                     </button>
                   </div>
                 </form>
+              ) : activeSubTab === "security" ? (
+                <div className="flex flex-col gap-6">
+                  <form
+                    onSubmit={handlePasswordChange}
+                    className="flex flex-col gap-5 max-w-[640px]"
+                  >
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[12.5px] font-bold text-slate-700 flex items-center gap-1.5">
+                        <Lock className="size-4 text-[#0058be]" />
+                        Mật khẩu cũ <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="password"
+                        value={oldPassword}
+                        onChange={(e) => setOldPassword(e.target.value)}
+                        placeholder="Nhập mật khẩu hiện tại"
+                        className="px-4 py-3 bg-[#f8fafc] border border-slate-200 rounded-[12px] text-[13.5px] focus:outline-none focus:border-[#0058be] focus:bg-white focus:ring-4 focus:ring-[#0058be]/10 transition-all font-medium text-slate-800"
+                      />
+                    </div>
+
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[12.5px] font-bold text-slate-700 flex items-center gap-1.5">
+                        <Key className="size-4 text-[#0058be]" />
+                        Mật khẩu mới <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="password"
+                        value={newPassword}
+                        onChange={(e) => setNewPassword(e.target.value)}
+                        placeholder="Nhập mật khẩu mới"
+                        className="px-4 py-3 bg-[#f8fafc] border border-slate-200 rounded-[12px] text-[13.5px] focus:outline-none focus:border-[#0058be] focus:bg-white focus:ring-4 focus:ring-[#0058be]/10 transition-all font-medium text-slate-800"
+                      />
+                    </div>
+
+                    <div className="flex flex-col gap-1.5">
+                      <label className="text-[12.5px] font-bold text-slate-700 flex items-center gap-1.5">
+                        <Shield className="size-4 text-[#0058be]" />
+                        Xác nhận mật khẩu mới <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="password"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
+                        placeholder="Nhập lại mật khẩu mới"
+                        className="px-4 py-3 bg-[#f8fafc] border border-slate-200 rounded-[12px] text-[13.5px] focus:outline-none focus:border-[#0058be] focus:bg-white focus:ring-4 focus:ring-[#0058be]/10 transition-all font-medium text-slate-800"
+                      />
+                    </div>
+
+                    <div className="pt-2">
+                      <button
+                        type="submit"
+                        disabled={changingPassword}
+                        className="flex items-center justify-center gap-2 px-6 py-3.5 bg-gradient-to-r from-[#0058be] to-[#2563eb] hover:from-[#0047a3] hover:to-[#1d4ed8] text-white text-[13.5px] font-bold rounded-[12px] shadow-lg shadow-blue-100/50 hover:shadow-xl transition-all cursor-pointer disabled:opacity-55 disabled:cursor-not-allowed"
+                      >
+                        {changingPassword ? (
+                          <>
+                            <Loader2 className="size-4 animate-spin" />
+                            Đang xử lý...
+                          </>
+                        ) : (
+                          <>
+                            <Save className="size-4" />
+                            Đổi mật khẩu
+                          </>
+                        )}
+                      </button>
+                    </div>
+                  </form>
+                </div>
               ) : (
                 <div className="py-20 flex flex-col items-center justify-center text-slate-400 gap-2">
                   <Shield className="size-12 animate-pulse text-[#0058be]/20" />

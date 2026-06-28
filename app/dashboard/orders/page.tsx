@@ -86,7 +86,7 @@ export default function OrdersPage() {
       className="flex flex-col gap-6"
       style={{ fontFamily: "Inter, sans-serif" }}
     >
-      {/* Title */}
+      {}
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-[#0f172a] text-[24px] font-semibold tracking-[-0.5px]">
@@ -103,7 +103,7 @@ export default function OrdersPage() {
         </button>
       </div>
 
-      {/* Stats Grid */}
+      {}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         {stats.map((s) => {
           const Icon = s.Icon;
@@ -124,7 +124,7 @@ export default function OrdersPage() {
         })}
       </div>
 
-      {/* Filter Bar */}
+      {}
       <div className="flex flex-col md:flex-row items-center gap-3 bg-white p-4 rounded-[12px] border border-[#e2e8f0] shadow-sm">
         <div className="relative w-full md:w-[300px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-[#94a3b8]" />
@@ -137,7 +137,7 @@ export default function OrdersPage() {
           />
         </div>
 
-        {/* Order Status Filter */}
+        {}
         <div className="relative w-full md:w-auto">
           <select
             value={filterStatus}
@@ -158,7 +158,7 @@ export default function OrdersPage() {
           <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 size-3.5 text-[#94a3b8] pointer-events-none" />
         </div>
 
-        {/* Payment Status Filter */}
+        {}
         <div className="relative w-full md:w-auto">
           <select
             value={filterPayment}
@@ -175,7 +175,7 @@ export default function OrdersPage() {
           <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 size-3.5 text-[#94a3b8] pointer-events-none" />
         </div>
 
-        {/* Sort select */}
+        {}
         <div className="relative w-full md:w-auto">
           <select
             value={sortBy}
@@ -195,7 +195,7 @@ export default function OrdersPage() {
         </p>
       </div>
 
-      {/* Orders Table */}
+      {}
       <div className="bg-white border border-[#e2e8f0] rounded-[12px] overflow-hidden shadow-sm">
         <div className="overflow-x-auto min-h-[300px]">
           {loading ? (
@@ -253,7 +253,7 @@ export default function OrdersPage() {
                           {delivery.label}
                         </span>
                       </td>
-                      {/* Payment column */}
+                      {}
                       <td className="px-5 py-4 text-center">
                         <div className="flex flex-col items-center gap-1.5">
                           {paymentMethodMeta && (

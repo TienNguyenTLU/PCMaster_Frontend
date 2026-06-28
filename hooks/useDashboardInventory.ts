@@ -4,12 +4,12 @@ import { useState, useEffect, useCallback } from "react";
 import { adminAPI, InventoryBatchResponse, IssueSlipResponse } from "@/lib/api";
 import toast from "react-hot-toast";
 
-// ==========================================
-// HOOK QUẢN LÝ NGHIỆP VỤ KHO HÀNG Ở DASHBOARD
-// ==========================================
+
+
+
 
 export function useDashboardInventory() {
-  // Trạng thái quản lý tab hoạt động
+  
   const [activeTab, setActiveTab] = useState<
     "batches" | "purchase-orders" | "slips"
   >("batches");
@@ -17,12 +17,12 @@ export function useDashboardInventory() {
   const [slips, setSlips] = useState<IssueSlipResponse[]>([]);
   const [sortBy, setSortBy] = useState("id-desc");
 
-  // Trạng thái đóng/mở modal Phiếu nhập & Phiếu xuất
+  
   const [isCreatePOOpen, setIsCreatePOOpen] = useState(false);
   const [isCreateSlipOpen, setIsCreateSlipOpen] = useState(false);
   const [poReloadTrigger, setPoReloadTrigger] = useState(0);
 
-  // Trạng thái tiến trình tải và từ khóa tìm kiếm
+  
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -47,7 +47,7 @@ export function useDashboardInventory() {
     "ALL" | "PENDING" | "COMPLETED"
   >("ALL");
 
-  // Các state tương tác chi tiết và chỉnh sửa
+  
   const [selectedSlip, setSelectedSlip] = useState<IssueSlipResponse | null>(
     null,
   );
@@ -57,7 +57,7 @@ export function useDashboardInventory() {
   const [savingPrices, setSavingPrices] = useState(false);
   const [dispatchingId, setDispatchingId] = useState<number | null>(null);
 
-  // Hàm tải dữ liệu linh hoạt dựa theo tab được chọn
+  
   const fetchData = useCallback(
     async (isRefresh = false) => {
       if (isRefresh) {
@@ -94,7 +94,7 @@ export function useDashboardInventory() {
     [activeTab, batchesPage, batchesSize, slipsPage, slipsSize],
   );
 
-  // Tự động tải lại dữ liệu khi đổi tab hoặc đổi trang
+  
   useEffect(() => {
     const timer = setTimeout(() => {
       fetchData();
@@ -102,7 +102,7 @@ export function useDashboardInventory() {
     return () => clearTimeout(timer);
   }, [fetchData]);
 
-  // Nghiệp vụ thực hiện xuất kho phiếu xuất
+  
   const handleDispatch = async (slipId: number) => {
     setDispatchingId(slipId);
     try {
@@ -120,7 +120,7 @@ export function useDashboardInventory() {
     }
   };
 
-  // Nghiệp vụ cập nhật đơn giá nhập và đơn giá bán của lô hàng
+  
   const handleSavePrices = async (
     batchId: number,
     importPrice: number,

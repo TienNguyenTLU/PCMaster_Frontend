@@ -89,7 +89,7 @@ export default function DualRangeSlider({
 
   return (
     <div className="flex flex-col gap-5 px-1 py-1">
-      {/* Slider Track Container */}
+      {}
       <div className="relative h-2 bg-[#f1f5f9] rounded-full mt-3">
         <div
           className="absolute h-full bg-gradient-to-r from-[#0058be] to-[#3b82f6] rounded-full pointer-events-none shadow-sm"
@@ -115,7 +115,7 @@ export default function DualRangeSlider({
         />
       </div>
 
-      {/* Input Price Values */}
+      {}
       <div className="flex items-center gap-3">
         <div className="flex-1 flex flex-col gap-1">
           <span className="text-[10px] font-bold text-[#94a3b8] uppercase tracking-[0.5px]">Giá tối thiểu</span>

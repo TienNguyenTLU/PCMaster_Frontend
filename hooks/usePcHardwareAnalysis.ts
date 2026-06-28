@@ -12,17 +12,17 @@ interface UsePcHardwareAnalysisProps {
   build: BuildState;
 }
 
-// ==========================================
-// HOOK PHÂN TÍCH HIỆU NĂNG PHẦN CỨNG (PSU & BOTTLENECK)
-// ==========================================
+
+
+
 
 export function usePcHardwareAnalysis({ build }: UsePcHardwareAnalysisProps) {
-  // Trạng thái phân tích nghẽn cổ chai
+  
   const [bottleneckResult, setBottleneckResult] = useState<any>(null);
   const [loadingBottleneck, setLoadingBottleneck] = useState(false);
   const [bottleneckError, setBottleneckError] = useState<string | null>(null);
 
-  // Trạng thái gợi ý nâng cấp CPU & công suất nguồn PSU
+  
   const [cpuAdvice, setCpuAdvice] = useState<string | null>(null);
   const [aiPsuWattage, setAiPsuWattage] = useState<number | null>(null);
   const [aiPsuExplanation, setAiPsuExplanation] = useState<string | null>(null);
@@ -37,7 +37,7 @@ export function usePcHardwareAnalysis({ build }: UsePcHardwareAnalysisProps) {
     }
   };
 
-  // Tự động gọi API dự đoán Bottleneck khi thay đổi CPU, VGA, hoặc RAM
+  
   useEffect(() => {
     const calculateBottleneck = async () => {
       const cpu = build.cpu;
@@ -87,7 +87,7 @@ export function usePcHardwareAnalysis({ build }: UsePcHardwareAnalysisProps) {
     calculateBottleneck();
   }, [build.cpu, build.vga, build.ram]);
 
-  // Tự động lấy lời khuyên nâng cấp CPU từ AI
+  
   useEffect(() => {
     const fetchCpuAdvice = async () => {
       if (!build.cpu) {
@@ -105,7 +105,7 @@ export function usePcHardwareAnalysis({ build }: UsePcHardwareAnalysisProps) {
     fetchCpuAdvice();
   }, [build.cpu]);
 
-  // Tự động lấy đề xuất công suất PSU từ AI
+  
   useEffect(() => {
     const fetchPsuRecommendation = async () => {
       const cpu = build.cpu;

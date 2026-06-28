@@ -76,7 +76,7 @@ export default function IssueSlipList({
       const timeB = b.createdAt ? new Date(b.createdAt).getTime() : Number(b.id);
       return timeA - timeB;
     }
-    // default: id-desc (mới nhất)
+    
     const timeA = a.createdAt ? new Date(a.createdAt).getTime() : Number(a.id);
     const timeB = b.createdAt ? new Date(b.createdAt).getTime() : Number(b.id);
     return timeB - timeA;
