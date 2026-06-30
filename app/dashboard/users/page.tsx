@@ -12,6 +12,7 @@ import {
   UserCheck,
   UserX,
 } from "lucide-react";
+import ConfirmModal from "@/components/ui/ConfirmModal";
 import { adminAPI, UserResponse, CreateStaffRequest } from "@/lib/api";
 import { USER_ROLE_MAP } from "@/utils/labelMapping";
 import { formatDate } from "@/utils/format";
@@ -35,6 +36,7 @@ export default function UsersPage() {
   );
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [userToToggle, setUserToToggle] = useState<UserResponse | null>(null);
 
   const fetchUsers = async () => {
     try {
@@ -61,14 +63,11 @@ export default function UsersPage() {
       toast.error("Không thể khóa tài khoản Administrator!");
       return;
     }
+    setUserToToggle(user);
+  };
+
+  const executeToggleStatus = async (user: UserResponse) => {
     const actionText = user.active ? "Khóa" : "Mở khóa";
-    if (
-      !confirm(
-        `Bạn có chắc chắn muốn ${actionText.toLowerCase()} tài khoản "${user.username}"?`,
-      )
-    ) {
-      return;
-    }
 
     try {
       await adminAPI.toggleUserStatus(user.id);
@@ -446,6 +445,17 @@ export default function UsersPage() {
             setIsModalOpen(false);
             fetchUsers();
           }}
+        />
+      )}
+      {userToToggle && (
+        <ConfirmModal
+          title="Xác nhận"
+          message={`Bạn có chắc chắn muốn ${userToToggle.active ? "khóa" : "mở khóa"} tài khoản "${userToToggle.username}"?`}
+          onConfirm={() => {
+            executeToggleStatus(userToToggle);
+            setUserToToggle(null);
+          }}
+          onCancel={() => setUserToToggle(null)}
         />
       )}
     </div>

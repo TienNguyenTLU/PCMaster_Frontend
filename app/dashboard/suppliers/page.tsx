@@ -10,6 +10,7 @@ import {
   Loader2,
   Check,
 } from "lucide-react";
+import ConfirmModal from "@/components/ui/ConfirmModal";
 import { adminAPI, Supplier, Brand } from "@/lib/api";
 import toast from "react-hot-toast";
 
@@ -23,6 +24,7 @@ export default function SuppliersPage() {
   const [sortBy, setSortBy] = useState("id-desc");
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [idToDelete, setIdToDelete] = useState<string | number | null>(null);
   const [editingSupplier, setEditingSupplier] = useState<Supplier | null>(null);
   const [allBrands, setAllBrands] = useState<Brand[]>([]);
 
@@ -94,7 +96,10 @@ export default function SuppliersPage() {
   };
 
   const handleDelete = async (id: string | number) => {
-    if (!confirm("Bạn có chắc chắn muốn xóa nhà cung cấp này?")) return;
+    setIdToDelete(id);
+  };
+
+  const executeDelete = async (id: string | number) => {
     try {
       await adminAPI.deleteSupplier(id);
       toast.success("Xóa nhà cung cấp thành công!");
@@ -297,6 +302,18 @@ export default function SuppliersPage() {
             setIsModalOpen(false);
             fetchSuppliers();
           }}
+        />
+      )}
+    
+      {idToDelete && (
+        <ConfirmModal
+          title="Xác nhận xóa"
+          message="Bạn có chắc chắn muốn xóa mục này? Thao tác này không thể hoàn tác."
+          onConfirm={() => {
+            executeDelete(idToDelete);
+            setIdToDelete(null);
+          }}
+          onCancel={() => setIdToDelete(null)}
         />
       )}
     </div>

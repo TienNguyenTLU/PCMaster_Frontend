@@ -35,6 +35,7 @@ import ClearCartModal from "./ClearCartModal";
 import CartItemRow from "./CartItemRow";
 import EmptyCart from "./EmptyCart";
 import CartSkeleton from "./CartSkeleton";
+import ConfirmModal from "@/components/ui/ConfirmModal";
 
 export default function CartPage() {
   const { user, isHydrated, hydrate } = useAuthStore();
@@ -55,6 +56,7 @@ export default function CartPage() {
   const searchParams = typeof window !== "undefined" ? new URLSearchParams(window.location.search) : null;
 
   const [showClearModal, setShowClearModal] = useState(false);
+  const [showConfirmOrderModal, setShowConfirmOrderModal] = useState(false);
   const [placingOrder, setPlacingOrder] = useState(false);
   const [orderSuccess, setOrderSuccess] = useState<{
     id: number;
@@ -175,6 +177,10 @@ export default function CartPage() {
       }
     }
 
+    setShowConfirmOrderModal(true);
+  }
+
+  async function executePlaceOrder() {
     setPlacingOrder(true);
     try {
       const request: OrderRequest = {
@@ -754,6 +760,18 @@ export default function CartPage() {
           onConfirm={onClearConfirm}
           onCancel={() => setShowClearModal(false)}
           loading={isClearing}
+        />
+      )}
+
+      {showConfirmOrderModal && (
+        <ConfirmModal
+          title="Xác nhận đặt hàng"
+          message="Bạn có chắc chắn muốn đặt đơn hàng này?"
+          onConfirm={() => {
+            setShowConfirmOrderModal(false);
+            executePlaceOrder();
+          }}
+          onCancel={() => setShowConfirmOrderModal(false)}
         />
       )}
 

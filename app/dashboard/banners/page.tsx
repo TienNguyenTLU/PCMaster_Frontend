@@ -10,6 +10,7 @@ import {
   Loader2,
   ExternalLink,
 } from "lucide-react";
+import ConfirmModal from "@/components/ui/ConfirmModal";
 import toast from "react-hot-toast";
 import { adminAPI, Banner } from "@/lib/api";
 
@@ -19,6 +20,7 @@ export default function BannersPage() {
   const [error, setError] = useState("");
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [idToDelete, setIdToDelete] = useState<any>(null);
   const [editingBanner, setEditingBanner] = useState<Banner | null>(null);
 
   const fetchBanners = async () => {
@@ -54,7 +56,10 @@ export default function BannersPage() {
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm("Bạn có chắc chắn muốn xóa banner này?")) return;
+    setIdToDelete(id);
+  };
+
+  const executeDelete = async (id: number) => {
     try {
       await adminAPI.deleteBanner(id);
       toast.success("Xóa banner thành công!");
@@ -184,6 +189,18 @@ export default function BannersPage() {
             setIsModalOpen(false);
             fetchBanners();
           }}
+        />
+      )}
+    
+      {idToDelete && (
+        <ConfirmModal
+          title="Xác nhận xóa"
+          message="Bạn có chắc chắn muốn xóa mục này? Thao tác này không thể hoàn tác."
+          onConfirm={() => {
+            executeDelete(idToDelete);
+            setIdToDelete(null);
+          }}
+          onCancel={() => setIdToDelete(null)}
         />
       )}
     </div>

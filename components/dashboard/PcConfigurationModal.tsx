@@ -1019,8 +1019,8 @@ export default function PcConfigurationModal({
       };
 
       const findCompatibleCpuAndMainboard = (startCpuIdx: number, targetMbBudget: number) => {
-        let queue: number[] = [startCpuIdx];
-        let visited = new Set<number>();
+        const queue: number[] = [startCpuIdx];
+        const visited = new Set<number>();
         visited.add(startCpuIdx);
 
         let offset = 1;
@@ -1978,7 +1978,7 @@ function AdminBuildSlot({
   const imgSrc = product?.thumbnailUrl?.startsWith("http")
     ? product.thumbnailUrl
     : product?.thumbnailUrl
-      ? `http:
+      ? `http://localhost:8080${product.thumbnailUrl}`
       : null;
 
   const isOutOfStock = product && product.stock === 0;

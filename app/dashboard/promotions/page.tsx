@@ -14,6 +14,7 @@ import {
   Sparkles,
   Image,
 } from "lucide-react";
+import ConfirmModal from "@/components/ui/ConfirmModal";
 import {
   adminAPI,
   Product,
@@ -33,6 +34,7 @@ export default function PromotionsPage() {
   const [sortBy, setSortBy] = useState("id-desc");
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [idToDelete, setIdToDelete] = useState<any>(null);
   const [editingPromotion, setEditingPromotion] = useState<Promotion | null>(
     null,
   );
@@ -104,8 +106,10 @@ export default function PromotionsPage() {
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm("Bạn có chắc chắn muốn xóa chương trình khuyến mãi này?"))
-      return;
+    setIdToDelete(id);
+  };
+
+  const executeDelete = async (id: number) => {
     try {
       await adminAPI.deletePromotion(id);
       toast.success("Xóa khuyến mãi thành công!");
@@ -302,6 +306,18 @@ export default function PromotionsPage() {
             setIsModalOpen(false);
             fetchPromotions();
           }}
+        />
+      )}
+    
+      {idToDelete && (
+        <ConfirmModal
+          title="Xác nhận xóa"
+          message="Bạn có chắc chắn muốn xóa mục này? Thao tác này không thể hoàn tác."
+          onConfirm={() => {
+            executeDelete(idToDelete);
+            setIdToDelete(null);
+          }}
+          onCancel={() => setIdToDelete(null)}
         />
       )}
     </div>

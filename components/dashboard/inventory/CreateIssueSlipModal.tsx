@@ -42,11 +42,6 @@ const EXPORT_REASONS = [
     label: "Xuất trả hàng lỗi cho nhà cung cấp",
     description: "Trả lại hàng bị lỗi hoặc hỏng cho nhà phân phối",
   },
-  {
-    key: "PC_ASSEMBLY",
-    label: "Xuất linh kiện để lắp ráp PC bộ",
-    description: "Sử dụng linh kiện trong kho để tự ráp cấu hình PC nguyên bộ",
-  },
 ];
 
 export default function CreateIssueSlipModal({
@@ -54,7 +49,7 @@ export default function CreateIssueSlipModal({
   onSuccess,
 }: CreateIssueSlipModalProps) {
   const [reason, setReason] = useState<
-    "RETAIL_SALE" | "PROVIDER_RETURN" | "PC_ASSEMBLY"
+    "RETAIL_SALE" | "PROVIDER_RETURN"
   >("RETAIL_SALE");
   const [allProducts, setAllProducts] = useState<Product[]>([]);
   const [orders, setOrders] = useState<OrderResponse[]>([]);

@@ -14,6 +14,7 @@ import {
   Percent,
   RefreshCw,
 } from "lucide-react";
+import ConfirmModal from "@/components/ui/ConfirmModal";
 import { adminAPI, Coupon, CouponRequest } from "@/lib/api";
 import toast from "react-hot-toast";
 
@@ -25,6 +26,7 @@ export default function CouponsPage() {
   const [sortBy, setSortBy] = useState("id-desc");
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [idToDelete, setIdToDelete] = useState<any>(null);
   const [editingCoupon, setEditingCoupon] = useState<Coupon | null>(null);
 
   const fetchCoupons = async () => {
@@ -83,7 +85,10 @@ export default function CouponsPage() {
   };
 
   const handleDelete = async (id: number) => {
-    if (!confirm("Bạn có chắc chắn muốn xóa mã giảm giá này?")) return;
+    setIdToDelete(id);
+  };
+
+  const executeDelete = async (id: number) => {
     try {
       await adminAPI.deleteCoupon(id);
       toast.success("Xóa mã giảm giá thành công!");
@@ -291,6 +296,18 @@ export default function CouponsPage() {
             setIsModalOpen(false);
             fetchCoupons();
           }}
+        />
+      )}
+    
+      {idToDelete && (
+        <ConfirmModal
+          title="Xác nhận xóa"
+          message="Bạn có chắc chắn muốn xóa mục này? Thao tác này không thể hoàn tác."
+          onConfirm={() => {
+            executeDelete(idToDelete);
+            setIdToDelete(null);
+          }}
+          onCancel={() => setIdToDelete(null)}
         />
       )}
     </div>

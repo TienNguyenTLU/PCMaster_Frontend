@@ -285,8 +285,8 @@ export function useAiSmartBuild({
         startCpuIdx: number,
         targetMbBudget: number,
       ): { cpu: Product; mb: Product; cpuIdx: number } | null => {
-        let queue: number[] = [startCpuIdx];
-        let visited = new Set<number>();
+        const queue: number[] = [startCpuIdx];
+        const visited = new Set<number>();
         visited.add(startCpuIdx);
         let offset = 1;
         while (visited.size < sortedCpus.length) {
@@ -357,7 +357,7 @@ export function useAiSmartBuild({
           (a, b) => Math.abs(a.price - ramBudget) - Math.abs(b.price - ramBudget),
         )[0];
       }
-      let currentVgaIdx = findClosestIndex(sortedVgas, vgaBudget);
+      const currentVgaIdx = findClosestIndex(sortedVgas, vgaBudget);
       let currVga = sortedVgas.length > 0 ? sortedVgas[currentVgaIdx] : null;
 
       

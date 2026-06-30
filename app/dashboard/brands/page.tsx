@@ -9,6 +9,7 @@ import {
   Upload,
   Loader2,
 } from "lucide-react";
+import ConfirmModal from "@/components/ui/ConfirmModal";
 import { adminAPI, Brand } from "@/lib/api";
 import { CldImage } from "next-cloudinary";
 import toast from "react-hot-toast";
@@ -23,6 +24,7 @@ export default function BrandsPage() {
   const [sortBy, setSortBy] = useState("id-desc");
 
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [idToDelete, setIdToDelete] = useState<string | number | null>(null);
   const [editingBrand, setEditingBrand] = useState<Brand | null>(null);
 
   const fetchBrands = async () => {
@@ -81,7 +83,10 @@ export default function BrandsPage() {
   };
 
   const handleDelete = async (id: string | number) => {
-    if (!confirm("Bạn có chắc chắn muốn xóa thương hiệu này?")) return;
+    setIdToDelete(id);
+  };
+
+  const executeDelete = async (id: string | number) => {
     try {
       await adminAPI.deleteBrand(id);
       toast.success("Xóa thương hiệu thành công!");
@@ -266,6 +271,18 @@ export default function BrandsPage() {
             setIsModalOpen(false);
             fetchBrands();
           }}
+        />
+      )}
+    
+      {idToDelete && (
+        <ConfirmModal
+          title="Xác nhận xóa"
+          message="Bạn có chắc chắn muốn xóa mục này? Thao tác này không thể hoàn tác."
+          onConfirm={() => {
+            executeDelete(idToDelete);
+            setIdToDelete(null);
+          }}
+          onCancel={() => setIdToDelete(null)}
         />
       )}
     </div>
