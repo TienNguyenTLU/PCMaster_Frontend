@@ -343,6 +343,8 @@ export default function BuildPage() {
               aiPsuWattage={aiPsuWattage}
               aiPsuExplanation={aiPsuExplanation}
               loadingPsu={loadingPsu}
+              bottleneckResult={bottleneckResult}
+              aiBuildNote={aiBuildNote}
             />
           </div>
         ) : (

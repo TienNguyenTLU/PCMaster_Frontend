@@ -21,9 +21,10 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { chatbotAPI } from "@/lib/api";
+import { chatbotAPI, Product } from "@/lib/api";
 import { ChatMessage, RecommendedProduct } from "@/lib/types/chatbot";
 import { useCartManager } from "@/hooks/useCartManager";
+import ProductCard from "@/components/explore/ProductCard";
 
 
 const WELCOME_CONSULT_MESSAGE: ChatMessage = {
@@ -330,12 +331,10 @@ function MessageBubble({ message, addingIds, onAddToCart }: MessageBubbleProps) 
         </div>
       </div>
 
-      {}
+      {/* Product Slider */}
       {!isUser && message.products && message.products.length > 0 && (
         <ProductSlider
           products={message.products}
-          addingIds={addingIds}
-          onAddToCart={onAddToCart}
         />
       )}
     </div>
@@ -366,14 +365,10 @@ function MarkdownText({ text, isUser }: { text: string; isUser: boolean }) {
 
 interface ProductSliderProps {
   products: RecommendedProduct[];
-  addingIds: Set<number | string>;
-  onAddToCart: (e: React.MouseEvent, product: RecommendedProduct) => void;
 }
 
 function ProductSlider({
   products,
-  addingIds,
-  onAddToCart,
 }: ProductSliderProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [showLeft, setShowLeft] = useState(false);
@@ -418,7 +413,7 @@ function ProductSlider({
       </div>
 
       <div className="relative group/slider">
-        {}
+        {/* Navigation Buttons */}
         {showLeft && (
           <button
             type="button"
@@ -429,7 +424,7 @@ function ProductSlider({
           </button>
         )}
 
-        {}
+        {/* Navigation Buttons */}
         {showRight && (
           <button
             type="button"
@@ -440,88 +435,29 @@ function ProductSlider({
           </button>
         )}
 
-        {}
+        {/* Product Cards Slider */}
         <div
           ref={containerRef}
           className="flex overflow-x-auto gap-3 pb-2 scrollbar-none snap-x snap-mandatory"
         >
           {products.map((product) => {
-            const isSale =
-              product.discountPrice !== null &&
-              product.discountPercent !== null;
-            const imgSrc = product.thumbnailUrl?.startsWith("http")
-              ? product.thumbnailUrl
-              : product.thumbnailUrl
-                ? `http://localhost:8080${product.thumbnailUrl}`
-                : null;
-            const displayPrice = product.discountPrice ?? product.price;
+            const adaptedProduct: Product = {
+              id: product.id,
+              name: product.name,
+              slug: product.slug,
+              price: product.price,
+              discountPrice: product.discountPrice,
+              discountPercent: product.discountPercent,
+              thumbnailUrl: product.thumbnailUrl || undefined,
+              stock: product.stock,
+            };
 
             return (
               <div
                 key={product.id}
-                className="flex-shrink-0 w-44 snap-start bg-white border border-gray-200 rounded-xl overflow-hidden hover:border-blue-300 hover:shadow-md hover:shadow-blue-50 transition-all duration-300 flex flex-col"
+                className="flex-shrink-0 w-44 snap-start"
               >
-                {}
-                <Link
-                  href={`/explore/${product.id}`}
-                  className="block h-24 bg-gray-50 relative overflow-hidden group"
-                >
-                  {imgSrc ? (
-                    <img
-                      src={imgSrc}
-                      alt={product.name}
-                      className="w-full h-full object-contain p-2 group-hover:scale-105 transition-transform duration-300"
-                    />
-                  ) : (
-                    <div className="flex flex-col items-center justify-center h-full text-gray-300">
-                      <Package className="size-6" />
-                      <span className="text-[9px] mt-1">Chưa có ảnh</span>
-                    </div>
-                  )}
-                  {}
-                  {isSale && (
-                    <span className="absolute top-1.5 left-1.5 bg-red-500 text-white text-[9px] font-bold px-1.5 py-0.5 rounded">
-                      -{product.discountPercent}%
-                    </span>
-                  )}
-                </Link>
-
-                {}
-                <div className="p-3 flex-1 flex flex-col justify-between gap-1.5">
-                  <Link
-                    href={`/explore/${product.id}`}
-                    className="text-[11px] font-semibold text-gray-700 hover:text-[#0058be] transition-colors line-clamp-2 leading-snug min-h-[32px]"
-                  >
-                    {product.name}
-                  </Link>
-
-                  <div className="flex items-end justify-between pt-1 border-t border-gray-100">
-                    <div className="flex flex-col">
-                      {isSale && (
-                        <span className="text-[9px] text-gray-400 line-through">
-                          {product.price.toLocaleString("vi-VN")}₫
-                        </span>
-                      )}
-                      <span className="text-[11px] font-bold text-[#0058be]">
-                        {displayPrice.toLocaleString("vi-VN")}₫
-                      </span>
-                    </div>
-
-                    <button
-                      type="button"
-                      disabled={product.stock === 0 || addingIds.has(product.id)}
-                      onClick={(e) => onAddToCart(e, product)}
-                      className="p-1.5 rounded-md bg-gray-100 hover:bg-[#0058be] text-gray-400 hover:text-white transition-colors disabled:opacity-30 disabled:cursor-not-allowed cursor-pointer"
-                      aria-label="Thêm vào giỏ"
-                    >
-                      {addingIds.has(product.id) ? (
-                        <Loader2 className="size-3.5 animate-spin" />
-                      ) : (
-                        <ShoppingCart className="size-3.5" />
-                      )}
-                    </button>
-                  </div>
-                </div>
+                <ProductCard product={adaptedProduct} isMini />
               </div>
             );
           })}

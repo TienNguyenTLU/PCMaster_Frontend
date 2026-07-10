@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import {
   Cpu,
   Layers,
@@ -14,6 +15,7 @@ import {
   ShoppingCart,
   Loader2,
   AlertTriangle,
+  FileDown,
 } from "lucide-react";
 import { Product } from "@/lib/api";
 import { SlotDef, BuildState, SLOTS } from "@/hooks/usePcBuildState";
@@ -28,6 +30,8 @@ interface SummaryPanelProps {
   aiPsuWattage: number | null;
   aiPsuExplanation: string | null;
   loadingPsu: boolean;
+  bottleneckResult?: any;
+  aiBuildNote?: string | null;
 }
 
 export default function SummaryPanel({
@@ -39,7 +43,30 @@ export default function SummaryPanel({
   aiPsuWattage,
   aiPsuExplanation,
   loadingPsu,
+  bottleneckResult,
+  aiBuildNote,
 }: SummaryPanelProps) {
+  const [downloadingPdf, setDownloadingPdf] = useState(false);
+
+  const handleDownloadPdf = async () => {
+    try {
+      setDownloadingPdf(true);
+      const { exportBuildToPdf } = await import("@/utils/pdfExport");
+      await exportBuildToPdf({
+        build,
+        totalPrice,
+        aiPsuWattage,
+        aiPsuExplanation,
+        aiBuildNote: aiBuildNote || null,
+        bottleneckResult,
+      });
+    } catch (err) {
+      console.error("Lỗi khi tải PDF:", err);
+    } finally {
+      setDownloadingPdf(false);
+    }
+  };
+
   const allSlots = [...SLOTS, ...extraStorageSlots];
   const selectedCount = allSlots.filter((s) => !!build[s.key]).length;
   const requiredSlots = SLOTS.filter((s) => s.required);
@@ -160,6 +187,23 @@ export default function SummaryPanel({
           ) : (
             <>
               <ShoppingCart className="size-4" /> Thêm tất cả vào giỏ
+            </>
+          )}
+        </button>
+
+        <button
+          type="button"
+          disabled={selectedCount === 0 || downloadingPdf}
+          onClick={handleDownloadPdf}
+          className="w-full flex items-center justify-center gap-2 py-3 rounded-[14px] bg-white border border-[#0058be] text-[#0058be] text-[14px] font-bold hover:bg-[#eff6ff] hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.99] transition-all cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none disabled:shadow-none mt-2"
+        >
+          {downloadingPdf ? (
+            <>
+              <Loader2 className="size-4 animate-spin" /> Đang tạo PDF...
+            </>
+          ) : (
+            <>
+              <FileDown className="size-4" /> Tải cấu hình PDF
             </>
           )}
         </button>
